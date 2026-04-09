@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part IB Revision</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="grain-overlay"></div>
+
+    <header class="header">
+        <div class="header-inner">
+            <h1 class="logo" onclick="app.showDashboard()">Part IB Revision</h1>
+            <nav class="nav">
+                <button class="nav-btn active" data-view="dashboard" onclick="app.showDashboard()">Dashboard</button>
+                <button class="nav-btn" data-view="warmup" onclick="app.showWarmup()">Warm Up</button>
+                <button class="nav-btn" data-view="graph" onclick="app.showGraph()">Graph</button>
+                <button class="nav-btn" data-view="session" onclick="app.startSessionModal()">Practice</button>
+                <button class="nav-btn" data-view="history" onclick="app.showHistory()">History</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="view active">
+            <div class="overall-progress">
+                <div class="overall-label">
+                    <span>Overall Progress</span>
+                    <span class="overall-pct" id="overall-pct">50%</span>
+                </div>
+                <div class="progress-bar-outer large">
+                    <div class="progress-bar-inner" id="overall-bar" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div id="terms-container"></div>
+        </div>
+
+        <!-- Course Detail View -->
+        <div id="view-course" class="view">
+            <button class="back-btn" onclick="app.showDashboard()">&larr; Back to Dashboard</button>
+            <div id="course-detail"></div>
+        </div>
+
+        <!-- Question View -->
+        <div id="view-question" class="view">
+            <button class="back-btn" id="question-back-btn">&larr; Back</button>
+            <div id="question-container"></div>
+        </div>
+
+        <!-- Warm Up View -->
+        <div id="view-warmup" class="view">
+
+            <!-- Setup phase -->
+            <div id="warmup-setup">
+                <div class="warmup-setup-inner">
+                    <div class="warmup-icon">☀</div>
+                    <h2 class="warmup-title">Warm Up</h2>
+                    <p class="warmup-desc">Quick multiple-choice questions to test key concepts before a full practice session.</p>
+                    <div class="warmup-field">
+                        <label class="warmup-field-label">Course</label>
+                        <select id="warmup-course-select" class="warmup-course-select">
+                            <option value="">All courses</option>
+                        </select>
+                    </div>
+                    <div class="warmup-field">
+                        <label class="warmup-field-label">Questions</label>
+                        <div class="warmup-count-row">
+                            <button class="warmup-count-btn" data-count="5" onclick="app.selectWarmupCount(5)">5</button>
+                            <button class="warmup-count-btn active" data-count="8" onclick="app.selectWarmupCount(8)">8</button>
+                            <button class="warmup-count-btn" data-count="12" onclick="app.selectWarmupCount(12)">12</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary warmup-start-btn" onclick="app.startWarmup()">Start Warm Up &rarr;</button>
+                </div>
+            </div>
+
+            <!-- Quiz phase -->
+            <div id="warmup-quiz" style="display:none">
+                <div class="warmup-progress-header">
+                    <button class="back-btn" onclick="app.showWarmup()" style="margin-bottom:0; flex-shrink:0;">&larr; Exit</button>
+                    <div class="warmup-progress-wrap">
+                        <div class="warmup-progress-track">
+                            <div class="warmup-progress-fill" id="warmup-progress-fill" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <span class="warmup-q-counter" id="warmup-q-counter">1 / 8</span>
+                </div>
+                <div id="warmup-card"></div>
+            </div>
+
+            <!-- Results phase -->
+            <div id="warmup-results" style="display:none">
+                <div class="warmup-results-inner">
+                    <div class="warmup-score-display" id="warmup-score-display">0/8</div>
+                    <div class="warmup-score-pct" id="warmup-score-pct">0%</div>
+                    <div class="warmup-score-emoji" id="warmup-score-emoji">&#x1F4DA;</div>
+                    <div id="warmup-review-section"></div>
+                    <div class="warmup-results-actions">
+                        <button class="btn btn-primary" onclick="app.startWarmup()">Try Again</button>
+                        <button class="btn btn-secondary" onclick="app.showDashboard()">Back to Dashboard</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History View -->
+        <div id="view-history" class="view">
+            <h2 class="section-title">Revision History</h2>
+            <div id="history-filters">
+                <select id="history-course-filter" onchange="app.loadHistory()">
+                    <option value="">All courses</option>
+                </select>
+            </div>
+            <div id="history-list"></div>
+            <button class="btn btn-secondary" id="history-load-more" onclick="app.loadMoreHistory()" style="display:none">Load more</button>
+        </div>
+
+        <!-- Graph View -->
+        <div id="view-graph" class="view">
+            <div class="graph-toolbar">
+                <div class="graph-legend" id="graph-legend"></div>
+                <div class="graph-controls">
+                    <button class="btn btn-ghost graph-btn" id="graph-reset-zoom">Reset view</button>
+                    <label class="graph-toggle">
+                        <input type="checkbox" id="graph-show-cross" checked>
+                        Cross-course links
+                    </label>
+                </div>
+            </div>
+            <div class="graph-container" id="graph-container">
+                <div id="graph-loading" class="loading">
+                    <span class="spinner"></span>Loading knowledge graph&hellip;
+                </div>
+            </div>
+            <div class="graph-tooltip" id="graph-tooltip" style="display:none">
+                <div class="graph-tooltip-name" id="graph-tooltip-name"></div>
+                <div class="graph-tooltip-course" id="graph-tooltip-course"></div>
+                <div class="graph-tooltip-conf" id="graph-tooltip-conf"></div>
+                <div class="graph-tooltip-actions">
+                    <button class="btn btn-primary graph-tooltip-btn" id="graph-tooltip-btn">Practice &rarr;</button>
+                    <button class="graph-tooltip-flag" id="graph-tooltip-flag">⚐ Flag</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Modal -->
+        <div id="session-modal" class="modal" style="display:none">
+            <div class="modal-content">
+                <h2>Start a Revision Session</h2>
+                <p class="modal-desc">Choose how to select topics for practice.</p>
+                <div class="session-options">
+                    <button class="session-option" onclick="app.startSession('weak')">
+                        <span class="session-icon">&#9888;</span>
+                        <span class="session-label">Weakest Topics</span>
+                        <span class="session-desc">Focus on your lowest-confidence areas</span>
+                    </button>
+                    <button class="session-option" onclick="app.startSession('random')">
+                        <span class="session-icon">&#9736;</span>
+                        <span class="session-label">Random Mix</span>
+                        <span class="session-desc">A varied selection across all courses</span>
+                    </button>
+                </div>
+                <div class="session-course-pick">
+                    <label>Or pick a specific course:</label>
+                    <select id="session-course-select">
+                        <option value="">Select a course...</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="app.startSessionCourse()">Go</button>
+                </div>
+                <button class="btn btn-ghost modal-close" onclick="app.closeModal()">Cancel</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,820 @@
+{
+  "terms": {
+    "michaelmas": {
+      "label": "Michaelmas",
+      "courses": {
+        "concurrent-distributed": {
+          "name": "Concurrent and Distributed Systems",
+          "lecturer": "Dr Martin Kleppmann",
+          "hours": 16,
+          "topics": [
+            {
+              "id": "cds-threads",
+              "name": "Threads and Atomicity",
+              "subtopics": ["Threads and interleaving", "Preemption", "Kernel vs user-level threads", "M:N threading", "Atomicity and mutual exclusion", "Test-and-set", "Load-linked/store-conditional", "Lamport bakery algorithm"]
+            },
+            {
+              "id": "cds-sync",
+              "name": "Synchronization Primitives",
+              "subtopics": ["Semaphores", "Condition synchronization", "Producer-consumer pattern", "MRSW locks", "Locks and invariants"]
+            },
+            {
+              "id": "cds-monitors",
+              "name": "Monitors and Condition Variables",
+              "subtopics": ["Conditional critical regions", "Monitors", "Condition variables", "Signal semantics", "Pthreads", "Java concurrency", "Cilk", "OpenMP"]
+            },
+            {
+              "id": "cds-deadlock",
+              "name": "Deadlock and Liveness",
+              "subtopics": ["Model checking", "Resource allocation graphs", "Deadlock prevention", "Deadlock avoidance", "Deadlock detection", "Livelock", "Priority inversion"]
+            },
+            {
+              "id": "cds-transactions",
+              "name": "Transactions and Concurrency Control",
+              "subtopics": ["Active objects and actors", "CSP and tuple spaces", "ACID properties", "Serialization", "History graphs", "Two-phase locking", "Timestamp ordering", "Optimistic concurrency control"]
+            },
+            {
+              "id": "cds-recovery",
+              "name": "Recovery and Lock-Free Programming",
+              "subtopics": ["Write-ahead logging", "Checkpoints", "Recovery mechanisms", "Lock-free data structures", "Hardware transactional memory", "Software transactional memory"]
+            },
+            {
+              "id": "cds-rpc",
+              "name": "RPC and Distributed Foundations",
+              "subtopics": ["Unbounded delay and partial failure", "Client-server architecture", "Remote procedure calls", "Marshalling", "Interface definition languages"]
+            },
+            {
+              "id": "cds-faults",
+              "name": "System Models and Fault Tolerance",
+              "subtopics": ["Synchronous and asynchronous models", "Partially synchronous model", "Crash-stop faults", "Crash-recovery faults", "Byzantine faults", "Two generals problem"]
+            },
+            {
+              "id": "cds-time",
+              "name": "Time and Logical Clocks",
+              "subtopics": ["Physical clock synchronization", "NTP", "Causality and happens-before", "Lamport clocks", "Vector clocks", "FIFO broadcast", "Causal broadcast", "Total-order broadcast", "Gossip protocols"]
+            },
+            {
+              "id": "cds-replication",
+              "name": "Replication and Consistency",
+              "subtopics": ["Quorum systems", "Idempotence", "Replica consistency", "Read-after-write consistency", "State machine replication", "Leader-based replication"]
+            },
+            {
+              "id": "cds-consensus",
+              "name": "Consensus",
+              "subtopics": ["FLP impossibility", "Leader election", "Raft consensus algorithm"]
+            },
+            {
+              "id": "cds-consistency-models",
+              "name": "Consistency Models and CRDTs",
+              "subtopics": ["Two-phase commit", "Linearizability", "ABD algorithm", "Eventual consistency", "CAP theorem", "CRDTs", "Collaborative text editing", "Google Spanner", "TrueTime"]
+            }
+          ]
+        },
+        "data-science": {
+          "name": "Data Science",
+          "lecturer": "Dr Damon Wischik",
+          "hours": 16,
+          "topics": [
+            {
+              "id": "ds-probability",
+              "name": "Probability Models",
+              "subtopics": ["Random variables", "Maximum likelihood estimation", "Generative models", "Supervised models", "Goodness of fit"]
+            },
+            {
+              "id": "ds-feature-spaces",
+              "name": "Feature Spaces and Linear Models",
+              "subtopics": ["Vector spaces", "Bases and inner products", "Projection", "Linear models", "Model fitting as projection", "Feature design"]
+            },
+            {
+              "id": "ds-distributions",
+              "name": "Probability Distributions",
+              "subtopics": ["Probability density functions", "Cumulative distribution functions", "Bayes's rule", "Monte Carlo estimation", "Empirical distributions"]
+            },
+            {
+              "id": "ds-inference",
+              "name": "Statistical Inference",
+              "subtopics": ["Bayesian inference", "Frequentist confidence intervals", "Hypothesis testing", "Bootstrap resampling"]
+            },
+            {
+              "id": "ds-random-processes",
+              "name": "Random Processes",
+              "subtopics": ["Markov chains", "Stationarity and drift", "Processes with memory", "Learning a random process"]
+            }
+          ]
+        },
+        "econ-law-ethics": {
+          "name": "Economics, Law and Ethics",
+          "lecturer": "Prof Alice Hutchings",
+          "hours": 8,
+          "topics": [
+            {
+              "id": "ele-consumer",
+              "name": "Classical Economics and Consumer Theory",
+              "subtopics": ["Prices and markets", "Pareto efficiency", "Preferences and utility", "Supply and demand", "Marginalist revolution", "Elasticity", "Welfare theorems", "Transaction costs"]
+            },
+            {
+              "id": "ele-info-econ",
+              "name": "Information Economics",
+              "subtopics": ["Discriminating monopolist", "Marginal costs in tech", "Lock-in", "Network effects", "Metcalfe's law", "Dominant firm model", "Price discrimination", "Bundling"]
+            },
+            {
+              "id": "ele-market-failure",
+              "name": "Market Failure and Behavioural Economics",
+              "subtopics": ["Tragedy of the commons", "Externalities", "Monopoly rents", "Asymmetric information", "Adverse selection", "Moral hazard", "Bounded rationality", "Nudge theory"]
+            },
+            {
+              "id": "ele-auctions-games",
+              "name": "Auctions and Game Theory",
+              "subtopics": ["Auction types", "Revenue equivalence", "Winner's curse", "Mechanism design", "Nash equilibrium", "Prisoner's dilemma", "Iterated games"]
+            },
+            {
+              "id": "ele-law",
+              "name": "Principles of Law",
+              "subtopics": ["Criminal and civil law", "Contract law", "Jurisdiction", "Tort and negligence", "Defamation", "Intellectual property"]
+            },
+            {
+              "id": "ele-internet-law",
+              "name": "Law and the Internet",
+              "subtopics": ["Computer evidence", "GDPR", "UK internet laws", "E-commerce regulations", "Privacy and electronic communications"]
+            },
+            {
+              "id": "ele-ethics",
+              "name": "Philosophies of Ethics",
+              "subtopics": ["Deontological theories", "Utilitarianism", "Rawlsian ethics", "Professional codes of ethics", "Research ethics"]
+            },
+            {
+              "id": "ele-contemporary",
+              "name": "Contemporary Ethical Issues",
+              "subtopics": ["Privacy and surveillance", "Censorship", "Vulnerability disclosure", "Algorithmic bias", "Predictive policing", "Targeted advertising", "Environmental impacts"]
+            }
+          ]
+        },
+        "further-graphics": {
+          "name": "Further Graphics",
+          "lecturer": "Dr Cengiz Oztireli",
+          "hours": 8,
+          "topics": [
+            {
+              "id": "fg-geometry",
+              "name": "Geometry Representations",
+              "subtopics": ["Parametric surfaces", "Implicit surfaces", "Meshes", "Point-set surfaces", "Geometry processing pipeline"]
+            },
+            {
+              "id": "fg-diff-geom",
+              "name": "Discrete Differential Geometry",
+              "subtopics": ["Surface normals", "Curvature", "Laplace-Beltrami operator", "Heat diffusion"]
+            },
+            {
+              "id": "fg-geom-proc",
+              "name": "Geometry Processing",
+              "subtopics": ["Parametrization", "Filtering", "3D capture"]
+            },
+            {
+              "id": "fg-animation",
+              "name": "Animation",
+              "subtopics": ["Animation pipeline", "Rigging and skinning", "Blending transformations", "Pose-space animation", "Controllers"]
+            },
+            {
+              "id": "fg-rendering",
+              "name": "Rendering Equation and Illumination",
+              "subtopics": ["Radiosity", "Reflection models", "BRDFs", "Local vs global illumination"]
+            },
+            {
+              "id": "fg-raytracing",
+              "name": "Distributed Ray Tracing",
+              "subtopics": ["Quadrature methods", "Importance sampling", "Recursive ray tracing"]
+            },
+            {
+              "id": "fg-inverse",
+              "name": "Inverse Rendering",
+              "subtopics": ["Differentiable rendering", "Inverse problems in graphics"]
+            }
+          ]
+        },
+        "intro-comp-arch": {
+          "name": "Introduction to Computer Architecture",
+          "lecturer": "Prof Simon Moore",
+          "hours": 16,
+          "topics": [
+            {
+              "id": "ica-trends",
+              "name": "Technology Trends and Design Challenges",
+              "subtopics": ["Current technology", "ECAD trends", "Eight great ideas in computer architecture"]
+            },
+            {
+              "id": "ica-digital",
+              "name": "Digital System Design",
+              "subtopics": ["SystemVerilog on FPGA", "Modular design", "Executable and synthesisable models"]
+            },
+            {
+              "id": "ica-riscv",
+              "name": "RISC-V and Instruction Sets",
+              "subtopics": ["RISC principles", "RISC-V ISA", "CISC comparison", "Stack-based and accumulator architectures"]
+            },
+            {
+              "id": "ica-pipeline",
+              "name": "Pipelining",
+              "subtopics": ["Pipeline stages", "Hazards", "Forwarding", "Stalling"]
+            },
+            {
+              "id": "ica-memory",
+              "name": "Memory Hierarchy and Caching",
+              "subtopics": ["Cache structures", "Cache organization", "DRAM", "Memory protection"]
+            },
+            {
+              "id": "ica-os-support",
+              "name": "OS Support and Exceptions",
+              "subtopics": ["Memory protection", "Exceptions", "Interrupt handling"]
+            },
+            {
+              "id": "ica-soc",
+              "name": "Systems-on-Chip and Advanced Topics",
+              "subtopics": ["SoC design", "DRAM access", "Multicore processors", "Cache coherence", "Synchronization"]
+            },
+            {
+              "id": "ica-gpu",
+              "name": "GPUs and Future Directions",
+              "subtopics": ["GPU architecture", "GPU programming", "Emerging trends"]
+            }
+          ]
+        },
+        "prog-c-cpp": {
+          "name": "Programming in C and C++",
+          "lecturer": "Dr David Greaves",
+          "hours": 12,
+          "topics": [
+            {
+              "id": "pcc-intro",
+              "name": "C Language Fundamentals",
+              "subtopics": ["Types and expressions", "Control flow", "Strings", "Functions", "Compilation units", "Scope and segments", "Preprocessor"]
+            },
+            {
+              "id": "pcc-pointers",
+              "name": "Pointers and Structures",
+              "subtopics": ["Pointer arithmetic", "Function pointers", "Structures", "Unions", "Const and volatile", "Typedefs"]
+            },
+            {
+              "id": "pcc-undefined",
+              "name": "C Semantics and Safety",
+              "subtopics": ["Undefined behaviour", "Implementation-defined behaviour", "Buffer overflows", "Integer overflows", "ASan", "MSan", "UBSan", "Valgrind"]
+            },
+            {
+              "id": "pcc-memory",
+              "name": "Memory Management",
+              "subtopics": ["Malloc and free", "Trees and DAGs", "Memory arenas", "Reference counting", "Garbage collection"]
+            },
+            {
+              "id": "pcc-performance",
+              "name": "Memory Hierarchy and Performance",
+              "subtopics": ["Data structure layouts", "Intrusive lists", "Array-of-structs vs struct-of-arrays", "Loop blocking"]
+            },
+            {
+              "id": "pcc-debugging",
+              "name": "Debugging and Testing",
+              "subtopics": ["Print statements", "Assertions", "Interactive debuggers", "Unit testing", "Regression testing"]
+            },
+            {
+              "id": "pcc-cpp-basics",
+              "name": "C++ Fundamentals",
+              "subtopics": ["References vs pointers", "Overloaded functions", "Classes and structs", "Destructors", "RAII"]
+            },
+            {
+              "id": "pcc-cpp-advanced",
+              "name": "Advanced C++",
+              "subtopics": ["Operator overloading", "Virtual functions", "Casts", "Multiple inheritance", "Virtual base classes", "Templates", "Meta-programming"]
+            }
+          ]
+        },
+        "unix-tools": {
+          "name": "Unix Tools",
+          "lecturer": "Dr Markus Kuhn",
+          "hours": 8,
+          "topics": [
+            {
+              "id": "ut-concepts",
+              "name": "Unix Concepts",
+              "subtopics": ["Unix history and philosophy", "Terminals", "IPC", "Shell fundamentals", "Environment variables", "File descriptors"]
+            },
+            {
+              "id": "ut-shell",
+              "name": "Shell Usage",
+              "subtopics": ["Redirection and pipes", "Filesystem navigation", "Argument expansion", "Quoting", "Job control", "Signals", "Process groups"]
+            },
+            {
+              "id": "ut-scripting",
+              "name": "Scripting",
+              "subtopics": ["Plain-text formats", "Shebang", "Shell control structures", "Shell functions", "Startup scripts"]
+            },
+            {
+              "id": "ut-text-tools",
+              "name": "Text, File and Networking Tools",
+              "subtopics": ["sed", "grep", "chmod", "find", "ssh", "rsync", "tar", "zip"]
+            },
+            {
+              "id": "ut-vcs",
+              "name": "Version Control",
+              "subtopics": ["diff and patch", "Git fundamentals", "Branching and merging"]
+            },
+            {
+              "id": "ut-dev-tools",
+              "name": "Software Development Tools",
+              "subtopics": ["C compiler", "Linker", "Debugger", "Make"]
+            },
+            {
+              "id": "ut-perl",
+              "name": "Perl",
+              "subtopics": ["Perl syntax", "Text manipulation", "Regular expressions in Perl"]
+            }
+          ]
+        }
+      }
+    },
+    "lent": {
+      "label": "Lent",
+      "courses": {
+        "compiler-construction": {
+          "name": "Compiler Construction",
+          "lecturer": "Dr Jeremy Yallop",
+          "hours": 16,
+          "topics": [
+            {
+              "id": "cc-overview",
+              "name": "Compiler Structure and Overview",
+              "subtopics": ["Interpreters vs compilers", "Compile-time vs run-time", "Intermediate languages", "Virtual machines"]
+            },
+            {
+              "id": "cc-lexing",
+              "name": "Lexical Analysis",
+              "subtopics": ["Regular expressions", "Finite state automata", "LEX tools"]
+            },
+            {
+              "id": "cc-parsing",
+              "name": "Syntax Analysis and Parsing",
+              "subtopics": ["Context-free grammars", "Push-down automata", "Grammar ambiguity", "Operator precedence", "LL(k) parsing", "LR(k) parsing", "YACC tools"]
+            },
+            {
+              "id": "cc-correctness",
+              "name": "Compiler Correctness",
+              "subtopics": ["Recursive to iterative transformation", "Continuation-passing style", "Stack-based compilers from interpreters", "Semantic preservation"]
+            },
+            {
+              "id": "cc-data-procs",
+              "name": "Data Structures and Procedures",
+              "subtopics": ["Tuples and arrays", "References", "Calling conventions", "Nested structure", "Non-local variables", "Closures"]
+            },
+            {
+              "id": "cc-optimisation",
+              "name": "Optimisation",
+              "subtopics": ["Inline expansion", "Constant folding", "Tail recursion elimination", "Peephole optimisation"]
+            },
+            {
+              "id": "cc-advanced",
+              "name": "Advanced Topics",
+              "subtopics": ["Garbage collection", "Static and dynamic linking", "Objects and inheritance", "Method dispatch", "Exception handling", "Compiler bootstrapping"]
+            }
+          ]
+        },
+        "computation-theory": {
+          "name": "Computation Theory",
+          "lecturer": "Prof Anuj Dawar",
+          "hours": 12,
+          "topics": [
+            {
+              "id": "ct-register",
+              "name": "Register Machines",
+              "subtopics": ["Machine definitions", "Graphical notation", "Register machine computable functions", "Arithmetic with register machines"]
+            },
+            {
+              "id": "ct-universal",
+              "name": "Universal Register Machines",
+              "subtopics": ["Encoding pairs and lists", "Program encoding", "Universal machine specification"]
+            },
+            {
+              "id": "ct-halting",
+              "name": "The Halting Problem",
+              "subtopics": ["Undecidability proof", "Uncomputable partial functions", "Decidable vs undecidable sets"]
+            },
+            {
+              "id": "ct-turing",
+              "name": "Turing Machines",
+              "subtopics": ["Formal definitions", "Turing computable functions", "Equivalence with register machines", "Church-Turing thesis"]
+            },
+            {
+              "id": "ct-recursive",
+              "name": "Recursive Functions",
+              "subtopics": ["Primitive recursive functions", "Partial recursive functions", "Non-primitive-recursive functions", "Computability equivalence"]
+            },
+            {
+              "id": "ct-lambda",
+              "name": "Lambda Calculus",
+              "subtopics": ["Alpha and beta conversion", "Normalization", "Data encoding", "Recursive functions in lambda calculus", "Lambda-definable vs computable"]
+            }
+          ]
+        },
+        "computer-networking": {
+          "name": "Computer Networking",
+          "lecturer": "Dr David Greaves",
+          "hours": 20,
+          "topics": [
+            {
+              "id": "cn-intro",
+              "name": "Networking Fundamentals",
+              "subtopics": ["LANs and WANs", "OSI model", "TCP/IP stack", "Circuit vs packet switching", "Delays and packet loss"]
+            },
+            {
+              "id": "cn-link",
+              "name": "Link Layer and LANs",
+              "subtopics": ["Error detection and correction", "Multiple access protocols", "Link layer addressing", "Ethernet", "Hubs and switches", "PPP"]
+            },
+            {
+              "id": "cn-wireless",
+              "name": "Wireless and Mobile Networks",
+              "subtopics": ["Wireless link characteristics", "IEEE 802.11", "Wi-Fi"]
+            },
+            {
+              "id": "cn-ip",
+              "name": "Network Layer Addressing",
+              "subtopics": ["IP addressing", "IPv4", "DHCP", "NAT", "ICMP", "IPv6"]
+            },
+            {
+              "id": "cn-routing",
+              "name": "Network Layer Routing",
+              "subtopics": ["Routing vs forwarding", "Routing algorithms", "Internet routing protocols", "Multicast"]
+            },
+            {
+              "id": "cn-transport",
+              "name": "Transport Layer",
+              "subtopics": ["Multiplexing/demultiplexing", "UDP", "Reliable data transfer", "TCP", "TCP congestion control", "TCP variants"]
+            },
+            {
+              "id": "cn-application",
+              "name": "Application Layer",
+              "subtopics": ["Client/server model", "HTTP and WWW", "DNS", "P2P applications"]
+            },
+            {
+              "id": "cn-multimedia",
+              "name": "Multimedia Networking",
+              "subtopics": ["Multimedia applications", "Delivery requirements", "SIP", "Content distribution networks"]
+            }
+          ]
+        },
+        "further-hci": {
+          "name": "Further Human-Computer Interaction",
+          "lecturer": "Prof Alan Blackwell, Dr Luke Church",
+          "hours": 8,
+          "topics": [
+            {
+              "id": "fhci-theory",
+              "name": "Theory-Driven Approaches to HCI",
+              "subtopics": ["Theoretical frameworks", "Cognitive theories"]
+            },
+            {
+              "id": "fhci-visual",
+              "name": "Design of Visual Displays",
+              "subtopics": ["Segmentation", "Display plane variables", "Correspondence modes"]
+            },
+            {
+              "id": "fhci-goal",
+              "name": "Goal-Oriented Interaction",
+              "subtopics": ["Planning", "Learning", "User comprehension"]
+            },
+            {
+              "id": "fhci-smart",
+              "name": "Designing Smart Systems",
+              "subtopics": ["Statistical methods", "Bayesian strategies", "Anticipating user behaviour"]
+            },
+            {
+              "id": "fhci-efficient",
+              "name": "Designing Efficient Systems",
+              "subtopics": ["Human performance measurement", "Quantitative experimental methods"]
+            },
+            {
+              "id": "fhci-meaningful",
+              "name": "Designing Meaningful Systems",
+              "subtopics": ["Qualitative research methods", "Social context", "User experience"]
+            },
+            {
+              "id": "fhci-evaluation",
+              "name": "Evaluating Interactive Systems",
+              "subtopics": ["Evaluation approaches", "Systems research methods"]
+            },
+            {
+              "id": "fhci-complex",
+              "name": "Designing Complex Systems",
+              "subtopics": ["Case studies", "Emerging research directions"]
+            }
+          ]
+        },
+        "logic-proof": {
+          "name": "Logic and Proof",
+          "lecturer": "Prof Mateja Jamnik",
+          "hours": 12,
+          "topics": [
+            {
+              "id": "lp-prop",
+              "name": "Propositional Logic",
+              "subtopics": ["Syntax and semantics", "Equivalences", "Normal forms", "Tautology checking"]
+            },
+            {
+              "id": "lp-sequent",
+              "name": "Sequent Calculus",
+              "subtopics": ["Hilbert-style proof systems", "Natural deduction", "Sequent rules", "Proofs"]
+            },
+            {
+              "id": "lp-fol",
+              "name": "First-Order Logic",
+              "subtopics": ["Syntax and quantifiers", "Semantics and truth definitions", "Variable binding", "Substitution", "Quantifier equivalences"]
+            },
+            {
+              "id": "lp-clausal",
+              "name": "Clausal Proof Methods",
+              "subtopics": ["Clause form", "SAT-solving", "Resolution rule", "Refinements"]
+            },
+            {
+              "id": "lp-skolem",
+              "name": "Skolem Functions and Unification",
+              "subtopics": ["Prenex normal form", "Skolemisation", "Unification algorithms", "Herbrand models", "Herbrand's theorem"]
+            },
+            {
+              "id": "lp-resolution",
+              "name": "Resolution Theorem Proving",
+              "subtopics": ["Binary resolution", "Factorisation", "Prolog execution model", "Model elimination"]
+            },
+            {
+              "id": "lp-smt",
+              "name": "Satisfiability Modulo Theories",
+              "subtopics": ["Decision problems", "Decision procedures", "SMT solvers"]
+            },
+            {
+              "id": "lp-bdd",
+              "name": "Binary Decision Diagrams",
+              "subtopics": ["BDD construction", "Canonical form", "Optimisations", "Applications"]
+            },
+            {
+              "id": "lp-modal",
+              "name": "Modal Logics",
+              "subtopics": ["Possible worlds semantics", "Validity", "Hilbert-style proofs for modal logic"]
+            },
+            {
+              "id": "lp-tableaux",
+              "name": "Tableaux Methods",
+              "subtopics": ["Simplified sequent calculus", "Unification integration", "Theorem proving"]
+            }
+          ]
+        },
+        "prolog": {
+          "name": "Prolog",
+          "lecturer": "Prof Ian Lewis",
+          "hours": 8,
+          "topics": [
+            {
+              "id": "pl-intro",
+              "name": "Introduction to Prolog",
+              "subtopics": ["Program structure", "Interpreter usage", "Unification", "Simple programs"]
+            },
+            {
+              "id": "pl-arithmetic-lists",
+              "name": "Arithmetic and Lists",
+              "subtopics": ["Arithmetic evaluation", "List operations", "Space complexity", "Last-call optimisation", "Accumulators"]
+            },
+            {
+              "id": "pl-backtracking",
+              "name": "Backtracking, Cut and Negation",
+              "subtopics": ["Cut operator", "Controlling backtracking", "Negation as failure"]
+            },
+            {
+              "id": "pl-search",
+              "name": "Search in Prolog",
+              "subtopics": ["Search methodology", "Graph searching", "Built-in search mechanisms"]
+            },
+            {
+              "id": "pl-difference",
+              "name": "Difference Structures",
+              "subtopics": ["Difference lists", "Applications of difference structures"]
+            },
+            {
+              "id": "pl-advanced",
+              "name": "Building on Prolog",
+              "subtopics": ["Constraint logic programming", "Tabled resolution", "Prolog limitations"]
+            }
+          ]
+        },
+        "semantics": {
+          "name": "Semantics of Programming Languages",
+          "lecturer": "Prof Peter Sewell",
+          "hours": 12,
+          "topics": [
+            {
+              "id": "sem-intro",
+              "name": "Transition Systems and Operational Semantics",
+              "subtopics": ["Transition systems", "Structural operational semantics", "Imperative language semantics", "Language design"]
+            },
+            {
+              "id": "sem-types",
+              "name": "Type Systems",
+              "subtopics": ["Formal type foundations", "Type annotations", "Type safety properties"]
+            },
+            {
+              "id": "sem-induction",
+              "name": "Induction and Proofs",
+              "subtopics": ["Mathematical induction", "Structural induction", "Rule-based inductive definitions", "Type safety proofs"]
+            },
+            {
+              "id": "sem-functions",
+              "name": "Functions",
+              "subtopics": ["Call-by-name", "Call-by-value", "Function application and typing", "Local recursive definitions"]
+            },
+            {
+              "id": "sem-data",
+              "name": "Data Types",
+              "subtopics": ["Products", "Sums", "Records", "References", "Semantics and typing"]
+            },
+            {
+              "id": "sem-subtyping",
+              "name": "Subtyping",
+              "subtopics": ["Record subtyping", "Simple object encoding"]
+            },
+            {
+              "id": "sem-equivalence",
+              "name": "Semantic Equivalence",
+              "subtopics": ["Program phrase equivalence", "Congruence", "Equivalence examples"]
+            },
+            {
+              "id": "sem-concurrency",
+              "name": "Concurrency Semantics",
+              "subtopics": ["Shared variable interleaving", "Mutex semantics", "Serializability"]
+            }
+          ]
+        }
+      }
+    },
+    "easter": {
+      "label": "Easter",
+      "courses": {
+        "artificial-intelligence": {
+          "name": "Artificial Intelligence",
+          "lecturer": "Dr Sean Holden",
+          "hours": 12,
+          "topics": [
+            {
+              "id": "ai-search-uninformed",
+              "name": "Uninformed Search",
+              "subtopics": ["Search as problem-solving", "Tree search", "Graph search", "BFS", "DFS", "Iterative deepening"]
+            },
+            {
+              "id": "ai-search-heuristic",
+              "name": "Heuristic Search",
+              "subtopics": ["A* algorithm", "Admissibility and consistency", "IDA*", "Recursive best-first search", "Local search", "Gradient descent"]
+            },
+            {
+              "id": "ai-games",
+              "name": "Game Playing",
+              "subtopics": ["Adversarial search", "Minimax algorithm", "Alpha-beta pruning"]
+            },
+            {
+              "id": "ai-csp",
+              "name": "Constraint Satisfaction Problems",
+              "subtopics": ["CSP formulation", "Backtracking", "Forward checking", "Arc consistency", "Constraint propagation", "Backjumping"]
+            },
+            {
+              "id": "ai-knowledge",
+              "name": "Knowledge Representation and Reasoning",
+              "subtopics": ["Semantic networks", "Frames and rules", "Inheritance", "Forward and backward chaining", "First-order logic", "Situation calculus"]
+            },
+            {
+              "id": "ai-planning",
+              "name": "Planning",
+              "subtopics": ["STRIPS language", "Partial-order planning", "Planning graphs", "GRAPHPLAN", "Propositional approaches"]
+            },
+            {
+              "id": "ai-neural",
+              "name": "Neural Networks",
+              "subtopics": ["Supervised learning", "Curve fitting", "Perceptron", "Gradient descent", "Multilayer perceptrons", "Backpropagation"]
+            }
+          ]
+        },
+        "complexity-theory": {
+          "name": "Complexity Theory",
+          "lecturer": "Prof Tom Gur",
+          "hours": 12,
+          "topics": [
+            {
+              "id": "cx-time",
+              "name": "Time Complexity and the Class P",
+              "subtopics": ["Time complexity classes", "Polynomial time", "Church-Turing hypothesis"]
+            },
+            {
+              "id": "cx-np",
+              "name": "NP and NP-Completeness",
+              "subtopics": ["Non-deterministic machines", "The class NP", "3SAT", "Cook-Levin theorem", "Reductions"]
+            },
+            {
+              "id": "cx-np-problems",
+              "name": "NP-Complete Problems",
+              "subtopics": ["3-colourability", "Scheduling", "Matching", "Set covering", "Knapsack"]
+            },
+            {
+              "id": "cx-conp",
+              "name": "coNP and Cryptographic Complexity",
+              "subtopics": ["Complement classes", "NP intersect coNP", "Primality", "One-way functions", "The class UP"]
+            },
+            {
+              "id": "cx-space",
+              "name": "Space Complexity",
+              "subtopics": ["Space complexity classes", "Savitch's theorem", "Hierarchy theorems"]
+            },
+            {
+              "id": "cx-randomised",
+              "name": "Randomised and Quantum Complexity",
+              "subtopics": ["The class BPP", "Derandomisation", "Error-correcting codes", "Communication complexity", "BQP", "QMA"]
+            },
+            {
+              "id": "cx-interactive",
+              "name": "Interactive Proofs",
+              "subtopics": ["IP equals PSPACE", "Zero-knowledge proofs", "PCPs"]
+            }
+          ]
+        },
+        "cybersecurity": {
+          "name": "Cybersecurity",
+          "lecturer": "Prof Frank Stajano",
+          "hours": 12,
+          "topics": [
+            {
+              "id": "cy-intro",
+              "name": "Security Fundamentals",
+              "subtopics": ["Adversarial thinking", "CIA triad", "Systems-level thinking", "Trusted computing base", "Role of cryptography"]
+            },
+            {
+              "id": "cy-access",
+              "name": "Access Control",
+              "subtopics": ["Discretionary vs mandatory", "POSIX access control", "File permissions", "Ownership and groups"]
+            },
+            {
+              "id": "cy-software",
+              "name": "Software Security",
+              "subtopics": ["Setuid and privilege escalation", "Buffer overflow", "Stack exploitation", "Return-to-libc", "Return-oriented programming"]
+            },
+            {
+              "id": "cy-injection",
+              "name": "Injection Attacks",
+              "subtopics": ["SQL injection", "Input filtering", "Prepared statements"]
+            },
+            {
+              "id": "cy-auth",
+              "name": "Authentication",
+              "subtopics": ["Knowledge factors", "Possession factors", "Biometrics", "Password cracking", "Single sign-on", "Password managers"]
+            },
+            {
+              "id": "cy-web",
+              "name": "Web Security",
+              "subtopics": ["Cross-site request forgery", "Cross-site scripting", "Persistent vs non-persistent XSS"]
+            },
+            {
+              "id": "cy-human",
+              "name": "Human Factors in Security",
+              "subtopics": ["User compliance", "Prospect theory", "Security design principles"]
+            },
+            {
+              "id": "cy-malware",
+              "name": "Malware and Physical Security",
+              "subtopics": ["Viruses and worms", "Quines", "Lockpicking", "Physical security"]
+            }
+          ]
+        },
+        "formal-models-language": {
+          "name": "Formal Models of Language",
+          "lecturer": "Prof Paula Buttery",
+          "hours": 8,
+          "topics": [
+            {
+              "id": "fml-chomsky",
+              "name": "Chomsky Hierarchy and Language Classes",
+              "subtopics": ["Language classes", "Closure properties", "Pumping lemma for regular languages", "Pumping lemma for CFLs", "Context-sensitive languages", "Tree adjoining grammars"]
+            },
+            {
+              "id": "fml-parsing",
+              "name": "Language Processing and CFG Parsing",
+              "subtopics": ["Top-down parsing", "Probabilistic parsing", "Dependency grammars", "Shift-reduce parsing", "Prosodic look-ahead"]
+            },
+            {
+              "id": "fml-induction",
+              "name": "Grammar Induction",
+              "subtopics": ["Language acquisition", "Gold's theorem", "Categorial grammars", "Learnable classes"]
+            },
+            {
+              "id": "fml-information",
+              "name": "Information Theory and Language",
+              "subtopics": ["Entropy and language typology", "Uniform information density", "Noisy channel models", "Spelling error correction"]
+            },
+            {
+              "id": "fml-vectors",
+              "name": "Vector Space Models",
+              "subtopics": ["Word embeddings", "Word2Vec", "Semantic processing"]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

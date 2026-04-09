@@ -1,0 +1,3732 @@
+{
+  "concurrent-distributed": {
+    "total_questions": 16,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ConcurrentandDistributedSystems.html",
+    "topic_frequencies": {
+      "cds-sync": 7,
+      "cds-time": 7,
+      "cds-replication": 6,
+      "cds-transactions": 5,
+      "cds-deadlock": 5,
+      "cds-faults": 4,
+      "cds-rpc": 3,
+      "cds-monitors": 3,
+      "cds-consistency-models": 2,
+      "cds-threads": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q4.pdf",
+        "topics": [
+          "cds-sync",
+          "cds-transactions",
+          "cds-rpc",
+          "cds-deadlock"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 4,
+            "topics": [
+              "cds-sync"
+            ],
+            "text": "A concurrency library provides a signal primitive for semaphores and a notify primitive for condition variables. Explain what they have in common and how they are different. Are they blocking primitives? Can they have no effect?"
+          },
+          {
+            "part": "b(i)",
+            "marks": 2,
+            "topics": [
+              "cds-transactions"
+            ],
+            "text": "Without using an example, define the notion of serialisability of transactions."
+          },
+          {
+            "part": "b(ii)",
+            "marks": 2,
+            "topics": [
+              "cds-transactions"
+            ],
+            "text": "What is a conflict between two threads, and can conflicts be used to check for serialisability?"
+          },
+          {
+            "part": "b(iii)",
+            "marks": 2,
+            "topics": [
+              "cds-transactions"
+            ],
+            "text": "What are the advantages and disadvantages of non-strict isolation?"
+          },
+          {
+            "part": "b(iv)",
+            "marks": 2,
+            "topics": [
+              "cds-transactions"
+            ],
+            "text": "Can performance be enhanced when increment and decrement operations are considered as composite operations? Consider this in the context of conflict analysis techniques."
+          },
+          {
+            "part": "b(v)",
+            "marks": 2,
+            "topics": [
+              "cds-transactions"
+            ],
+            "text": "Give an example, not using increments or decrements, where simplistic conflict analysis may report a problem that in reality is not a problem."
+          },
+          {
+            "part": "c",
+            "marks": 6,
+            "topics": [
+              "cds-rpc",
+              "cds-deadlock"
+            ],
+            "text": "Some code is replaced in an asynchronous, reliable message-passing language that uses channel_id!value and ?channel_id to communicate between user-space threads. The whole system has now seized up. Sketch two possible code fragments that may have caused the seizure, one due to deadlock, and one not due to deadlock."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q5.pdf",
+        "topics": [
+          "cds-time",
+          "cds-replication"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 2,
+            "topics": [
+              "cds-time"
+            ],
+            "text": "Three nodes N1...N3 communicate using point-to-point messages. Give Lamport timestamps for each of the events e1...e9, assuming clocks start from 0."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 2,
+            "topics": [
+              "cds-time"
+            ],
+            "text": "What is a necessary condition on Lamport timestamps for an event x to have happened before an event y? Is this a sufficient condition? Briefly justify your answer based on the events in the example."
+          },
+          {
+            "part": "a(iii)",
+            "marks": 2,
+            "topics": [
+              "cds-time"
+            ],
+            "text": "Now give possible vector timestamps for each of the events e1...e9."
+          },
+          {
+            "part": "a(iv)",
+            "marks": 2,
+            "topics": [
+              "cds-time"
+            ],
+            "text": "What is a necessary and sufficient condition on vector timestamps for an event x to have happened before an event y?"
+          },
+          {
+            "part": "b(i)",
+            "marks": 8,
+            "topics": [
+              "cds-time",
+              "cds-replication"
+            ],
+            "text": "Write pseudo-code to implement causal broadcast, assuming access to an underlying reliable broadcast protocol. Describe the local state held at each node along with the algorithm used to broadcast a message, and to decide when a message can be delivered locally."
+          },
+          {
+            "part": "b(ii)",
+            "marks": 4,
+            "topics": [
+              "cds-time"
+            ],
+            "text": "A colleague suggests that the space required by vector timestamps makes this algorithm inefficient. They suggest basing the algorithm on Lamport timestamps instead. Do you agree with this suggestion?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q4.pdf",
+        "topics": [
+          "cds-sync",
+          "cds-monitors",
+          "cds-deadlock"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 5,
+            "topics": [
+              "cds-sync",
+              "cds-monitors"
+            ],
+            "text": "A guarded resource is locked by readers, moderators, and writers. Any number of readers may hold it concurrently, up to two moderators, or at most one writer. Define the locks, mutexes or shared variables needed, and sketch a state transition diagram."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 5,
+            "topics": [
+              "cds-monitors"
+            ],
+            "text": "Using a monitor approach, give pseudocode for: start_write(), start_moderate(), start_read(), end_write(), end_moderate(), end_read()."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "cds-deadlock"
+            ],
+            "text": "Describe two deadlock avoidance techniques, one graceful deadlock recovery technique (not reboot), and two burdensome aspects of deadlock recovery."
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "cds-deadlock"
+            ],
+            "text": "A system has T threads and 3 resource types with 4 instances each. What state space does the system have before and after applying a deadlock avoidance restriction?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q5.pdf",
+        "topics": [
+          "cds-faults",
+          "cds-replication",
+          "cds-consistency-models"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 1,
+            "topics": [
+              "cds-faults"
+            ],
+            "text": "Define fair-loss network links."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 1,
+            "topics": [
+              "cds-faults"
+            ],
+            "text": "Define crash-recovery execution."
+          },
+          {
+            "part": "a(iii)",
+            "marks": 1,
+            "topics": [
+              "cds-faults"
+            ],
+            "text": "Define asynchronous timing model."
+          },
+          {
+            "part": "b(i)",
+            "marks": 5,
+            "topics": [
+              "cds-replication"
+            ],
+            "text": "A traffic monitoring system uses quorum-based replication with 5 nodes, quorum size 3. Write pseudocode for setCount(n) \u2014 update local counter and replicate to a quorum."
+          },
+          {
+            "part": "b(ii)",
+            "marks": 5,
+            "topics": [
+              "cds-replication"
+            ],
+            "text": "Write pseudocode for getTotalCount() \u2014 return the total of all nodes' counters."
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "cds-consistency-models"
+            ],
+            "text": "Does your system provide linearizable behaviour? Explain or give a counterexample."
+          },
+          {
+            "part": "d",
+            "marks": 4,
+            "topics": [
+              "cds-consistency-models",
+              "cds-replication"
+            ],
+            "text": "A second version requires strong eventual consistency, always completing regardless of available nodes. Summarise the changes needed."
+          }
+        ]
+      },
+      {
+        "year": 2022,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p5q4.pdf",
+        "topics": [
+          "cds-sync",
+          "cds-monitors",
+          "cds-deadlock",
+          "cds-rpc"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 2,
+            "topics": [
+              "cds-sync"
+            ],
+            "text": "A shared resource allows one writer or concurrent readers. What design choices exist regarding fairness?"
+          },
+          {
+            "part": "a(ii)",
+            "marks": 4,
+            "topics": [
+              "cds-sync",
+              "cds-monitors"
+            ],
+            "text": "Compare two simple locks (read/write) vs a single specialised locking primitive. What additional state transitions could the specialised lock support?"
+          },
+          {
+            "part": "a(iii)",
+            "marks": 2,
+            "topics": [
+              "cds-deadlock"
+            ],
+            "text": "If deadlock is avoided via locking order, is a complete or partial order needed?"
+          },
+          {
+            "part": "a(iv)",
+            "marks": 3,
+            "topics": [
+              "cds-deadlock"
+            ],
+            "text": "How should specialised lock transitions integrate into a lock ordering policy?"
+          },
+          {
+            "part": "b(i)",
+            "marks": 1,
+            "topics": [
+              "cds-sync",
+              "cds-threads"
+            ],
+            "text": "A mutex is acquired at the start of a function body. What can go wrong if the function is recursive?"
+          },
+          {
+            "part": "b(ii)",
+            "marks": 3,
+            "topics": [
+              "cds-sync"
+            ],
+            "text": "A friend suggests allowing re-acquisition if the same thread already holds the lock. Could this work and is it worthwhile?"
+          },
+          {
+            "part": "c(i)",
+            "marks": 2,
+            "topics": [
+              "cds-rpc"
+            ],
+            "text": "Give pseudocode for emulating a shared global variable in a message-passing system."
+          },
+          {
+            "part": "c(ii)",
+            "marks": 3,
+            "topics": [
+              "cds-rpc",
+              "cds-sync"
+            ],
+            "text": "Discuss whether emulating locking primitives such as semaphores in a message-passing system is possible or worthwhile."
+          }
+        ]
+      },
+      {
+        "year": 2022,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p5q5.pdf",
+        "topics": [
+          "cds-replication",
+          "cds-faults",
+          "cds-time"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 12,
+            "topics": [
+              "cds-replication",
+              "cds-faults"
+            ],
+            "text": "A social network stores follow/unfollow relationships across 5 servers (majority quorum = 3). Using asynchronous system model, fair-loss links, crash-recovery faults and Lamport timestamps, give pseudocode for: (1) u1 follows u2; (2) u1 unfollows u2; (3) get followers of u. Describe the data structures and messages used."
+          },
+          {
+            "part": "b",
+            "marks": 8,
+            "topics": [
+              "cds-time",
+              "cds-replication"
+            ],
+            "text": "When a user posts a chirp, it must be sent to all followers. Delivery order: same-author chirps in post order; replies must be delivered after the chirp they reply to. Give pseudocode using the follower operation from (a). Explain and justify your approach."
+          }
+        ]
+      }
+    ]
+  },
+  "compiler-construction": {
+    "total_questions": 22,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-CompilerConstruction.html",
+    "topic_frequencies": {
+      "cc-parsing": 10,
+      "cc-correctness": 8,
+      "cc-data-procs": 4,
+      "cc-lexing": 2,
+      "cc-advanced": 2,
+      "cc-overview": 2,
+      "cc-optimisation": 2
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 4,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p4q1.pdf",
+        "topics": [
+          "cc-lexing",
+          "cc-parsing"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 2,
+            "topics": [
+              "cc-lexing"
+            ],
+            "text": "Two grammars A and B over {a,b}. L(A) and L(B) are not equal. Give an example string in L(A) but not L(B), and an example in L(B) but not L(A)."
+          },
+          {
+            "part": "b",
+            "marks": 4,
+            "topics": [
+              "cc-lexing"
+            ],
+            "text": "Give regular expressions describing L(A) and L(B)."
+          },
+          {
+            "part": "c",
+            "marks": 6,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "Compute nullable, first sets, and follow sets for each grammar."
+          },
+          {
+            "part": "d",
+            "marks": 8,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "State with justification whether each grammar is LL(1) and whether it is SLR(1)."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 4,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p4q2.pdf",
+        "topics": [
+          "cc-advanced",
+          "cc-data-procs",
+          "cc-overview"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 8,
+            "topics": [
+              "cc-advanced",
+              "cc-overview"
+            ],
+            "text": "You have acquired an old computer with only a Lisp compiler lispc.exe and the source code for a C compiler cc.c written in C. A useful first step is to write a quick-and-dirty C-to-Lisp compiler in Lisp. What further steps are needed to get the C compiler running efficiently? Describe and illustrate each step using the T-diagram illustration scheme."
+          },
+          {
+            "part": "b(i)",
+            "marks": 6,
+            "topics": [
+              "cc-data-procs"
+            ],
+            "text": "You would like to extend the C compiler to support foreign function calls so that C programs can use libraries compiled by lispc.exe. What information from the Application Binary Interface might you need to ensure that foreign calls work correctly? Comment on function calls, on the stack, on object layout, and on any other relevant considerations."
+          },
+          {
+            "part": "b(ii)",
+            "marks": 6,
+            "topics": [
+              "cc-advanced"
+            ],
+            "text": "Programs written in Lisp use a garbage collector (GC) to reclaim unreachable objects. Explain how the GC determines reachability, how calls between C and Lisp might affect the reachability check, and what changes are needed to make the check work in the presence of those calls."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 4,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p4q1.pdf",
+        "topics": [
+          "cc-overview",
+          "cc-parsing",
+          "cc-correctness",
+          "cc-optimisation"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "cc-overview"
+            ],
+            "text": "Describe the inputs and outputs of a lexer and parser."
+          },
+          {
+            "part": "b(i)",
+            "marks": 3,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "Three grammars are given for a language with branching, sequencing and variables. For each grammar, state whether it is ambiguous, giving an example if so."
+          },
+          {
+            "part": "b(ii)",
+            "marks": 3,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "For each grammar, state whether it is LL(1), giving a reason if not."
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "Explain the roles of the ACTION and GOTO tables in LR parsing, including what entries they contain and how they are indexed."
+          },
+          {
+            "part": "d(i)",
+            "marks": 4,
+            "topics": [
+              "cc-correctness"
+            ],
+            "text": "Two Slang simplifications: 'if true then e1 else e2 \u2192 e1' and '(fun (x:t) -> e1) e2 \u2192 {e2/x}e1'. For each, under what circumstances is it correct for type checking?"
+          },
+          {
+            "part": "d(ii)",
+            "marks": 4,
+            "topics": [
+              "cc-optimisation"
+            ],
+            "text": "For each simplification, under what circumstances is it correct for optimisation?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 4,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p4q2.pdf",
+        "topics": [
+          "cc-correctness",
+          "cc-data-procs"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 5,
+            "topics": [
+              "cc-correctness"
+            ],
+            "text": "The OCaml Ackermann function ack m n. Rewrite to ack_cps in continuation-passing style."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 5,
+            "topics": [
+              "cc-correctness",
+              "cc-data-procs"
+            ],
+            "text": "Eliminate higher-order functions: rewrite ack_cps as ack_cps_dfn (defunctionalized), using an ID constructor."
+          },
+          {
+            "part": "a(iii)",
+            "marks": 5,
+            "topics": [
+              "cc-correctness"
+            ],
+            "text": "Convert ack_cps_dfn to ack_cps_dfn_list using standard lists instead of custom data types."
+          },
+          {
+            "part": "b",
+            "marks": 5,
+            "topics": [
+              "cc-data-procs",
+              "cc-optimisation"
+            ],
+            "text": "Comment on memory usage (stack and heap) for ack and all three transformed implementations."
+          }
+        ]
+      },
+      {
+        "year": 2022,
+        "paper": 4,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p4q1.pdf",
+        "topics": [
+          "cc-parsing"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "Productions 'S \u2192 if E then S else S end' and 'S \u2192 if E then S end' share an initial segment. Explain why this prevents automatic LL(1) parser generation."
+          },
+          {
+            "part": "b",
+            "marks": 4,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "Rewrite those productions to be suitable for an LL(1) parser generator."
+          },
+          {
+            "part": "c",
+            "marks": 5,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "Eliminate shared initial segments from: A\u2192aAbCeDg, A\u2192aAbCd, B\u2192eDgEf."
+          },
+          {
+            "part": "d",
+            "marks": 5,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "Give a general method for eliminating shared initial segments from a grammar."
+          },
+          {
+            "part": "e",
+            "marks": 4,
+            "topics": [
+              "cc-parsing"
+            ],
+            "text": "Argue carefully that the grammar produced by your method generates the same language."
+          }
+        ]
+      },
+      {
+        "year": 2022,
+        "paper": 4,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p4q2.pdf",
+        "topics": [
+          "cc-correctness",
+          "cc-data-procs"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "cc-correctness"
+            ],
+            "text": "OCaml add_right : int list -> int. Explain why add_right as presented is not tail recursive."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "cc-correctness"
+            ],
+            "text": "CPS-transform add_right to add_right_cps : int list -> (int -> int) -> int."
+          },
+          {
+            "part": "c",
+            "marks": 6,
+            "topics": [
+              "cc-correctness",
+              "cc-data-procs"
+            ],
+            "text": "Apply defunctionalisation: define data type cnt, transform to add_right_dfc : int list -> cnt -> int."
+          },
+          {
+            "part": "d",
+            "marks": 6,
+            "topics": [
+              "cc-correctness"
+            ],
+            "text": "Generalised fold_right f l accu. Rewrite using CPS transformation. Justify treatment of f. What problems arise in attempting to defunctionalise?"
+          }
+        ]
+      }
+    ]
+  },
+  "computation-theory": {
+    "total_questions": 16,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ComputationTheory.html",
+    "topic_frequencies": {
+      "ct-lambda": 12,
+      "ct-register": 6,
+      "ct-recursive": 4,
+      "ct-universal": 3,
+      "ct-halting": 2
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 6,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q3.pdf",
+        "topics": [
+          "ct-recursive",
+          "ct-lambda"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "ct-recursive"
+            ],
+            "text": "Define the collection of primitive recursive functions."
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "What does it mean to say that a function f: N \u2192 N is \u03bb-definable?"
+          },
+          {
+            "part": "c(i)",
+            "marks": 7,
+            "topics": [
+              "ct-recursive",
+              "ct-lambda"
+            ],
+            "text": "For fact(x) \u225c x!, show that it is primitive recursive and explain why it is \u03bb-definable."
+          },
+          {
+            "part": "c(ii)",
+            "marks": 7,
+            "topics": [
+              "ct-recursive",
+              "ct-lambda"
+            ],
+            "text": "For cond(x,y,z) defined as y if x=0, z otherwise: show that it is primitive recursive and explain why it is \u03bb-definable."
+          },
+          {
+            "part": "d",
+            "marks": 2,
+            "topics": [
+              "ct-lambda",
+              "ct-recursive"
+            ],
+            "text": "Give an example of a function that is \u03bb-definable but not primitive recursive. You do not need to give a proof."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 6,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q4.pdf",
+        "topics": [
+          "ct-register",
+          "ct-universal"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "ct-register"
+            ],
+            "text": "Let P be any register machine program. What is the partial function f: N \u21c0 N of one argument computed by P?"
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "ct-register"
+            ],
+            "text": "What is the partial function g: N\u00b2 \u21c0 N of two arguments computed by P?"
+          },
+          {
+            "part": "c",
+            "marks": 5,
+            "topics": [
+              "ct-register",
+              "ct-universal"
+            ],
+            "text": "Describe the construction of a G\u00f6del numbering of register machine programs. That is, a bijection G between the natural numbers N and the collection of register machine programs."
+          },
+          {
+            "part": "d",
+            "marks": 5,
+            "topics": [
+              "ct-universal"
+            ],
+            "text": "Show that the partial function u: N\u00b2 \u21c0 N defined by u(i, x) = \u03c6\u1d62(x) for all i and x is computable. You may assume standard results about register machine programs, as long as you state them clearly."
+          },
+          {
+            "part": "e",
+            "marks": 6,
+            "topics": [
+              "ct-universal"
+            ],
+            "text": "Sketch a proof to show that there is a computable partial function s: N\u00b2 \u21c0 N such that for all x, y, z \u2208 N: \u03c6_{s(x,y)}(z) = \u03c8_x(y, z). [S-m-n theorem]"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 6,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q3.pdf",
+        "topics": [
+          "ct-register",
+          "ct-halting"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 5,
+            "topics": [
+              "ct-register"
+            ],
+            "text": "Define configuration and computation of a register machine (RM). Explain what it means for a computation to halt."
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "ct-register"
+            ],
+            "text": "Define RM computable partial numerical function of n arguments."
+          },
+          {
+            "part": "c",
+            "marks": 2,
+            "topics": [
+              "ct-halting"
+            ],
+            "text": "What does it mean for a problem (as a property of numbers) to be RM undecidable?"
+          },
+          {
+            "part": "d(i)",
+            "marks": 2,
+            "topics": [
+              "ct-register"
+            ],
+            "text": "A RM computation is circular if it reaches the same configuration at two different times. Explain why circular computation doesn't halt. Give an example of a non-halting computation that is not circular."
+          },
+          {
+            "part": "d(ii)",
+            "marks": 9,
+            "topics": [
+              "ct-halting"
+            ],
+            "text": "Prove that the Circularity Problem \u2014 decide if the computation of any given RM and initial register contents is circular \u2014 is undecidable."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 6,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q4.pdf",
+        "topics": [
+          "ct-lambda"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 2,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "For the \u03bb-calculus, define \u03b2-conversion (=_\u03b2)."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 2,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "Define the Church numeral n\u0304."
+          },
+          {
+            "part": "b",
+            "marks": 3,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "What does it mean for f: N\u207f \u2192 N to be \u03bb-definable? Explain why not every such function is \u03bb-definable."
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "Explain why the predecessor function pred(x) = 0 if x=0, x-1 if x>0 is \u03bb-definable and give a \u03bb-term representing it."
+          },
+          {
+            "part": "d(i)",
+            "marks": 3,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "Show if\u2080(x,y,z) = y if x=0, z if x\u22600 is \u03bb-definable."
+          },
+          {
+            "part": "d(ii)",
+            "marks": 1,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "Show and(x,y) = 0 if x=0 and y=0, 1 otherwise is \u03bb-definable."
+          },
+          {
+            "part": "d(iii)",
+            "marks": 3,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "Show monus(x,y) = x\u2212y if x>y, 0 if x\u2264y is \u03bb-definable."
+          },
+          {
+            "part": "d(iv)",
+            "marks": 2,
+            "topics": [
+              "ct-lambda"
+            ],
+            "text": "Show eq(x,y) = 0 if x=y, 1 if x\u2260y is \u03bb-definable."
+          }
+        ]
+      }
+    ]
+  },
+  "complexity-theory": {
+    "total_questions": 16,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ComplexityTheory.html",
+    "topic_frequencies": {
+      "cx-np": 10,
+      "cx-space": 7,
+      "cx-np-problems": 6,
+      "cx-conp": 3,
+      "cx-interactive": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 6,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q2.pdf",
+        "topics": [
+          "cx-space",
+          "cx-np"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "cx-space"
+            ],
+            "text": "Provide a precise definition of the following complexity classes: EXP, NEXP, and NPSPACE."
+          },
+          {
+            "part": "b",
+            "marks": 7,
+            "topics": [
+              "cx-space",
+              "cx-np"
+            ],
+            "text": "Prove that NPSPACE \u2286 EXP \u2286 NEXP."
+          },
+          {
+            "part": "c",
+            "marks": 10,
+            "topics": [
+              "cx-np",
+              "cx-space"
+            ],
+            "text": "Prove that if P = NP, then EXP = NEXP."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 6,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q1.pdf",
+        "topics": [
+          "cx-np",
+          "cx-np-problems"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "cx-np-problems"
+            ],
+            "text": "What is a Hamiltonian cycle in a graph G=(V,E)?"
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "cx-np",
+              "cx-np-problems"
+            ],
+            "text": "What is known about the complexity of deciding whether a graph has a Hamiltonian cycle?"
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "cx-np-problems"
+            ],
+            "text": "Show that G has a Hamiltonian cycle not including edge e if and only if G\u2212e has a Hamiltonian cycle."
+          },
+          {
+            "part": "d",
+            "marks": 12,
+            "topics": [
+              "cx-np"
+            ],
+            "text": "Assume P=NP. Show there is a polynomial-time algorithm A that returns 'no' if G has no Hamiltonian cycle, or returns an actual Hamiltonian cycle otherwise."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 6,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q2.pdf",
+        "topics": [
+          "cx-np",
+          "cx-conp",
+          "cx-interactive"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "cx-conp"
+            ],
+            "text": "How would you modify the definition of pseudo one-way function to obtain Papadimitriou's one-way function definition?"
+          },
+          {
+            "part": "b",
+            "marks": 4,
+            "topics": [
+              "cx-np"
+            ],
+            "text": "Show that for any pseudo one-way function f, the language Lf is in NP."
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "cx-conp"
+            ],
+            "text": "Show that for any pseudo one-way function f, the language Lf is not in P."
+          },
+          {
+            "part": "d",
+            "marks": 9,
+            "topics": [
+              "cx-np",
+              "cx-interactive"
+            ],
+            "text": "Given function s(x) defined using a SAT formula. Prove that if P\u2260NP then s is a pseudo one-way function."
+          }
+        ]
+      },
+      {
+        "year": 2022,
+        "paper": 6,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q3.pdf",
+        "topics": [
+          "cx-space",
+          "cx-np",
+          "cx-conp"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "cx-space"
+            ],
+            "text": "Give a precise definition of a logarithmic-space reduction A \u2264_L B."
+          },
+          {
+            "part": "b",
+            "marks": 5,
+            "topics": [
+              "cx-space"
+            ],
+            "text": "Show that A \u2264_L B and B \u2264_L C implies A \u2264_L C."
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "cx-np",
+              "cx-conp",
+              "cx-space"
+            ],
+            "text": "For each of P, NP, NL, co-NP, give an example of a problem complete for that class under log-space reductions."
+          },
+          {
+            "part": "d",
+            "marks": 9,
+            "topics": [
+              "cx-np",
+              "cx-space"
+            ],
+            "text": "For each pair of problems from (c), state whether A \u2264_L B, or if unknown, state what complexity class inclusions would follow."
+          }
+        ]
+      },
+      {
+        "year": 2022,
+        "paper": 6,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q4.pdf",
+        "topics": [
+          "cx-np",
+          "cx-np-problems"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 4,
+            "topics": [
+              "cx-np"
+            ],
+            "text": "A graph homomorphism is a mapping G\u2192H preserving edges. HOM = set of pairs (G,H) with a homomorphism. Explain why HOM is in NP."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "cx-np-problems"
+            ],
+            "text": "Let K\u2083 have vertices a,b,c with edges {a,b},{b,c},{a,c}. Show that there is a homomorphism from G to K\u2083 if and only if G is 3-colourable."
+          },
+          {
+            "part": "c",
+            "marks": 5,
+            "topics": [
+              "cx-np",
+              "cx-np-problems"
+            ],
+            "text": "What can you conclude about the complexity of HOM?"
+          },
+          {
+            "part": "d",
+            "marks": 5,
+            "topics": [
+              "cx-np-problems"
+            ],
+            "text": "Let K\u2082 have vertices a,b with edge {a,b}. What is the complexity of deciding if there is a homomorphism from G to K\u2082?"
+          }
+        ]
+      }
+    ]
+  },
+  "artificial-intelligence": {
+    "total_questions": 32,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ArtificialIntelligence.html",
+    "topic_frequencies": {
+      "ai-planning": 16,
+      "ai-neural": 10,
+      "ai-csp": 1,
+      "ai-search-heuristic": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q1.pdf",
+        "topics": [
+          "ai-neural"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 1,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "A two-class linear classifier uses Pr(C\u2081|x,w,w\u2080,\u03b8) = \u03c3_\u03b8(w\u1d40x + w\u2080) where \u03c3_\u03b8(x) = 1/(1+exp(\u2212\u03b8x)). What role does \u03b8 play when set freely?"
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "Data has a band-like structure (C\u2082, C\u2081, C\u2082 bands). How can the linear classifier be modified \u2014 changing only its activation function with no new parameters \u2014 to be trained on this data with a trainable band width?"
+          },
+          {
+            "part": "c",
+            "marks": 13,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "Using cross-entropy error E(p) = \u2212\u03a3[y\u1d62 log h(x\u1d62,p) + (1\u2212y\u1d62) log(1\u2212h(x\u1d62,p))], explain how gradient descent applies to the modified classifier in (b), giving explicit gradient formulae."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q2.pdf",
+        "topics": [
+          "ai-planning"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "In Partial-Order Planning (POP), how does an ordering constraint differ from a causal link?"
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Why must Partial-Order Planning consider both ordering constraints and causal links?"
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "A tile-placement problem: explain how Start and Finish states are represented in POP."
+          },
+          {
+            "part": "d",
+            "marks": 7,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Explain how actions modelling tile placement are represented in POP, with examples from the tile-placement instance."
+          },
+          {
+            "part": "e",
+            "marks": 6,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Explain promotion and demotion in POP. To what extent are they useful in this planning problem given your formulation? Illustrate with an example."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 7,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p7q1.pdf",
+        "topics": [
+          "ai-planning",
+          "ai-csp"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 1,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "In a state-variable planning representation for an Evil Robot maze, give an example of a domain."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 2,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Give an example of a rigid relation in the representation."
+          },
+          {
+            "part": "a(iii)",
+            "marks": 3,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Give an example of a function/state variable representing the destination of a switched edge."
+          },
+          {
+            "part": "a(iv)",
+            "marks": 1,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Give an example of a goal in the representation."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Explain in detail how actions for (1) moving around the grid and (2) altering a switched edge's destination are implemented in the state-variable representation."
+          },
+          {
+            "part": "c",
+            "marks": 7,
+            "topics": [
+              "ai-csp"
+            ],
+            "text": "The victim converts the planning problem to a CSP. Explain in detail, with examples from the diagram, the steps for this conversion."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 7,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p7q2.pdf",
+        "topics": [
+          "ai-neural"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 4,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "K-class classification using softmax: Pr(x \u2208 class i|x,w) = exp(h(w\u1d62,x)) / \u03a3 exp(h(w\u2c7c,x)). Explain why the softmax modification is required and how it achieves its aim."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "Maximise Pr(s|w). Show training can be achieved by minimising E(w) = \u2212\u03a3\u1d62 \u03a3\u2c7c y\u1d62\u2c7c log prob(j, x\u1d62). State all assumptions made."
+          },
+          {
+            "part": "c",
+            "marks": 10,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "Given \u2202h(w\u1d62,x)/\u2202w\u1d62\u2c7c from backpropagation, explain what further steps are needed to obtain the derivatives of E(w) with respect to relevant weights."
+          }
+        ]
+      },
+      {
+        "year": 2022,
+        "paper": 6,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q1.pdf",
+        "topics": [
+          "ai-planning"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "GraphPlan planning graph. Draw state levels S_i and action levels A_i up to S\u2082 (no mutexes yet)."
+          },
+          {
+            "part": "b",
+            "marks": 1,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Explain why a plan cannot be extracted from the graph at this stage."
+          },
+          {
+            "part": "c",
+            "marks": 2,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "What is the smallest i for which plan extraction might be attempted from S_i? Explain."
+          },
+          {
+            "part": "d",
+            "marks": 4,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Draw levels S_{i-1}, A_{i-1}, S_i for that i."
+          },
+          {
+            "part": "e",
+            "marks": 6,
+            "topics": [
+              "ai-planning"
+            ],
+            "text": "Mark four mutexes, each from a different reason. Explain each type of mutex."
+          },
+          {
+            "part": "f",
+            "marks": 4,
+            "topics": [
+              "ai-planning",
+              "ai-search-heuristic"
+            ],
+            "text": "Describe generally how plan extraction from a planning graph can be addressed as a heuristic search problem."
+          }
+        ]
+      },
+      {
+        "year": 2022,
+        "paper": 6,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q2.pdf",
+        "topics": [
+          "ai-neural"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "Variation on MLP with p groups of n inputs and shared weight vector w. Show that \u03b4 = \u2202E(\u03b8)/\u2202a = \u03c3'(a) \u00b7 \u2202E(\u03b8)/\u2202y."
+          },
+          {
+            "part": "b",
+            "marks": 5,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "Find expressions for partial derivatives of E(\u03b8) with respect to parameters of the output node."
+          },
+          {
+            "part": "c",
+            "marks": 5,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "Show that \u03b4\u1d62 = \u2202E(\u03b8)/\u2202a\u1d62 = \u03b4 v\u1d62 \u03c3'(a\u1d62)."
+          },
+          {
+            "part": "d",
+            "marks": 7,
+            "topics": [
+              "ai-neural"
+            ],
+            "text": "Find expressions for partial derivatives of E(\u03b8) with respect to parameters of the hidden nodes."
+          }
+        ]
+      }
+    ]
+  },
+  "prog-c-cpp": {
+    "total_questions": 33,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ProgramminginCandC++.html",
+    "topic_frequencies": {
+      "pcc-cpp-advanced": 10,
+      "pcc-undefined": 6,
+      "pcc-memory": 5,
+      "pcc-debugging": 3,
+      "pcc-intro": 2,
+      "pcc-pointers": 2,
+      "pcc-cpp-basics": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 4,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p4q5.pdf",
+        "topics": [
+          "pcc-intro",
+          "pcc-cpp-advanced",
+          "pcc-undefined"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "pcc-intro",
+              "pcc-cpp-basics"
+            ],
+            "text": "Are C functions exactly the same as C++ functions? What is the difference between a C function and a C++ method?"
+          },
+          {
+            "part": "b",
+            "marks": 3,
+            "topics": [
+              "pcc-intro",
+              "pcc-undefined"
+            ],
+            "text": "A system where char is 8\u201316 bits but int is always 24 bits. Write a program to determine the number of bits in a char."
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "pcc-undefined"
+            ],
+            "text": "char is 8 bits but signedness is unknown. Write a program to test whether char is signed or unsigned."
+          },
+          {
+            "part": "d(i)",
+            "marks": 3,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "Can C++ upcasts and downcasts always be checked for type safety at compile time?"
+          },
+          {
+            "part": "d(ii)",
+            "marks": 3,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "Give an example of a C++ upcast that requires the object pointer to be adjusted."
+          },
+          {
+            "part": "d(iii)",
+            "marks": 3,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "Give an example where a C++ downcast is checked at runtime. What is needed for the language runtime to check validity?"
+          },
+          {
+            "part": "e",
+            "marks": 2,
+            "topics": [
+              "pcc-undefined"
+            ],
+            "text": "Will 'char *mys = \"ab_de\"; mys[2] = 'c';' work? Why or why not?"
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 4,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p4q6.pdf",
+        "topics": [
+          "pcc-cpp-advanced",
+          "pcc-memory",
+          "pcc-undefined"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "pcc-undefined"
+            ],
+            "text": "A C programmer sorts an array of pointers to structs using <. Describe one circumstance producing undefined behaviour and one where behaviour is defined."
+          },
+          {
+            "part": "b",
+            "marks": 8,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "Criticise a given bucket<T> template class definition. Give three reasons to separate declaration and implementation in OO. Explain difficulties with implementation in a separate file. Does inheriting from a common parent help?"
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "pcc-memory",
+              "pcc-cpp-advanced"
+            ],
+            "text": "Instead of holding pointers, a collection holds objects themselves. What method type changes are needed? Advantages and disadvantages?"
+          },
+          {
+            "part": "d",
+            "marks": 6,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "All pushed objects must have void foo(). bucket invokes foo() on all members on removal. Define storage and sketch dequeue(). Can foo() use static or dynamic dispatch?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 4,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p4q5.pdf",
+        "topics": [
+          "pcc-undefined",
+          "pcc-pointers",
+          "pcc-memory",
+          "pcc-debugging"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 6,
+            "topics": [
+              "pcc-undefined",
+              "pcc-pointers"
+            ],
+            "text": "14-bit words: 5-bit unsigned mantissa, 9-bit unsigned left-shift exponent. Write two C functions: one to convert to nearest 32-bit unsigned int and one to nearest double-precision float. What problems arise?"
+          },
+          {
+            "part": "a(ii)",
+            "marks": 6,
+            "topics": [
+              "pcc-pointers"
+            ],
+            "text": "A packed array of 14-bit words with no unused bits (words may cross byte boundaries). Write a C function to update a word at a given index. Args: unsigned char* base pointer, index, 14-bit word to store. May assume unaligned 32-bit loads/stores supported."
+          },
+          {
+            "part": "b(i)",
+            "marks": 3,
+            "topics": [
+              "pcc-memory",
+              "pcc-debugging"
+            ],
+            "text": "Implement void *my_malloc(size_t) that calls system malloc but adds 16 bytes padding at start and end, initialised with a distinctive bit pattern."
+          },
+          {
+            "part": "b(ii)",
+            "marks": 3,
+            "topics": [
+              "pcc-memory",
+              "pcc-debugging"
+            ],
+            "text": "Write companion my_free that checks the padding pattern for changes, reports appropriately, or calls system free."
+          },
+          {
+            "part": "b(iii)",
+            "marks": 2,
+            "topics": [
+              "pcc-debugging"
+            ],
+            "text": "What is the motivation for introducing my_malloc and my_free?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 4,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p4q6.pdf",
+        "topics": [
+          "pcc-memory",
+          "pcc-cpp-advanced"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 4,
+            "topics": [
+              "pcc-memory"
+            ],
+            "text": "Describe the two main forms of dynamic storage in C and OCaml. How does each interact with a garbage collector?"
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "pcc-undefined"
+            ],
+            "text": "Does any aspect of C or C++ prevent the compiler from implementing tail-recursion optimisation? Would this tend to reduce memory leak problems?"
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "pcc-memory"
+            ],
+            "text": "In-core database: server process and 4 client processes share a memory segment. Describe the total number of user-space segments in physical memory. How might memory in the shared segment be allocated?"
+          },
+          {
+            "part": "d(i)",
+            "marks": 3,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "C++ multiple inheritance: class D: B,C { int d1, d2; }. Give C code summarising the storage layout of D x."
+          },
+          {
+            "part": "d(ii)",
+            "marks": 2,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "Given class D *p, how are C++-style casts (B*)p and (C*)p achieved in C code?"
+          },
+          {
+            "part": "d(iii)",
+            "marks": 2,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "If B and C both inherit from A, explain the conceptual choice for how A's data members appear in D's layout."
+          },
+          {
+            "part": "d(iv)",
+            "marks": 3,
+            "topics": [
+              "pcc-cpp-advanced"
+            ],
+            "text": "Explain how the virtual keyword lets the programmer select between the alternatives in (iii)."
+          }
+        ]
+      }
+    ]
+  },
+  "prolog": {
+    "total_questions": 22,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-Prolog.html",
+    "topic_frequencies": {
+      "pl-arithmetic-lists": 6,
+      "pl-backtracking": 3,
+      "pl-intro": 1,
+      "pl-search": 1,
+      "pl-difference": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 4,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p4q4.pdf",
+        "topics": [
+          "pl-intro",
+          "pl-arithmetic-lists",
+          "pl-backtracking"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 4,
+            "topics": [
+              "pl-arithmetic-lists"
+            ],
+            "text": "Define eval/2 to reduce arithmetic terms: eval(1+2*3, N) gives N=7, atoms reduce to themselves."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "pl-arithmetic-lists",
+              "pl-backtracking"
+            ],
+            "text": "Extend eval to support function calls: 2 * apply(inc, [2+3]) reduces to 12, where fun(apply(inc,[N]), N+1) is a fact. Function args in a list."
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "pl-arithmetic-lists"
+            ],
+            "text": "Extend eval to support the ==/2 operator: A==B reduces to true if A and B reduce to the same number or atom, false otherwise."
+          },
+          {
+            "part": "d",
+            "marks": 7,
+            "topics": [
+              "pl-backtracking",
+              "pl-arithmetic-lists"
+            ],
+            "text": "Extend eval to support if(Condition, Then, Else). Add a fun fact for factorial so eval(apply(fact,[5]), N) gives N=120."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 4,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p4q4.pdf",
+        "topics": [
+          "pl-intro",
+          "pl-arithmetic-lists",
+          "pl-difference"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "pl-intro"
+            ],
+            "text": "Explain Prolog's unification process. What does an occurs check guard against?"
+          },
+          {
+            "part": "b",
+            "marks": 3,
+            "topics": [
+              "pl-search"
+            ],
+            "text": "node(Left,Right) and leaf(Name,Value) trees. Define lookup(+Tree, ?Name, ?Value)."
+          },
+          {
+            "part": "c",
+            "marks": 5,
+            "topics": [
+              "pl-arithmetic-lists",
+              "pl-backtracking"
+            ],
+            "text": "Define rle(+L1, ?L2) to run-length encode a list: rle([a,a,b,c,a,a,a], L) gives L=[2*a, 1*b, 1*c, 3*a]. Would rle(L, [2*a, 1*b, 1*c, 3*a]) succeed in reverse? Give reasons."
+          },
+          {
+            "part": "d",
+            "marks": 4,
+            "topics": [
+              "pl-arithmetic-lists"
+            ],
+            "text": "Define rld(+L1, ?L2) to decode a run-length-encoded list."
+          },
+          {
+            "part": "e",
+            "marks": 5,
+            "topics": [
+              "pl-difference"
+            ],
+            "text": "Given alter_list and change clauses, add a difference-list argument to accumulate the execution path through Prolog clauses as a list of clause numbers. alter_list([2,4,6], L, Path-[]) should yield L=[a,a,b] and Path=[4,1,4,1,4,2,3]."
+          }
+        ]
+      }
+    ]
+  },
+  "cybersecurity": {
+    "total_questions": 6,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-Cybersecurity.html",
+    "topic_frequencies": {
+      "cy-auth": 5,
+      "cy-software": 5,
+      "cy-injection": 4,
+      "cy-access": 4,
+      "cy-human": 2,
+      "cy-intro": 1,
+      "cy-malware": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 4,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p4q7.pdf",
+        "topics": [
+          "cy-auth"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 4,
+            "topics": [
+              "cy-auth"
+            ],
+            "text": "Precomputed hash chains for cracking lowercase alphanumeric passwords (\u226415 chars). Derive formulae and numerical values for the maximum number of chains n_c and minimum chain length l_c."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 5,
+            "topics": [
+              "cy-auth"
+            ],
+            "text": "Describe the algorithm for recovering a password that is the preimage of a given digest d using the hash chain table."
+          },
+          {
+            "part": "a(iii)",
+            "marks": 2,
+            "topics": [
+              "cy-auth"
+            ],
+            "text": "Derive the formula and numerical value for the minimum number of hashes n_h needed to build the table."
+          },
+          {
+            "part": "a(iv)",
+            "marks": 5,
+            "topics": [
+              "cy-auth"
+            ],
+            "text": "Calculate the time t_s to build the table sequentially. Give speedup factors for CPU\u2192GPU, a bank of GPUs, and distributed collaborators. Compute total time with all three speedups."
+          },
+          {
+            "part": "b",
+            "marks": 4,
+            "topics": [
+              "cy-auth"
+            ],
+            "text": "Explain what hash collisions are and why they matter. How would collisions invalidate the answer to (a)(iii)?"
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 4,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p4q8.pdf",
+        "topics": [
+          "cy-software"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 1,
+            "topics": [
+              "cy-software"
+            ],
+            "text": "Buffer overflow hacking game. 32-bit x86, setuid challenge program, executable stack, no canaries, ASLR off. Do you favour more runs or longer inputs? Explain."
+          },
+          {
+            "part": "b",
+            "marks": 3,
+            "topics": [
+              "cy-software"
+            ],
+            "text": "Should you put the nop sled/payload before or after the stack spraying region? Explain."
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "cy-software"
+            ],
+            "text": "Do you favour a longer nop sled or a longer stack spraying region?"
+          },
+          {
+            "part": "d",
+            "marks": 5,
+            "topics": [
+              "cy-software"
+            ],
+            "text": "Outline an efficient strategy guaranteeing a win, including the worst-case number of runs."
+          },
+          {
+            "part": "e",
+            "marks": 8,
+            "topics": [
+              "cy-software"
+            ],
+            "text": "Give specific values of each of the five input parameters (length, payloadOffset, retOffset, retAddress, retCopies) for run i."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 4,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p4q7.pdf",
+        "topics": [
+          "cy-injection"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "cy-injection"
+            ],
+            "text": "A Python program reads fields.txt (two text fields), concatenates with LaTeX template fragments, writes to form-content.tex, then runs pdflatex via os.system(). Can a fields.txt cause malfunction during lines 1\u20138? If yes, produce such input; otherwise justify."
+          },
+          {
+            "part": "b",
+            "marks": 3,
+            "topics": [
+              "cy-injection"
+            ],
+            "text": "Can a fields.txt cause malfunction during the os.system() call? If yes, produce such input; otherwise justify."
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "cy-injection"
+            ],
+            "text": "Amend the program so it won't malfunction on inputs from (a) or (b). An ad-hoc fix is sufficient."
+          },
+          {
+            "part": "d",
+            "marks": 3,
+            "topics": [
+              "cy-injection"
+            ],
+            "text": "Can an attacker exploit this to execute an arbitrary command? Under what circumstances? If yes, produce input to execute /tmp/payload."
+          },
+          {
+            "part": "e",
+            "marks": 8,
+            "topics": [
+              "cy-intro",
+              "cy-human"
+            ],
+            "text": "For security training: state the two most important points and recommend remedial approaches, in the context of the listing."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 4,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p4q8.pdf",
+        "topics": [
+          "cy-malware",
+          "cy-access",
+          "cy-human"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 6,
+            "topics": [
+              "cy-human",
+              "cy-access"
+            ],
+            "text": "Compare a mechanical master-keyed lock system vs electronic key fobs under at least four aspects. Give one scenario for each where that system is preferable, with justification."
+          },
+          {
+            "part": "b(i)",
+            "marks": 2,
+            "topics": [
+              "cy-access"
+            ],
+            "text": "Building with 24 locks D0\u2013D23, 5 pin stacks, 8 cut depths, at most one master pin per stack. D10\u2013D19 opened by master key 36735. For D12, what is the minimum and maximum number of pin stacks containing a master pin?"
+          },
+          {
+            "part": "b(ii)",
+            "marks": 4,
+            "topics": [
+              "cy-access"
+            ],
+            "text": "D13 differ key is 32737. List all other keys that also open D13, with stated assumptions."
+          },
+          {
+            "part": "b(iii)",
+            "marks": 8,
+            "topics": [
+              "cy-malware",
+              "cy-access"
+            ],
+            "text": "D16 occupant has differ key 32535 and wants to open D07 using Matt Blaze privilege escalation, visiting D07 only once. Using optimal strategy, list every key created and tried in order, with lock and result."
+          }
+        ]
+      }
+    ]
+  },
+  "intro-comp-arch": {
+    "total_questions": 16,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-IntroductiontoComputerArchitecture.html",
+    "topic_frequencies": {
+      "ica-digital": 9,
+      "ica-soc": 9,
+      "ica-pipeline": 8,
+      "ica-memory": 8,
+      "ica-riscv": 5,
+      "ica-trends": 4,
+      "ica-os-support": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q6.pdf",
+        "topics": [
+          "ica-digital",
+          "ica-riscv"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "ica-digital"
+            ],
+            "text": "A SystemVerilog simple I/O processor (PIO) with 8 opcodes. How many clock cycles does it take to fetch, decode and execute an instruction? Explain."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "ica-digital",
+              "ica-riscv"
+            ],
+            "text": "What are the eight instructions and what does each do? Give a short English explanation for each."
+          },
+          {
+            "part": "c",
+            "marks": 6,
+            "topics": [
+              "ica-digital"
+            ],
+            "text": "Produce commented pseudocode representing the program in imem."
+          },
+          {
+            "part": "d",
+            "marks": 3,
+            "topics": [
+              "ica-digital"
+            ],
+            "text": "What registers are not reset? Will they cause malfunction?"
+          },
+          {
+            "part": "e",
+            "marks": 3,
+            "topics": [
+              "ica-digital"
+            ],
+            "text": "What is the meaning of the outw output? Is instruction timing of the program important?"
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q7.pdf",
+        "topics": [
+          "ica-pipeline",
+          "ica-memory"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 2,
+            "topics": [
+              "ica-pipeline"
+            ],
+            "text": "Classical five-stage pipeline (IF, Decode+RF, Execute, Mem, WB). Explain control hazards and how they arise."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 2,
+            "topics": [
+              "ica-pipeline"
+            ],
+            "text": "Explain structural hazards and how they arise."
+          },
+          {
+            "part": "b",
+            "marks": 3,
+            "topics": [
+              "ica-pipeline"
+            ],
+            "text": "What are forwarding paths and why are they needed? Sketch the pipeline indicating forwarding paths."
+          },
+          {
+            "part": "c(i)",
+            "marks": 3,
+            "topics": [
+              "ica-pipeline",
+              "ica-memory"
+            ],
+            "text": "New 128KiB L1 caches (2-cycle pipelined), 1MiB L2, seven-stage pipeline. Sketch the new pipeline. Why might new forwarding paths be required?"
+          },
+          {
+            "part": "c(ii)",
+            "marks": 2,
+            "topics": [
+              "ica-pipeline"
+            ],
+            "text": "What is the load-to-use penalty for the 5-stage and 7-stage pipelines?"
+          },
+          {
+            "part": "c(iii)",
+            "marks": 2,
+            "topics": [
+              "ica-pipeline"
+            ],
+            "text": "What is the branch penalty for the 5-stage and 7-stage pipelines?"
+          },
+          {
+            "part": "c(iv)",
+            "marks": 4,
+            "topics": [
+              "ica-memory"
+            ],
+            "text": "Calculate cache access latency in cycles for each design given L1 miss rates, L2 miss rates, and DRAM latency."
+          },
+          {
+            "part": "d",
+            "marks": 2,
+            "topics": [
+              "ica-pipeline"
+            ],
+            "text": "What is tandem verification and how could it test pipelined processor designs?"
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q8.pdf",
+        "topics": [
+          "ica-memory",
+          "ica-soc",
+          "ica-os-support"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "ica-soc"
+            ],
+            "text": "Why do multicore SoCs use hierarchical caches rather than one large shared cache?"
+          },
+          {
+            "part": "b",
+            "marks": 5,
+            "topics": [
+              "ica-os-support",
+              "ica-memory"
+            ],
+            "text": "Why are page tables hierarchical rather than flat? Illustrate with an application with contiguous 6MiB footprint starting at virtual address 0 on a 32-bit processor with 4KiB pages."
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "ica-memory",
+              "ica-soc"
+            ],
+            "text": "What is a TLB and why do we need one per core?"
+          },
+          {
+            "part": "d",
+            "marks": 3,
+            "topics": [
+              "ica-memory"
+            ],
+            "text": "Explain the difference between inclusive, exclusive, and NINE (non-inclusive non-exclusive) cache inclusion policies."
+          },
+          {
+            "part": "e",
+            "marks": 3,
+            "topics": [
+              "ica-memory",
+              "ica-soc"
+            ],
+            "text": "In a multicore system with private L1/L2 caches and a shared L3, why might L2 be inclusive but L3 be NINE?"
+          },
+          {
+            "part": "f",
+            "marks": 3,
+            "topics": [
+              "ica-soc"
+            ],
+            "text": "What is the difference between cache coherence and cache consistency? Give examples of two consistency models."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q6.pdf",
+        "topics": [
+          "ica-digital"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "ica-digital"
+            ],
+            "text": "Why is it important that a circuit implementation meets all timing constraints?"
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "ica-digital"
+            ],
+            "text": "Three SystemVerilog state machines: seqA (4-bit counter, direct FF update), seqB (4-bit counter, combinational next-state), seqC (16-bit rotating shift register with 4-bit combinational output). What is the complete output sequence for each after reset is released? Justify."
+          },
+          {
+            "part": "c",
+            "marks": 6,
+            "topics": [
+              "ica-digital"
+            ],
+            "text": "If mapped to an FPGA with 4-input 1-output LUTs, DFFs and wiring, what resources does each module require for a minimal implementation? Justify."
+          },
+          {
+            "part": "d",
+            "marks": 6,
+            "topics": [
+              "ica-digital"
+            ],
+            "text": "LUTs: 2d input-to-output delay. DFFs: setup time d, no other delays. Wire delays ignored. For each module, what is the minimum clock period in terms of d? Justify."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q7.pdf",
+        "topics": [
+          "ica-riscv",
+          "ica-soc",
+          "ica-pipeline"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "ica-trends"
+            ],
+            "text": "What is Amdahl's law?"
+          },
+          {
+            "part": "b",
+            "marks": 4,
+            "topics": [
+              "ica-riscv",
+              "ica-pipeline"
+            ],
+            "text": "How could RISC-V code performing 16-byte copy (four lw/sw pairs) be optimised to reduce execution time on a 64-bit pipelined processor? Justify."
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "ica-riscv"
+            ],
+            "text": "Proposed RISC-V R-type swap t0, t1 instruction to swap two registers. What challenges arise in implementing this?"
+          },
+          {
+            "part": "d",
+            "marks": 3,
+            "topics": [
+              "ica-riscv"
+            ],
+            "text": "As a pseudo instruction, what sequence swaps two registers without an extra register? (Hint: use xor.)"
+          },
+          {
+            "part": "e",
+            "marks": 4,
+            "topics": [
+              "ica-riscv",
+              "ica-soc"
+            ],
+            "text": "RISC-V amoswapd: atomic swap between register and memory location. How could the same be achieved using lr (load-reserved) and sc (store-conditional)? Comment your code."
+          },
+          {
+            "part": "f",
+            "marks": 4,
+            "topics": [
+              "ica-soc"
+            ],
+            "text": "Using MSI cache coherence protocol: multiple cores reading shared data at address a. What happens when one core writes to a?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q8.pdf",
+        "topics": [
+          "ica-trends",
+          "ica-soc"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 3,
+            "topics": [
+              "ica-trends"
+            ],
+            "text": "What is the power wall and why does it lead to the idea of dark silicon?"
+          },
+          {
+            "part": "b",
+            "marks": 3,
+            "topics": [
+              "ica-trends"
+            ],
+            "text": "Explain the difference between race-to-dark (race-to-sleep/halt) and dynamic voltage/frequency scaling to save power."
+          },
+          {
+            "part": "c",
+            "marks": 4,
+            "topics": [
+              "ica-soc",
+              "ica-trends"
+            ],
+            "text": "Why does dark silicon lead SoC designers to incorporate accelerators? Give an example."
+          },
+          {
+            "part": "d",
+            "marks": 4,
+            "topics": [
+              "ica-soc"
+            ],
+            "text": "Why do SoCs contain many more processor cores than the advertised application-class cores? What characteristics do these extra cores possess?"
+          },
+          {
+            "part": "e",
+            "marks": 3,
+            "topics": [
+              "ica-memory"
+            ],
+            "text": "Why do you need both a row access and column read when reading from DRAM? What does each operation do?"
+          },
+          {
+            "part": "f",
+            "marks": 3,
+            "topics": [
+              "ica-memory",
+              "ica-soc"
+            ],
+            "text": "DRAM can perform burst reads/writes. How does the last-level cache use and benefit from DRAM burst accesses?"
+          }
+        ]
+      }
+    ]
+  },
+  "econ-law-ethics": {
+    "total_questions": 4,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-EconomicsLawandEthics.html",
+    "topic_frequencies": {
+      "ele-contemporary": 4,
+      "ele-ethics": 4,
+      "ele-internet-law": 2,
+      "ele-market-failure": 2,
+      "ele-info-econ": 2,
+      "ele-auctions-games": 2
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q3.pdf",
+        "topics": [
+          "ele-internet-law",
+          "ele-ethics",
+          "ele-contemporary"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 6,
+            "topics": [
+              "ele-internet-law",
+              "ele-contemporary"
+            ],
+            "text": "The Master of a college wants to use generative AI to create the college website (HTML and content). Discuss the challenges presented by intellectual property and generative AI."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "ele-ethics"
+            ],
+            "text": "Use either consequentialist or deontological reasoning to argue for or against the proposal. Define the ethical philosophy used."
+          },
+          {
+            "part": "c",
+            "marks": 8,
+            "topics": [
+              "ele-contemporary",
+              "ele-ethics"
+            ],
+            "text": "A Fellow is concerned about the existential risk of generative AI. Discuss this risk and explain other risks from AI."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q4.pdf",
+        "topics": [
+          "ele-market-failure",
+          "ele-info-econ",
+          "ele-internet-law"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 6,
+            "topics": [
+              "ele-market-failure",
+              "ele-info-econ"
+            ],
+            "text": "Explain information asymmetry and how it can lead to a lemon market."
+          },
+          {
+            "part": "b",
+            "marks": 6,
+            "topics": [
+              "ele-market-failure"
+            ],
+            "text": "What solutions can help prevent a lemon market?"
+          },
+          {
+            "part": "c",
+            "marks": 8,
+            "topics": [
+              "ele-internet-law",
+              "ele-contemporary"
+            ],
+            "text": "How is information asymmetry relevant to privacy?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 7,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p7q3.pdf",
+        "topics": [
+          "ele-ethics",
+          "ele-contemporary"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 12,
+            "topics": [
+              "ele-ethics"
+            ],
+            "text": "Describe the six branches of philosophy (metaphysics, epistemology, ethics, logic, aesthetics, and political philosophy) and explain the insight each provides into technology ethics."
+          },
+          {
+            "label": "b",
+            "marks": 8,
+            "topics": [
+              "ele-ethics",
+              "ele-contemporary"
+            ],
+            "text": "Using a consequentialist approach, evaluate the ethical implications of facial recognition technology, including both its benefits and harms."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 7,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p7q4.pdf",
+        "topics": [
+          "ele-auctions-games",
+          "ele-info-econ"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 10,
+            "topics": [
+              "ele-auctions-games"
+            ],
+            "text": "How does game theory account for the distribution of trolls on social media platforms? Explain the strategic interactions involved."
+          },
+          {
+            "label": "b",
+            "marks": 10,
+            "topics": [
+              "ele-auctions-games",
+              "ele-info-econ"
+            ],
+            "text": "If a popular social media platform changes its moderation policy to allow trolls to proliferate, under what conditions are existing users likely to switch to a different platform? Use game theory to support your answer."
+          }
+        ]
+      }
+    ]
+  },
+  "formal-models-language": {
+    "total_questions": 4,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-FormalModelsofLanguage.html",
+    "topic_frequencies": {
+      "fml-parsing": 9,
+      "fml-chomsky": 8,
+      "fml-information": 8
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q5.pdf",
+        "topics": [
+          "fml-chomsky",
+          "fml-parsing"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 2,
+            "topics": [
+              "fml-chomsky"
+            ],
+            "text": "An alien language has \u03a3={a,e,f,m}. Expression 1: e*(a|e|f|m)(a|e|f|m)*. Describe the strings matched by Expression 1."
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "fml-chomsky"
+            ],
+            "text": "Provide an FSA generating the language defined by Expression 1."
+          },
+          {
+            "part": "c",
+            "marks": 5,
+            "topics": [
+              "fml-chomsky"
+            ],
+            "text": "Expression 2: w\u207b\u00b9e*w where w \u2208 \u03a3*. Can the linguist draw an FSA for Expression 2? Provide a proof."
+          },
+          {
+            "part": "d",
+            "marks": 5,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "Provide a grammar generating the language defined by Expression 2."
+          },
+          {
+            "part": "e",
+            "marks": 1,
+            "topics": [
+              "fml-chomsky"
+            ],
+            "text": "A new dialect has strings like 'amaf e amaf', 'faem e e faem'. Provide a general expression."
+          },
+          {
+            "part": "f",
+            "marks": 5,
+            "topics": [
+              "fml-chomsky"
+            ],
+            "text": "Can a Context Free Grammar generate the language from (e)? Provide a proof."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q6.pdf",
+        "topics": [
+          "fml-information"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 1,
+            "topics": [
+              "fml-information"
+            ],
+            "text": "Andrew and Brian communicate using a flag in 4 positions (L/R/U/D) with a given confusion matrix. Write down the distribution of X (Andrew's flag positions)."
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "fml-information"
+            ],
+            "text": "What is H(X) in bits? Give equations and describe what H(X) represents."
+          },
+          {
+            "part": "c",
+            "marks": 2,
+            "topics": [
+              "fml-information"
+            ],
+            "text": "Calculate joint entropy H(X,Y) in bits. Is this ideal? Give equations."
+          },
+          {
+            "part": "d",
+            "marks": 2,
+            "topics": [
+              "fml-information"
+            ],
+            "text": "What is H(Y|X) in bits? Give equations and describe what it represents."
+          },
+          {
+            "part": "e",
+            "marks": 3,
+            "topics": [
+              "fml-information"
+            ],
+            "text": "Calculate mutual information I(X;Y) in bits. What does this tell us about their communication system?"
+          },
+          {
+            "part": "f",
+            "marks": 3,
+            "topics": [
+              "fml-information"
+            ],
+            "text": "Provide an attested lower bound on channel capacity. Explain with relevant equations."
+          },
+          {
+            "part": "g",
+            "marks": 2,
+            "topics": [
+              "fml-information"
+            ],
+            "text": "Will this be an effective way for Andrew and Brian to communicate? Explain."
+          },
+          {
+            "part": "h",
+            "marks": 5,
+            "topics": [
+              "fml-information"
+            ],
+            "text": "Andrew suggests using two positions instead of four. What do you think? What two positions would you choose and why? How could you quantify the benefit?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 7,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p7q5.pdf",
+        "topics": [
+          "fml-parsing",
+          "fml-chomsky"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 4,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "Describe the structure of a chart used in a bottom-up RL chart parser for context-free grammars. What information does each edge in the chart represent?"
+          },
+          {
+            "label": "b",
+            "marks": 2,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "Explain how the chart is initialised in a bottom-up RL chart parser."
+          },
+          {
+            "label": "c",
+            "marks": 6,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "Describe the bottom-up RL chart parsing algorithm using rule induction notation for adding new edges to the chart."
+          },
+          {
+            "label": "d",
+            "marks": 2,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "What properties does the chart have when a complete parse is found?"
+          },
+          {
+            "label": "e",
+            "marks": 2,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "How do you reconstruct a parse tree from the completed chart?"
+          },
+          {
+            "label": "f",
+            "marks": 2,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "How do you choose between multiple parses if the chart contains more than one?"
+          },
+          {
+            "label": "g",
+            "marks": 2,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "Does this approach give a compact chart? If not, how can you reduce the number of edges without losing parse information?"
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 7,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p7q6.pdf",
+        "topics": [
+          "fml-parsing",
+          "fml-chomsky"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 5,
+            "topics": [
+              "fml-chomsky"
+            ],
+            "text": "Given the syntax tree for 'pirates generally sail the high seas with parrots', provide a Context-Free Grammar (CFG) that generates this tree."
+          },
+          {
+            "label": "b",
+            "marks": 5,
+            "topics": [
+              "fml-chomsky"
+            ],
+            "text": "Provide a Tree-Adjoining Grammar (TAG) that generates the syntax tree for 'pirates generally sail the high seas with parrots'."
+          },
+          {
+            "label": "c",
+            "marks": 5,
+            "topics": [
+              "fml-chomsky"
+            ],
+            "text": "Show step-by-step how to generate the syntax tree for 'pirates generally sail the high seas with parrots' using your Tree-Adjoining Grammar."
+          },
+          {
+            "label": "d",
+            "marks": 5,
+            "topics": [
+              "fml-parsing"
+            ],
+            "text": "Could the grammatical relations (root, subj, obj, det, mod) be derived from the syntax tree for 'pirates generally sail the high seas with parrots'? Explain your reasoning."
+          }
+        ]
+      }
+    ]
+  },
+  "data-science": {
+    "total_questions": 10,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-DataScience.html",
+    "topic_frequencies": {
+      "ds-inference": 6,
+      "ds-probability": 2,
+      "ds-feature-spaces": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 6,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q5.pdf",
+        "topics": [
+          "ds-inference"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 5,
+            "topics": [
+              "ds-inference"
+            ],
+            "text": "A hypothesis test on grave alignment angles [x\u2081,...,x\u2099] where 0 \u2264 x\u1d62 < 360. What is a 'null hypothesis'? What null hypothesis do you propose?"
+          },
+          {
+            "part": "b",
+            "marks": 7,
+            "topics": [
+              "ds-inference"
+            ],
+            "text": "What is a 'test statistic'? What test statistic do you propose? How does it deal with 359.999 and 0 being close?"
+          },
+          {
+            "part": "c",
+            "marks": 5,
+            "topics": [
+              "ds-inference"
+            ],
+            "text": "What is a 'one-sided' or 'two-sided' test? Which will you use and why?"
+          },
+          {
+            "part": "d",
+            "marks": 3,
+            "topics": [
+              "ds-inference"
+            ],
+            "text": "Define 'p-value'. Explain how to compute the p-value for your test."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 6,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q6.pdf",
+        "topics": [
+          "ds-probability",
+          "ds-inference",
+          "ds-feature-spaces"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 7,
+            "topics": [
+              "ds-probability",
+              "ds-feature-spaces"
+            ],
+            "text": "A scatterplot of (x,y,group) data from two groups with fitted parallel lines. Describe a probability model and fitting procedure behind this plot. Explain how the 'parallel lines' constraint is enforced. Give pseudocode for the fitting procedure."
+          },
+          {
+            "part": "b",
+            "marks": 7,
+            "topics": [
+              "ds-inference"
+            ],
+            "text": "Explain the Bayesian approach to computing confidence about the offset between groups. Give pseudocode."
+          },
+          {
+            "part": "c",
+            "marks": 6,
+            "topics": [
+              "ds-inference",
+              "ds-probability"
+            ],
+            "text": "Predict y at a new value x* for both groups. Explain how to compute confidence intervals for these predictions. Give pseudocode."
+          }
+        ]
+      }
+    ]
+  },
+  "logic-proof": {
+    "total_questions": 14,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-LogicandProof.html",
+    "_paper_note": "Logic and Proof appears in Paper 6, Q7 and Q8 (2024 onwards).",
+    "topic_frequencies": {
+      "lp-modal": 3,
+      "lp-clausal": 3,
+      "lp-prop": 2,
+      "lp-sequent": 1,
+      "lp-resolution": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 6,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q7.pdf",
+        "topics": [
+          "lp-modal",
+          "lp-sequent"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 6,
+            "topics": [
+              "lp-modal"
+            ],
+            "text": "A dispensing machine for products A and B has five requirements formalised in S4 modal logic. Propositions: A (A selected), B (B selected), D (default state), P (payment made). Formalise statements 1\u20135 in S4 modal logic."
+          },
+          {
+            "part": "b",
+            "marks": 7,
+            "topics": [
+              "lp-modal"
+            ],
+            "text": "Model the default state as a world in a modal frame. Exhibit an interpretation satisfying statements 1\u20135."
+          },
+          {
+            "part": "c",
+            "marks": 7,
+            "topics": [
+              "lp-modal",
+              "lp-sequent"
+            ],
+            "text": "Formalise and prove (using sequent calculus for S4) that, starting from the default state, the user can get one of every product. Answer can be schematic but strategy must be clear."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 6,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q8.pdf",
+        "topics": [
+          "lp-clausal",
+          "lp-resolution",
+          "lp-prop"
+        ],
+        "parts": [
+          {
+            "part": "a(i)",
+            "marks": 3,
+            "topics": [
+              "lp-clausal"
+            ],
+            "text": "Formulae: P(a,v)\u2192\u00acQ(b,w); \u00ac(\u00acQ(b,x)\u2227P(b,y)); \u00ac(\u00acP(z,z)\u2227\u00acP(z,c)). Convert to CNF as a set of clauses. State the rule used at each step."
+          },
+          {
+            "part": "a(ii)",
+            "marks": 2,
+            "topics": [
+              "lp-clausal"
+            ],
+            "text": "Convert the resulting clauses to Kowalski form."
+          },
+          {
+            "part": "a(iii)",
+            "marks": 7,
+            "topics": [
+              "lp-resolution"
+            ],
+            "text": "Give a resolution proof using clause (1) as top clause. Indicate selected literals, the clause, and substitution at each step."
+          },
+          {
+            "part": "b(i)",
+            "marks": 2,
+            "topics": [
+              "lp-clausal",
+              "lp-prop"
+            ],
+            "text": "Formulae: M\u2192(N\u2192M); M\u2192(N\u2228P); N\u2192(\u00acQ\u2227\u00acR); P\u2192(R\u2227\u00acQ); M. Convert to clauses."
+          },
+          {
+            "part": "b(ii)",
+            "marks": 6,
+            "topics": [
+              "lp-prop"
+            ],
+            "text": "Use DPLL to find a model or prove no model exists. Briefly explain each step."
+          }
+        ]
+      }
+    ]
+  },
+  "semantics": {
+    "total_questions": 14,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-SemanticsofProgrammingLanguages.html",
+    "_paper_note": "Semantics of Programming Languages appears in Paper 6, Q9 (2024 onwards).",
+    "topic_frequencies": {
+      "sem-types": 2,
+      "sem-induction": 2,
+      "sem-subtyping": 1,
+      "sem-concurrency": 1,
+      "sem-equivalence": 1,
+      "sem-data": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 6,
+        "question": 9,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q9.pdf",
+        "topics": [
+          "sem-subtyping",
+          "sem-types",
+          "sem-concurrency",
+          "sem-induction"
+        ],
+        "parts": [
+          {
+            "part": "a",
+            "marks": 5,
+            "topics": [
+              "sem-subtyping",
+              "sem-types"
+            ],
+            "text": "Types InputChannel(\u03c4), OutputChannel(\u03c4), IOChannel(\u03c4) with read/write APIs. Define a suitable subtyping relation over the channel types."
+          },
+          {
+            "part": "b",
+            "marks": 2,
+            "topics": [
+              "sem-concurrency",
+              "sem-equivalence"
+            ],
+            "text": "Two concurrent L1 programs: r :=!r+1; r :=!r+1 vs r :=!r+2. Are they semantically equivalent in a concurrent setting? Argue informally or give a counterexample."
+          },
+          {
+            "part": "c",
+            "marks": 3,
+            "topics": [
+              "sem-types",
+              "sem-data"
+            ],
+            "text": "withFile : (File \u2192 unit) \u2192 unit creates a file, passes it to a callback, closes it after the callback returns. Can a File object outlive the callback and leak into the environment? Argue safe or give a counterexample."
+          },
+          {
+            "part": "d(i)",
+            "marks": 3,
+            "topics": [
+              "sem-induction"
+            ],
+            "text": "The prefix relation xs \u2291 ys is defined by: [] \u2291 ys and x::xs \u2291 x::ys iff xs \u2291 ys. Prove the prefix relation is reflexive."
+          },
+          {
+            "part": "d(ii)",
+            "marks": 7,
+            "topics": [
+              "sem-induction"
+            ],
+            "text": "Prove the prefix relation is transitive. Inversion properties may be used without proof if stated."
+          }
+        ]
+      }
+    ]
+  },
+  "computer-networking": {
+    "total_questions": 6,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ComputerNetworking.html",
+    "topic_frequencies": {
+      "cn-transport": 12,
+      "cn-link": 12,
+      "cn-routing": 2,
+      "cn-ip": 2,
+      "cn-wireless": 2,
+      "cn-application": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/past-papers/y2023p5q1.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "Recall the simplified TCP throughput equation: TCP throughput = 1.22\u00b7MSS / (RTT\u00b7\u221aL). Provide a derivation of this equation utilising a figure. Include a description of each term of this equation and example values (including units)."
+          },
+          {
+            "label": "b",
+            "marks": 3,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "What does the simplified TCP throughput equation (TCP throughput = 1.22\u00b7MSS / RTT\u00b7\u221aL) imply for networks of 10 Gbit/s throughput?"
+          },
+          {
+            "label": "c",
+            "marks": 3,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "What important TCP congestion behaviour does the simplified TCP throughput equation not capture?"
+          },
+          {
+            "label": "di",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "CUBIC is commonly used as an alternative to classic AIMD TCP congestion control. With the aid of a diagram showing window size over time, compare how CUBIC differs from classic AIMD TCP congestion control."
+          },
+          {
+            "label": "dii",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "With reference to the diagram used in part (d)(i), discuss how the CUBIC approach improves performance for a flow on a link with very large bandwidth delay products."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/past-papers/y2023p5q2.pdf",
+        "topics": [
+          "cn-link",
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 3,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "ISP ShinyNet connects customers to the Internet with a symmetric 40 Mbit/s link. The ISP gateway router/modem has a single buffer shared by all senders with a capacity of 1000 packets (all equal length, non-bursty arrivals). A popular application uses three UDP flows sharing the link at rates of 10 Mbit/s, 20 Mbit/s and 30 Mbit/s respectively. What is the data rate successfully traversing the buffer and the fraction of packets for each flow dropped by the buffer?"
+          },
+          {
+            "label": "b",
+            "marks": 3,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "ShinyNet upgrades to employ one queue per flow (333 packets per flow), scheduled using simple per-flow fair queueing with equal weight. What is the packet loss rate for each flow when using the upgraded gateway?"
+          },
+          {
+            "label": "c",
+            "marks": 3,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "With per-flow fair queueing (equal weights, 333 packets per flow), approximately how many packets does each flow have in its queue?"
+          },
+          {
+            "label": "d",
+            "marks": 3,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "ShinyNet now uses weighted-fair queueing with weights 0.2, 0.6, and 0.2 assigned to the three flows (10 Mbit/s, 20 Mbit/s, 30 Mbit/s) respectively. What is the packet loss rate for each flow?"
+          },
+          {
+            "label": "e",
+            "marks": 3,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "With weighted fair queueing (weights 0.2, 0.6, 0.2), approximately how many packets does each flow have in its queue?"
+          },
+          {
+            "label": "f",
+            "marks": 5,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "Throughout this question we have assumed packets are of equal length; this is not a valid assumption for the vast majority of Internet traffic. Presuming that over the long term we wish for the queue discipline to retain the desired weighted-fairness properties, discuss the issues variable length packets raise, and propose an approach to maintain the desired weighted-fairness outcome."
+          }
+        ]
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/past-papers/y2023p5q3.pdf",
+        "topics": [
+          "cn-routing",
+          "cn-link",
+          "cn-ip"
+        ],
+        "parts": [
+          {
+            "label": "ai",
+            "marks": 6,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "Ethernet switches use a spanning tree. Explain briefly what the aims of the spanning tree protocol are, and how it works to achieve these aims."
+          },
+          {
+            "label": "aii",
+            "marks": 2,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "Do the switches learn the entire network topology? Explain your answer."
+          },
+          {
+            "label": "aiii",
+            "marks": 2,
+            "topics": [
+              "cn-link",
+              "cn-routing"
+            ],
+            "text": "Routers using link-state protocols communicate over the shortest path. Does each pair of switches communicate over the shortest path? Explain your answer."
+          },
+          {
+            "label": "aiv",
+            "marks": 6,
+            "topics": [
+              "cn-routing"
+            ],
+            "text": "Routers may use a link-state protocol or a distance vector protocol. Compare the message-size complexity, computational complexity, and the robustness of these two approaches."
+          },
+          {
+            "label": "b",
+            "marks": 4,
+            "topics": [
+              "cn-ip"
+            ],
+            "text": "A student's computer can talk with the printer in their room and see your computer, but cannot connect to the Internet, Google, or send email. You suspect their computer is using automatically-allocated link-local addresses for both IPv4 and IPv6. Speculate what has gone wrong: What address did the machine use? Why is the computer using link-local addresses? Why are some services working but not others?"
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/past-papers/y2024p5q1.pdf",
+        "topics": [
+          "cn-link",
+          "cn-ip",
+          "cn-transport",
+          "cn-application",
+          "cn-wireless"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 4,
+            "topics": [
+              "cn-wireless"
+            ],
+            "text": "Consider the communications stack: HTTP v1.2 / TCP / IPv4 / IEEE 802.11 (WiFi) / 2.4 GHz wireless band. Each layer can provide multiplexing support to the layer above, mapping a single channel into multiple independent communications channels. Discuss how multiplexing is put into practice at a 2.4 GHz physical layer, including an example of how relevant data is identified and mapped to/from the layer above."
+          },
+          {
+            "label": "b",
+            "marks": 4,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "From the communications stack (HTTP v1.2 / TCP / IPv4 / IEEE 802.11 / 2.4 GHz), discuss how multiplexing is put into practice at a data-link layer (IEEE 802.11), including an example of how relevant data is identified and mapped to/from the layer above."
+          },
+          {
+            "label": "c",
+            "marks": 4,
+            "topics": [
+              "cn-ip"
+            ],
+            "text": "From the communications stack (HTTP v1.2 / TCP / IPv4 / IEEE 802.11 / 2.4 GHz), discuss how multiplexing is put into practice at an IPv4 network layer, including an example of how relevant data is identified and mapped to/from the layer above."
+          },
+          {
+            "label": "d",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "From the communications stack (HTTP v1.2 / TCP / IPv4 / IEEE 802.11 / 2.4 GHz), discuss how multiplexing is put into practice at a TCP transport layer, including an example of how relevant data is identified and mapped to/from the layer above."
+          },
+          {
+            "label": "e",
+            "marks": 4,
+            "topics": [
+              "cn-application"
+            ],
+            "text": "From the communications stack (HTTP v1.2 / TCP / IPv4 / IEEE 802.11 / 2.4 GHz), discuss how multiplexing is put into practice at a web server using HTTP v1.2, including an example of how relevant data is identified and mapped to/from the layer above."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/past-papers/y2024p5q2.pdf",
+        "topics": [
+          "cn-link",
+          "cn-wireless"
+        ],
+        "parts": [
+          {
+            "label": "ai",
+            "marks": 6,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "Physical line coding discusses the design of systems that transform digital communications into an analog channel. Compare and contrast the two physical line coding systems: a pure scrambling system, and a pure block codec."
+          },
+          {
+            "label": "aii",
+            "marks": 4,
+            "topics": [
+              "cn-link"
+            ],
+            "text": "For each of scrambler and block code, outline the disadvantages in their sole use. Then indicate how a hybrid schema can solve such drawbacks."
+          },
+          {
+            "label": "b",
+            "marks": 10,
+            "topics": [
+              "cn-wireless"
+            ],
+            "text": "Wireless networking faces several challenges due to the physics of radio communications. Explain, with the use of illustration, two distinct collision-detection issues unique to wireless networks, and then describe a protocol-centered approach that will overcome each issue."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/past-papers/y2024p5q3.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "Define the terms latency and capacity as applied to communication channels."
+          },
+          {
+            "label": "b",
+            "marks": 1,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "Is there a strict relation between latency and capacity of a communication channel?"
+          },
+          {
+            "label": "ci",
+            "marks": 8,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "Imagine a packet-based network channel, with fixed bandwidth and fixed latency, providing service to a transport protocol. Describe a basic system that provides reliable transmission of packet data. Include a description of the essential features of your approach."
+          },
+          {
+            "label": "cii",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "The network channel will impact the effective throughput of your reliable transport protocol. Outline an example of why this occurs."
+          },
+          {
+            "label": "ciii",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "Describe a straightforward extension to your protocol that would improve the performance of your transport protocol without changing the channel provided by the underlying network."
+          },
+          {
+            "label": "civ",
+            "marks": 3,
+            "topics": [
+              "cn-transport"
+            ],
+            "text": "In what circumstances might the protocol improvements (e.g. pipelining/windowing) have only limited benefit for throughput?"
+          }
+        ]
+      }
+    ]
+  },
+  "further-graphics": {
+    "total_questions": 2,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-FurtherGraphics.html",
+    "topic_frequencies": {
+      "fg-geometry": 8,
+      "fg-rendering": 6,
+      "fg-animation": 4,
+      "fg-raytracing": 4,
+      "fg-inverse": 2
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q7.pdf",
+        "topics": [
+          "fg-animation",
+          "fg-geometry"
+        ],
+        "parts": [
+          {
+            "label": "ai",
+            "marks": 3,
+            "topics": [
+              "fg-animation",
+              "fg-geometry"
+            ],
+            "text": "A rod has endpoints x_0 and x_1 with initial orientations (rotations from a reference frame) q_0 and q_1 respectively. Consider shortest-path SO(3) interpolation of rotation along the rod. Write the quaternion for rotation \u03b8 \u2264 \u03c0 at x_1."
+          },
+          {
+            "label": "aii",
+            "marks": 3,
+            "topics": [
+              "fg-animation",
+              "fg-geometry"
+            ],
+            "text": "For the rod with quaternions q_0 at x_0 and q_1 at x_1, write the quaternion at any point on the rod/time in [0,1] using shortest-path SO(3) interpolation over both time and space."
+          },
+          {
+            "label": "aiii",
+            "marks": 3,
+            "topics": [
+              "fg-animation",
+              "fg-geometry"
+            ],
+            "text": "For the same rod, write the quaternion at any point using linear quaternion blending along the rod (spatial interpolation) combined with shortest-path SO(3) interpolation over time."
+          },
+          {
+            "label": "aiv",
+            "marks": 3,
+            "topics": [
+              "fg-animation",
+              "fg-geometry"
+            ],
+            "text": "For the linear quaternion blending approach from part (a)(iii), write an expression for the norm of the resulting quaternion."
+          },
+          {
+            "label": "bi",
+            "marks": 1,
+            "topics": [
+              "fg-geometry"
+            ],
+            "text": "A triangle has vertices v_0, v_1, v_2 in 3D. What condition must the vertices satisfy to define a valid plane?"
+          },
+          {
+            "label": "bii",
+            "marks": 2,
+            "topics": [
+              "fg-geometry"
+            ],
+            "text": "Write the parametric form p(u,v) for the plane defined by the triangle with vertices v_0, v_1, v_2."
+          },
+          {
+            "label": "biii",
+            "marks": 1,
+            "topics": [
+              "fg-geometry"
+            ],
+            "text": "Write an expression for the plane normal defined by the triangle."
+          },
+          {
+            "label": "biv",
+            "marks": 4,
+            "topics": [
+              "fg-geometry"
+            ],
+            "text": "Describe an algorithm to find the closest point on a triangle (with vertices v_0, v_1, v_2) to an arbitrary point x in 3D space."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q8.pdf",
+        "topics": [
+          "fg-raytracing",
+          "fg-rendering",
+          "fg-inverse"
+        ],
+        "parts": [
+          {
+            "label": "ai",
+            "marks": 3,
+            "topics": [
+              "fg-raytracing",
+              "fg-rendering"
+            ],
+            "text": "Consider ray tracing a scene where only the camera moves (scene geometry and lights are static), using local illumination with a single BRDF. Is pre-computation of any quantities possible, and if so, how would you use it?"
+          },
+          {
+            "label": "aii",
+            "marks": 3,
+            "topics": [
+              "fg-raytracing",
+              "fg-rendering"
+            ],
+            "text": "Consider ray tracing a scene where only the camera moves, using global illumination with purely diffuse reflection. Is pre-computation of any quantities possible, and if so, how would you use it?"
+          },
+          {
+            "label": "bi",
+            "marks": 5,
+            "topics": [
+              "fg-raytracing",
+              "fg-rendering"
+            ],
+            "text": "In path tracing with importance sampling using exact incoming radiance: write the approximation for outgoing radiance with N samples, give the light path length, and explain why the path length is finite."
+          },
+          {
+            "label": "bii",
+            "marks": 4,
+            "topics": [
+              "fg-raytracing",
+              "fg-rendering"
+            ],
+            "text": "For a scene with a single point light, paths of length 3, and no shadow rays: describe the importance-sampling strategy at each intersection point."
+          },
+          {
+            "label": "ci",
+            "marks": 3,
+            "topics": [
+              "fg-rendering",
+              "fg-inverse"
+            ],
+            "text": "The rendering equation is reduced to L_o(x, \u03c9_o) = c \u222b V(x,\u03c9_i) cos\u03b8_i d\u03c9_i. What scene properties allow this reduction from the full rendering equation?"
+          },
+          {
+            "label": "cii",
+            "marks": 2,
+            "topics": [
+              "fg-rendering",
+              "fg-inverse"
+            ],
+            "text": "For a scene with a single object and no inter-reflections, and the reduced rendering equation L_o(x, \u03c9_o) = c \u222b V(x,\u03c9_i) cos\u03b8_i d\u03c9_i, write the gradient of L_o with respect to the scene point x."
+          }
+        ]
+      }
+    ]
+  },
+  "further-hci": {
+    "total_questions": 2,
+    "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-FurtherHuman-ComputerInteraction.html",
+    "topic_frequencies": {
+      "fhci-efficient": 4,
+      "fhci-theory": 3,
+      "fhci-evaluation": 3,
+      "fhci-visual": 2,
+      "fhci-goal": 1,
+      "fhci-complex": 1,
+      "fhci-meaningful": 1
+    },
+    "tagged_questions": [
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 9,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q9.pdf",
+        "topics": [
+          "fhci-efficient",
+          "fhci-theory",
+          "fhci-goal"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 2,
+            "topics": [
+              "fhci-efficient"
+            ],
+            "text": "Provide quantitative estimates for: (i) the information content of English text, and (ii) the theoretical rate of information entry from a keyboard."
+          },
+          {
+            "label": "b",
+            "marks": 2,
+            "topics": [
+              "fhci-efficient"
+            ],
+            "text": "How could you use the relationship between information content of text and keyboard entry rate in a design to allow users to enter text faster or with less effort?"
+          },
+          {
+            "label": "c",
+            "marks": 8,
+            "topics": [
+              "fhci-theory",
+              "fhci-goal"
+            ],
+            "text": "A probabilistic command-line interpreter uses Bayes' theorem to infer the user's intended command. Explain in this context what each of the following represents: Posterior probability, Likelihood, Prior probability, and Evidence."
+          },
+          {
+            "label": "d",
+            "marks": 4,
+            "topics": [
+              "fhci-theory"
+            ],
+            "text": "Identify one well-known cognitive bias or heuristic applied by users of a command-line interface for making rapid decisions. Explain its effectiveness using Bayes' theorem or information theory."
+          },
+          {
+            "label": "e",
+            "marks": 4,
+            "topics": [
+              "fhci-theory"
+            ],
+            "text": "Apply the attention investment model of abstraction to explain the trade-off between abstract and concrete strategies in using a probabilistic command-line interpreter."
+          }
+        ]
+      },
+      {
+        "year": 2024,
+        "paper": 7,
+        "question": 10,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p7q10.pdf",
+        "topics": [
+          "fhci-visual",
+          "fhci-evaluation",
+          "fhci-efficient",
+          "fhci-meaningful"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "marks": 3,
+            "topics": [
+              "fhci-visual"
+            ],
+            "text": "A radio station wants an online tool using a generative AI LLM to help produce scripts \u2014 as an alternative to a conversational interface like ChatGPT. Sketch a user interface as a front end to the LLM."
+          },
+          {
+            "label": "b",
+            "marks": 4,
+            "topics": [
+              "fhci-visual"
+            ],
+            "text": "Label two specific parts of your UI sketch and explain how the graphical/visual properties you chose correspond to the intended function of those elements."
+          },
+          {
+            "label": "c",
+            "marks": 1,
+            "topics": [
+              "fhci-evaluation",
+              "fhci-efficient"
+            ],
+            "text": "Name an analytic method you could use to predict whether your designed UI would be more time-efficient than using ChatGPT directly."
+          },
+          {
+            "label": "d",
+            "marks": 4,
+            "topics": [
+              "fhci-efficient",
+              "fhci-evaluation"
+            ],
+            "text": "Perform calculations comparing (i) ChatGPT and (ii) your UI design for typical radio script production usage. Your answers should be correct within an order of magnitude."
+          },
+          {
+            "label": "e",
+            "marks": 4,
+            "topics": [
+              "fhci-evaluation"
+            ],
+            "text": "Describe an empirical approach to evaluate whether your calculated time-efficiency estimates are justified in practice."
+          },
+          {
+            "label": "f",
+            "marks": 4,
+            "topics": [
+              "fhci-complex",
+              "fhci-meaningful"
+            ],
+            "text": "Identify up to four further considerations beyond time-efficiency that are relevant to this design, with reference to specific HCI literature or frameworks."
+          }
+        ]
+      }
+    ]
+  },
+  "unix-tools": {
+    "total_questions": 0,
+    "past_paper_url": null,
+    "topic_frequencies": {},
+    "tagged_questions": [],
+    "_note": "Unix Tools is assessed by coursework only \u2014 no past paper exam questions exist for this course."
+  }
+}

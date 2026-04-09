@@ -1,0 +1,36 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ---- Virtual environment ----
+venv/
+env/
+.env/
+.venv/
+
+# ---- Environment variables (API keys!) ----
+.env
+.env.*
+*.env
+
+# ---- Personal revision data (private!) ----
+data/knowledge.json
+data/history.json
+
+# ---- macOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ---- Editor ----
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- Misc ----
+*.log
+pastpapers_data.json
