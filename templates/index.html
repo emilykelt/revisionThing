@@ -60,10 +60,31 @@
                     <h2 class="warmup-title">Warm Up</h2>
                     <p class="warmup-desc">Quick multiple-choice questions to test key concepts before a full practice session.</p>
                     <div class="warmup-field">
+                        <label class="warmup-field-label">Mode</label>
+                        <div class="warmup-mode-row">
+                            <button class="warmup-mode-btn active" data-mode="general" onclick="app.setWarmupMode('general')">General</button>
+                            <button class="warmup-mode-btn" data-mode="pastpaper" onclick="app.setWarmupMode('pastpaper')">Past Paper</button>
+                        </div>
+                    </div>
+                    <div id="warmup-general-opts" class="warmup-field">
                         <label class="warmup-field-label">Course</label>
                         <select id="warmup-course-select" class="warmup-course-select">
                             <option value="">All courses</option>
                         </select>
+                    </div>
+                    <div id="warmup-pp-opts" style="display:none">
+                        <div class="warmup-field">
+                            <label class="warmup-field-label">Course</label>
+                            <select id="warmup-pp-course-select" class="warmup-course-select" onchange="app.onWarmupPpCourseChange()">
+                                <option value="">Select a course…</option>
+                            </select>
+                        </div>
+                        <div class="warmup-field" id="warmup-pp-q-field" style="display:none">
+                            <label class="warmup-field-label">Question</label>
+                            <select id="warmup-pp-select" class="warmup-course-select">
+                                <option value="">Select a question…</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="warmup-field">
                         <label class="warmup-field-label">Questions</label>
@@ -82,12 +103,14 @@
                 <div class="warmup-progress-header">
                     <button class="back-btn" onclick="app.showWarmup()" style="margin-bottom:0; flex-shrink:0;">&larr; Exit</button>
                     <div class="warmup-progress-wrap">
+                        <div id="warmup-pp-label" class="warmup-pp-label" style="display:none"></div>
                         <div class="warmup-progress-track">
                             <div class="warmup-progress-fill" id="warmup-progress-fill" style="width:0%"></div>
                         </div>
                     </div>
                     <span class="warmup-q-counter" id="warmup-q-counter">1 / 8</span>
                 </div>
+                <div id="warmup-heatmap-quiz" class="warmup-heatmap-wrap"></div>
                 <div id="warmup-card"></div>
             </div>
 
@@ -97,6 +120,7 @@
                     <div class="warmup-score-display" id="warmup-score-display">0/8</div>
                     <div class="warmup-score-pct" id="warmup-score-pct">0%</div>
                     <div class="warmup-score-emoji" id="warmup-score-emoji">&#x1F4DA;</div>
+                    <div id="warmup-heatmap-results" class="warmup-heatmap-wrap warmup-heatmap-wrap--results"></div>
                     <div id="warmup-review-section"></div>
                     <div class="warmup-results-actions">
                         <button class="btn btn-primary" onclick="app.startWarmup()">Try Again</button>

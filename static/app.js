@@ -33,6 +33,8 @@ const app = {
     warmupAnswered: [],
     warmupCount: 8,
     warmupCourseId: null,
+    warmupMode: 'general',
+    warmupPastPapers: null,
 
     // ---- Initialization ----
     async init() {
@@ -932,11 +934,76 @@ const app = {
     },
 
     // ---- Warm Up / MCQ ----
-    showWarmup() {
+    async showWarmup() {
         document.getElementById('warmup-setup').style.display = 'block';
         document.getElementById('warmup-quiz').style.display = 'none';
         document.getElementById('warmup-results').style.display = 'none';
         this.showView('warmup');
+        if (!this.warmupPastPapers) await this.loadWarmupPastPapers();
+    },
+
+    async loadWarmupPastPapers() {
+        try {
+            const res = await fetch('/api/pastpapers/all');
+            const data = await res.json();
+            this.warmupPastPapers = data.courses || [];
+        } catch (_) {
+            this.warmupPastPapers = [];
+        }
+        this.populateWarmupPpSelect();
+    },
+
+    populateWarmupPpSelect() {
+        const courseSelect = document.getElementById('warmup-pp-course-select');
+        if (!courseSelect) return;
+        courseSelect.innerHTML = '<option value="">Select a course…</option>';
+        for (const course of (this.warmupPastPapers || [])) {
+            const opt = document.createElement('option');
+            opt.value = course.course_id;
+            opt.textContent = course.course_name;
+            courseSelect.appendChild(opt);
+        }
+        document.getElementById('warmup-pp-q-field').style.display = 'none';
+    },
+
+    onWarmupPpCourseChange() {
+        const courseId = document.getElementById('warmup-pp-course-select').value;
+        const qField = document.getElementById('warmup-pp-q-field');
+        const qSelect = document.getElementById('warmup-pp-select');
+        if (!courseId) { qField.style.display = 'none'; return; }
+
+        const course = (this.warmupPastPapers || []).find(c => c.course_id === courseId);
+        if (!course) { qField.style.display = 'none'; return; }
+
+        qSelect.innerHTML = '<option value="">Select a question…</option>';
+        for (const q of course.questions) {
+            const opt = document.createElement('option');
+            opt.value = JSON.stringify({
+                course_id: course.course_id,
+                year: q.year,
+                paper: q.paper,
+                question_num: q.question,
+                ref: q.ref,
+            });
+            opt.textContent = q.ref;
+            qSelect.appendChild(opt);
+        }
+        qField.style.display = '';
+    },
+
+    setWarmupMode(mode) {
+        this.warmupMode = mode;
+        document.querySelectorAll('.warmup-mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
+        document.getElementById('warmup-general-opts').style.display = mode === 'general' ? '' : 'none';
+        document.getElementById('warmup-pp-opts').style.display = mode === 'pastpaper' ? '' : 'none';
+        if (mode === 'pastpaper') {
+            const cs = document.getElementById('warmup-pp-course-select');
+            if (cs) cs.value = '';
+            const qf = document.getElementById('warmup-pp-q-field');
+            if (qf) qf.style.display = 'none';
+        }
     },
 
     selectWarmupCount(n) {
@@ -947,23 +1014,45 @@ const app = {
     },
 
     async startWarmup() {
-        const courseSelect = document.getElementById('warmup-course-select');
-        this.warmupCourseId = courseSelect ? courseSelect.value : '';
         this.warmupIndex = 0;
         this.warmupCorrect = 0;
         this.warmupAnswered = [];
+
+        let body = { count: this.warmupCount };
+        let titleNote = '';
+
+        if (this.warmupMode === 'pastpaper') {
+            const ppSelect = document.getElementById('warmup-pp-select');
+            const val = ppSelect ? ppSelect.value : '';
+            if (!val) { alert('Please select a past paper question.'); return; }
+            const pp = JSON.parse(val);
+            body.past_paper = pp;
+            titleNote = pp.ref;
+        } else {
+            const courseSelect = document.getElementById('warmup-course-select');
+            this.warmupCourseId = courseSelect ? courseSelect.value : '';
+            if (this.warmupCourseId) body.course_id = this.warmupCourseId;
+        }
 
         document.getElementById('warmup-setup').style.display = 'none';
         document.getElementById('warmup-quiz').style.display = 'block';
         document.getElementById('warmup-results').style.display = 'none';
 
+        const ppLabel = document.getElementById('warmup-pp-label');
+        if (ppLabel) {
+            if (titleNote) {
+                ppLabel.textContent = titleNote;
+                ppLabel.style.display = 'block';
+            } else {
+                ppLabel.style.display = 'none';
+            }
+        }
+
         document.getElementById('warmup-card').innerHTML = `
-            <div class="loading" style="margin-top: 3rem;"><span class="spinner"></span>Generating questions…</div>
+            <div class="loading" style="margin-top: 3rem;"><span class="spinner"></span>Generating questions${titleNote ? ' for ' + this.escapeHtml(titleNote) : ''}…</div>
         `;
 
         try {
-            const body = { count: this.warmupCount };
-            if (this.warmupCourseId) body.course_id = this.warmupCourseId;
 
             const res = await fetch('/api/mcq/generate', {
                 method: 'POST',
@@ -980,6 +1069,7 @@ const app = {
             }
 
             this.warmupCount = this.warmupMcqs.length;
+            this.renderWarmupHeatmap('warmup-heatmap-quiz');
             this.renderWarmupQuestion();
         } catch (err) {
             document.getElementById('warmup-card').innerHTML =
@@ -1055,6 +1145,8 @@ const app = {
             topic: q.topic || '',
         });
 
+        this.renderWarmupHeatmap('warmup-heatmap-quiz');
+
         // Show next button
         document.getElementById('mcq-next-wrap').style.display = 'block';
     },
@@ -1068,6 +1160,64 @@ const app = {
         }
     },
 
+    _warmupTopicColor(ratio) {
+        const c = [
+            [0x8B, 0x40, 0x40],
+            [0xB8, 0x86, 0x0B],
+            [0x5A, 0x72, 0x47],
+        ];
+        let r, g, b;
+        if (ratio <= 0.5) {
+            const t = ratio * 2;
+            r = Math.round(c[0][0] + (c[1][0] - c[0][0]) * t);
+            g = Math.round(c[0][1] + (c[1][1] - c[0][1]) * t);
+            b = Math.round(c[0][2] + (c[1][2] - c[0][2]) * t);
+        } else {
+            const t = (ratio - 0.5) * 2;
+            r = Math.round(c[1][0] + (c[2][0] - c[1][0]) * t);
+            g = Math.round(c[1][1] + (c[2][1] - c[1][1]) * t);
+            b = Math.round(c[1][2] + (c[2][2] - c[1][2]) * t);
+        }
+        return `rgb(${r},${g},${b})`;
+    },
+
+    renderWarmupHeatmap(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        // All topics planned for this warm-up (for pre-rendered grey slots)
+        const allTopics = [...new Set(this.warmupMcqs.map(q => q.topic || 'Unknown'))];
+
+        // Tally correct/total per topic from answered questions
+        const stats = {};
+        for (const t of allTopics) stats[t] = { correct: 0, total: 0 };
+        for (const a of this.warmupAnswered) {
+            const t = a.topic || 'Unknown';
+            if (!stats[t]) stats[t] = { correct: 0, total: 0 };
+            stats[t].total++;
+            if (a.isCorrect) stats[t].correct++;
+        }
+
+        const cells = allTopics.map(topic => {
+            const { correct, total } = stats[topic];
+            let bg, opacity;
+            if (total === 0) {
+                bg = 'var(--border)';
+                opacity = 0.35;
+            } else {
+                bg = this._warmupTopicColor(correct / total);
+                opacity = Math.min(1, 0.45 + total * 0.28);
+            }
+            const label = topic.length > 11 ? topic.slice(0, 10) + '…' : topic;
+            const tooltip = total > 0
+                ? `${topic}: ${Math.round(correct / total * 100)}% (${correct}/${total})`
+                : `${topic}: not yet answered`;
+            return `<div class="heatmap-cell" style="background:${bg};opacity:${opacity}" title="${this.escapeHtml(tooltip)}"><span class="heatmap-label">${this.escapeHtml(label)}</span></div>`;
+        }).join('');
+
+        container.innerHTML = `<div class="warmup-heatmap">${cells}</div>`;
+    },
+
     showWarmupResults() {
         const total = this.warmupMcqs.length;
         const correct = this.warmupCorrect;
@@ -1079,6 +1229,7 @@ const app = {
         document.getElementById('warmup-score-display').textContent = `${correct}/${total}`;
         document.getElementById('warmup-score-pct').textContent = `${pct}%`;
         document.getElementById('warmup-score-emoji').textContent = emoji;
+        this.renderWarmupHeatmap('warmup-heatmap-results');
 
         const wrong = this.warmupAnswered.filter(a => !a.isCorrect);
         let reviewHtml = '';

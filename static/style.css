@@ -1140,6 +1140,37 @@ body {
     border-color: var(--accent);
 }
 
+.warmup-mode-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.warmup-mode-btn {
+    flex: 1;
+    padding: 0.55rem;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+}
+
+.warmup-mode-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.warmup-mode-btn.active {
+    border-color: var(--accent);
+    background: rgba(139, 105, 20, 0.08);
+    color: var(--accent);
+    font-weight: 600;
+}
+
 .warmup-count-row {
     display: flex;
     gap: 0.5rem;
@@ -1415,6 +1446,58 @@ body {
     gap: 0.75rem;
     justify-content: center;
     margin-top: 1.5rem;
+}
+
+.warmup-pp-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.01em;
+}
+
+/* ---- Warm-up heatmap ---- */
+.warmup-heatmap-wrap {
+    margin: 0.75rem 0 0.5rem;
+}
+
+.warmup-heatmap-wrap--results {
+    margin: 0 auto 1.5rem;
+    max-width: 480px;
+}
+
+.warmup-heatmap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.warmup-heatmap-wrap--results .warmup-heatmap {
+    justify-content: center;
+}
+
+.heatmap-cell {
+    width: 68px;
+    height: 42px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.35s ease, opacity 0.35s ease;
+    cursor: default;
+    overflow: hidden;
+}
+
+.heatmap-label {
+    font-size: 0.58rem;
+    color: rgba(255, 255, 255, 0.92);
+    text-align: center;
+    line-height: 1.25;
+    padding: 0 5px;
+    font-family: var(--font-serif);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    word-break: break-word;
+    pointer-events: none;
 }
 
 /* ---- Knowledge Graph ---- */

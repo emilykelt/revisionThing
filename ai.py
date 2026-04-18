@@ -260,38 +260,60 @@ def _shuffle_mcq_options(mcq):
     return {**mcq, 'options': new_options, 'correct': new_correct}
 
 
-def generate_mcqs(topic_infos, count=8):
+def generate_mcqs(topic_infos, count=8, past_paper_context=None):
     """
     Generate multiple-choice warm-up questions.
     topic_infos: list of {id, name, subtopics, course_name, course_id, confidence}
+    past_paper_context: optional {ref, parts} to focus questions on a specific past paper question
     Returns list of {question, options: {A,B,C,D}, correct, explanation, topic}
     """
     if not topic_infos:
         return []
 
-    # --- Weighted random topic assignment ---
-    # Each question slot gets a topic sampled independently with probability
-    # proportional to (1 - confidence), so weaker topics come up more often
-    # but ANY topic can appear. Using random.choices (with replacement) means
-    # each warm-up draw is different even when the topic pool is small.
     weights = [max(0.05, 1.0 - t.get('confidence', 0.0)) for t in topic_infos]
     assigned = random.choices(topic_infos, weights=weights, k=count)
 
-    # Build explicit per-question assignments for the prompt
     assignments = '\n'.join(
         f'Q{i + 1}: {t["course_name"]} — {t["name"]}'
         + (f' (e.g. {", ".join(t["subtopics"][:3])})' if t.get('subtopics') else '')
         for i, t in enumerate(assigned)
     )
 
+    if past_paper_context:
+        parts_text = '\n'.join(
+            f'  ({p.get("part", "")}) [{p.get("marks", 0)} marks] {p.get("text", "")}'
+            for p in past_paper_context['parts']
+        )
+        pp_preamble = (
+            f'A student is about to attempt this Cambridge Part IB past paper question '
+            f'({past_paper_context["ref"]}):\n\n'
+            f'{parts_text}\n\n'
+            f'Generate exactly {count} multiple-choice questions that test the prerequisite '
+            f'knowledge and concepts needed to answer the above question well.\n'
+        )
+        focus_rule = (
+            f'- Each question should target a specific concept, definition, or technique '
+            f'that would directly help a student tackle the past paper question above\n'
+        )
+    else:
+        pp_preamble = (
+            f'Cambridge Part IB CS examiner. Generate exactly {count} multiple-choice warm-up questions.\n'
+        )
+        focus_rule = (
+            f'- Test a fact, definition, concept, or short reasoning from the assigned topic\n'
+        )
+
     prompt = (
-        f'Cambridge Part IB CS examiner. Generate exactly {count} multiple-choice warm-up questions.\n'
+        f'{pp_preamble}'
         f'Each question must cover the SPECIFIC topic assigned to it:\n\n'
         f'{assignments}\n\n'
         f'Rules:\n'
-        f'- Test a fact, definition, concept, or short reasoning from the assigned topic\n'
+        f'{focus_rule}'
         f'- Keep each question concise (1-2 sentences)\n'
         f'- 4 options A-D, exactly one correct; wrong options must be plausible distractors\n'
+        f'- CRITICAL: all four options must be similar in length and grammatical structure — '
+        f'the correct answer must NOT be longer, more detailed, or more specific than the wrong options. '
+        f'A student should not be able to guess by looking at option length or complexity.\n'
         f'- One-sentence explanation of why the correct answer is right\n'
         f'- "topic" field: copy the topic name exactly from the assignment above\n'
         f'- Return questions in the same order as the assignments (Q1 first)\n\n'

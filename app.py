@@ -282,35 +282,86 @@ def api_generate_mcqs():
     data = request.get_json() or {}
     course_id = data.get('course_id')
     count = min(max(int(data.get('count', 8)), 3), 15)
+    past_paper = data.get('past_paper')  # {course_id, year, paper, question_num}
 
     courses = load_courses()
     knowledge = load_knowledge()
 
-    topic_infos = []
-    for term_id, term in courses['terms'].items():
-        for cid, course in term['courses'].items():
-            if course_id and cid != course_id:
-                continue
-            for topic in course['topics']:
-                k = knowledge.get(topic['id'], {})
-                conf = k.get('confidence', DEFAULT_CONFIDENCE)
-                topic_infos.append({
-                    'id': topic['id'],
-                    'name': topic['name'],
-                    'subtopics': topic.get('subtopics', []),
-                    'course_name': course['name'],
-                    'course_id': cid,
-                    'confidence': conf,
-                })
+    past_paper_context = None
+
+    if past_paper:
+        pp_course_id = past_paper.get('course_id')
+        pp_year = past_paper.get('year')
+        pp_paper = past_paper.get('paper')
+        pp_qnum = past_paper.get('question_num')
+
+        # Load the specific past paper question
+        pp_file = os.path.join(DATA_DIR, 'pastpapers.json')
+        try:
+            with open(pp_file) as f:
+                pp_data = json.load(f)
+        except Exception:
+            pp_data = {}
+
+        pp_course_data = pp_data.get(pp_course_id, {})
+        pp_question = None
+        for q in pp_course_data.get('tagged_questions', []):
+            if q['year'] == pp_year and q['paper'] == pp_paper and q['question'] == pp_qnum:
+                pp_question = q
+                break
+
+        if pp_question:
+            topic_ids = set(pp_question.get('topics', []))
+            past_paper_context = {
+                'ref': f"{pp_year} Paper {pp_paper} Q{pp_qnum}",
+                'parts': pp_question.get('parts', []),
+            }
+            # Filter topic_infos to only the topics tagged in this question
+            course_id = pp_course_id  # restrict to this course
+            topic_infos = []
+            for term_id, term in courses['terms'].items():
+                for cid, course in term['courses'].items():
+                    if cid != pp_course_id:
+                        continue
+                    for topic in course['topics']:
+                        if topic['id'] not in topic_ids:
+                            continue
+                        k = knowledge.get(topic['id'], {})
+                        conf = k.get('confidence', DEFAULT_CONFIDENCE)
+                        topic_infos.append({
+                            'id': topic['id'],
+                            'name': topic['name'],
+                            'subtopics': topic.get('subtopics', []),
+                            'course_name': course['name'],
+                            'course_id': cid,
+                            'confidence': conf,
+                        })
+        else:
+            topic_infos = []
+    else:
+        topic_infos = []
+        for term_id, term in courses['terms'].items():
+            for cid, course in term['courses'].items():
+                if course_id and cid != course_id:
+                    continue
+                for topic in course['topics']:
+                    k = knowledge.get(topic['id'], {})
+                    conf = k.get('confidence', DEFAULT_CONFIDENCE)
+                    topic_infos.append({
+                        'id': topic['id'],
+                        'name': topic['name'],
+                        'subtopics': topic.get('subtopics', []),
+                        'course_name': course['name'],
+                        'course_id': cid,
+                        'confidence': conf,
+                    })
 
     if not topic_infos:
         return jsonify({'mcqs': [], 'total': 0})
 
-    # Pass ALL topics so the AI can spread questions across the full course.
-    # Sort weakest first as a bias hint, but do not cap the list.
     topic_infos.sort(key=lambda t: t['confidence'])
 
-    mcqs = generate_mcqs(topic_infos, count)
+    mcqs = generate_mcqs(topic_infos, count, past_paper_context=past_paper_context)
     return jsonify({'mcqs': mcqs, 'total': len(mcqs)})
 
 
@@ -322,6 +373,51 @@ def api_start_session():
     count = data.get('count', 8)
     topics = select_session_topics(mode, course_id, count)
     return jsonify({'topics': topics})
+
+
+@app.route('/api/pastpapers/all')
+def api_pastpapers_all():
+    pp_file = os.path.join(DATA_DIR, 'pastpapers.json')
+    courses_data = load_courses()
+
+    # Build course_id → name lookup
+    course_names = {}
+    for term_id, term in courses_data['terms'].items():
+        for course_id, course in term['courses'].items():
+            course_names[course_id] = course['name']
+
+    try:
+        with open(pp_file) as f:
+            pp = json.load(f)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    result = []
+    for course_id, data in pp.items():
+        qs = data.get('tagged_questions', [])
+        if not qs:
+            continue
+        questions = []
+        for q in qs:
+            total_marks = sum(p.get('marks', 0) for p in q.get('parts', []))
+            questions.append({
+                'year': q['year'],
+                'paper': q['paper'],
+                'question': q['question'],
+                'ref': f"{q['year']} Paper {q['paper']} Q{q['question']}",
+                'total_marks': total_marks,
+                'topic_ids': q.get('topics', []),
+                'parts': q.get('parts', []),
+                'pdf_url': q.get('pdf_url'),
+            })
+        questions.sort(key=lambda q: (-q['year'], q['paper'], q['question']))
+        result.append({
+            'course_id': course_id,
+            'course_name': course_names.get(course_id, course_id),
+            'questions': questions,
+        })
+    result.sort(key=lambda c: c['course_name'])
+    return jsonify({'courses': result})
 
 
 @app.route('/api/pastpapers/<course_id>')
