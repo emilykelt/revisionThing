@@ -32,9 +32,9 @@ const app = {
     warmupCorrect: 0,
     warmupAnswered: [],
     warmupCount: 8,
-    warmupCourseId: null,
     warmupMode: 'general',
     warmupPastPapers: null,
+    warmupSelectedTopics: new Set(),
 
     // ---- Initialization ----
     async init() {
@@ -939,7 +939,118 @@ const app = {
         document.getElementById('warmup-quiz').style.display = 'none';
         document.getElementById('warmup-results').style.display = 'none';
         this.showView('warmup');
+        this.renderWarmupTopicPicker();
         if (!this.warmupPastPapers) await this.loadWarmupPastPapers();
+    },
+
+    renderWarmupTopicPicker() {
+        const container = document.getElementById('warmup-topic-picker');
+        if (!container || !this.dashboardData) return;
+
+        const termOrder = ['michaelmas', 'lent', 'easter'];
+        let sectionsHtml = '';
+
+        for (const termId of termOrder) {
+            const term = this.dashboardData.terms[termId];
+            if (!term) continue;
+            for (const [courseId, course] of Object.entries(term.courses)) {
+                const topicIds = course.topics.map(t => t.id);
+                const allSelected = topicIds.length > 0 && topicIds.every(id => this.warmupSelectedTopics.has(id));
+
+                const chipsHtml = course.topics.map(topic => {
+                    const color = this._warmupTopicColor(topic.confidence);
+                    const sel = this.warmupSelectedTopics.has(topic.id);
+                    const pct = Math.round(topic.confidence * 100);
+                    return `<div class="warmup-topic-chip${sel ? ' selected' : ''}"
+                        data-topic-id="${this.escapeHtml(topic.id)}"
+                        onclick="app.toggleWarmupTopic('${this.escapeHtml(topic.id)}')">
+                        <span class="warmup-topic-dot" style="background:${color}"></span>
+                        <span class="warmup-topic-name">${this.escapeHtml(topic.name)}</span>
+                        <span class="warmup-topic-pct" style="color:${color}">${pct}%</span>
+                    </div>`;
+                }).join('');
+
+                sectionsHtml += `
+                    <div class="warmup-topic-section">
+                        <div class="warmup-topic-section-head">
+                            <span>${this.escapeHtml(course.name)}</span>
+                            <button class="warmup-course-select-all ${allSelected ? 'active' : ''}"
+                                onclick="app.toggleCourseTopics('${this.escapeHtml(courseId)}')">
+                                ${allSelected ? 'Deselect all' : 'Select all'}
+                            </button>
+                        </div>
+                        <div class="warmup-topic-chips">${chipsHtml}</div>
+                    </div>`;
+            }
+        }
+
+        const selCount = this.warmupSelectedTopics.size;
+        const selLabel = selCount === 0 ? 'All topics' : `${selCount} topic${selCount > 1 ? 's' : ''} selected`;
+
+        container.innerHTML = `
+            <div class="warmup-topic-picker-wrap">
+                <div class="warmup-picker-header">
+                    <span class="warmup-picker-count">${this.escapeHtml(selLabel)}</span>
+                    <div class="warmup-picker-actions">
+                        <button class="warmup-picker-btn" onclick="app.selectWeakTopics()">Weakest</button>
+                        <button class="warmup-picker-btn" onclick="app.clearTopicSelection()">Clear all</button>
+                    </div>
+                </div>
+                <div class="warmup-topic-list">${sectionsHtml}</div>
+            </div>`;
+    },
+
+    toggleWarmupTopic(topicId) {
+        if (this.warmupSelectedTopics.has(topicId)) {
+            this.warmupSelectedTopics.delete(topicId);
+        } else {
+            this.warmupSelectedTopics.add(topicId);
+        }
+        // Update just the chip and counter without full re-render
+        const chip = document.querySelector(`.warmup-topic-chip[data-topic-id="${topicId}"]`);
+        if (chip) chip.classList.toggle('selected', this.warmupSelectedTopics.has(topicId));
+        const counter = document.querySelector('.warmup-picker-count');
+        if (counter) {
+            const n = this.warmupSelectedTopics.size;
+            counter.textContent = n === 0 ? 'All topics' : `${n} topic${n > 1 ? 's' : ''} selected`;
+        }
+    },
+
+    selectWeakTopics() {
+        this.warmupSelectedTopics.clear();
+        for (const [termId, term] of Object.entries(this.dashboardData?.terms || {})) {
+            for (const course of Object.values(term.courses)) {
+                for (const topic of course.topics) {
+                    if (topic.confidence < 0.35) this.warmupSelectedTopics.add(topic.id);
+                }
+            }
+        }
+        this.renderWarmupTopicPicker();
+    },
+
+    selectAllTopics() {
+        this.warmupSelectedTopics.clear();
+        this.renderWarmupTopicPicker();
+    },
+
+    clearTopicSelection() {
+        this.warmupSelectedTopics.clear();
+        this.renderWarmupTopicPicker();
+    },
+
+    toggleCourseTopics(courseId) {
+        let topicIds = [];
+        for (const term of Object.values(this.dashboardData?.terms || {})) {
+            if (term.courses[courseId]) {
+                topicIds = term.courses[courseId].topics.map(t => t.id);
+                break;
+            }
+        }
+        const allSelected = topicIds.length > 0 && topicIds.every(id => this.warmupSelectedTopics.has(id));
+        topicIds.forEach(id => allSelected
+            ? this.warmupSelectedTopics.delete(id)
+            : this.warmupSelectedTopics.add(id));
+        this.renderWarmupTopicPicker();
     },
 
     async loadWarmupPastPapers() {
@@ -1029,9 +1140,9 @@ const app = {
             body.past_paper = pp;
             titleNote = pp.ref;
         } else {
-            const courseSelect = document.getElementById('warmup-course-select');
-            this.warmupCourseId = courseSelect ? courseSelect.value : '';
-            if (this.warmupCourseId) body.course_id = this.warmupCourseId;
+            if (this.warmupSelectedTopics.size > 0) {
+                body.topic_ids = [...this.warmupSelectedTopics];
+            }
         }
 
         document.getElementById('warmup-setup').style.display = 'none';
@@ -1069,7 +1180,6 @@ const app = {
             }
 
             this.warmupCount = this.warmupMcqs.length;
-            this.renderWarmupHeatmap('warmup-heatmap-quiz');
             this.renderWarmupQuestion();
         } catch (err) {
             document.getElementById('warmup-card').innerHTML =
@@ -1145,8 +1255,6 @@ const app = {
             topic: q.topic || '',
         });
 
-        this.renderWarmupHeatmap('warmup-heatmap-quiz');
-
         // Show next button
         document.getElementById('mcq-next-wrap').style.display = 'block';
     },
@@ -1185,10 +1293,8 @@ const app = {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        // All topics planned for this warm-up (for pre-rendered grey slots)
         const allTopics = [...new Set(this.warmupMcqs.map(q => q.topic || 'Unknown'))];
 
-        // Tally correct/total per topic from answered questions
         const stats = {};
         for (const t of allTopics) stats[t] = { correct: 0, total: 0 };
         for (const a of this.warmupAnswered) {
@@ -1198,24 +1304,20 @@ const app = {
             if (a.isCorrect) stats[t].correct++;
         }
 
-        const cells = allTopics.map(topic => {
+        const rows = allTopics.map(topic => {
             const { correct, total } = stats[topic];
-            let bg, opacity;
-            if (total === 0) {
-                bg = 'var(--border)';
-                opacity = 0.35;
-            } else {
-                bg = this._warmupTopicColor(correct / total);
-                opacity = Math.min(1, 0.45 + total * 0.28);
-            }
-            const label = topic.length > 11 ? topic.slice(0, 10) + '…' : topic;
-            const tooltip = total > 0
-                ? `${topic}: ${Math.round(correct / total * 100)}% (${correct}/${total})`
-                : `${topic}: not yet answered`;
-            return `<div class="heatmap-cell" style="background:${bg};opacity:${opacity}" title="${this.escapeHtml(tooltip)}"><span class="heatmap-label">${this.escapeHtml(label)}</span></div>`;
+            const color = total > 0 ? this._warmupTopicColor(correct / total) : 'var(--border)';
+            const scoreHtml = total > 0
+                ? `<span class="heatmap-score">${correct}/${total}</span>`
+                : `<span class="heatmap-score heatmap-score--none">—</span>`;
+            return `<div class="heatmap-row">
+                <div class="heatmap-swatch" style="background:${color}"></div>
+                <span class="heatmap-topic-name">${this.escapeHtml(topic)}</span>
+                ${scoreHtml}
+            </div>`;
         }).join('');
 
-        container.innerHTML = `<div class="warmup-heatmap">${cells}</div>`;
+        container.innerHTML = `<div class="warmup-heatmap-list">${rows}</div>`;
     },
 
     showWarmupResults() {
@@ -1267,7 +1369,6 @@ const app = {
         const selects = [
             document.getElementById('session-course-select'),
             document.getElementById('history-course-filter'),
-            document.getElementById('warmup-course-select'),
         ];
 
         for (const select of selects) {

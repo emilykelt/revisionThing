@@ -66,11 +66,8 @@
                             <button class="warmup-mode-btn" data-mode="pastpaper" onclick="app.setWarmupMode('pastpaper')">Past Paper</button>
                         </div>
                     </div>
-                    <div id="warmup-general-opts" class="warmup-field">
-                        <label class="warmup-field-label">Course</label>
-                        <select id="warmup-course-select" class="warmup-course-select">
-                            <option value="">All courses</option>
-                        </select>
+                    <div id="warmup-general-opts">
+                        <div id="warmup-topic-picker"></div>
                     </div>
                     <div id="warmup-pp-opts" style="display:none">
                         <div class="warmup-field">
@@ -110,7 +107,6 @@
                     </div>
                     <span class="warmup-q-counter" id="warmup-q-counter">1 / 8</span>
                 </div>
-                <div id="warmup-heatmap-quiz" class="warmup-heatmap-wrap"></div>
                 <div id="warmup-card"></div>
             </div>
 

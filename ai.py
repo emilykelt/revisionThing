@@ -10,6 +10,7 @@ EVAL_MODEL = 'claude-sonnet-4-6'
 
 _client = None
 _PASTPAPERS = None
+_NOTES_INDEX = None
 
 
 def _get_client():
@@ -29,6 +30,52 @@ def _get_client():
                 pass
         _client = anthropic.Anthropic(api_key=key)
     return _client
+
+
+def _load_notes_index():
+    global _NOTES_INDEX
+    if _NOTES_INDEX is None:
+        try:
+            path = os.path.join(os.path.dirname(__file__), 'data', 'notes_index.json')
+            with open(path) as f:
+                _NOTES_INDEX = json.load(f)
+        except Exception:
+            _NOTES_INDEX = {}
+    return _NOTES_INDEX
+
+
+def _notes_block(topic_id: str) -> str:
+    """Return a compact notes snippet for a topic, or empty string if none."""
+    idx = _load_notes_index()
+    entry = idx.get(topic_id)
+    if not entry:
+        return ''
+    parts = []
+    facts = entry.get('key_facts', [])
+    if facts:
+        parts.append('Key facts: ' + ' | '.join(facts[:4]))
+    terms = entry.get('terms', {})
+    if terms:
+        term_str = ', '.join(f'{k}: {v}' for k, v in list(terms.items())[:4])
+        parts.append('Terms: ' + term_str)
+    tips = entry.get('exam_tips', [])
+    if tips:
+        parts.append('Exam focus: ' + ' | '.join(tips[:2]))
+    return '\nCourse notes:\n' + '\n'.join(parts) if parts else ''
+
+
+def _notes_block_multi(topic_ids: list) -> str:
+    """Return combined notes for multiple topics (for MCQ generation)."""
+    idx = _load_notes_index()
+    lines = []
+    for tid in topic_ids:
+        entry = idx.get(tid)
+        if not entry:
+            continue
+        facts = entry.get('key_facts', [])
+        if facts:
+            lines.append(f'[{tid}] ' + ' | '.join(facts[:3]))
+    return '\nCourse notes excerpts:\n' + '\n'.join(lines) if lines else ''
 
 
 def _load_pastpapers():
@@ -142,7 +189,7 @@ def generate_question(topic_name, subtopics, course_name, confidence,
         }
 
     # --- Fall back to AI generation with style examples ---
-    example_block = ''
+    notes_snippet = _notes_block(topic_id) if topic_id else ''
 
     # Rotate which subtopics are emphasised on successive attempts
     n = len(subtopics)
@@ -168,7 +215,7 @@ def generate_question(topic_name, subtopics, course_name, confidence,
             f'Cambridge Part IB CS examiner. Generate ONE short {style} question.\n'
             f'Course: {course_name} | Topic: {topic_name}\n'
             f'Focus subtopics: {", ".join(rotated[:4])}'
-            f'{example_block}\n\n'
+            f'{notes_snippet}\n\n'
             f'Marks must be 1–10 (simple recall = 2–3, explanation = 4–6, analysis = 7–10).\n'
             f'Respond ONLY with this JSON (no other text):\n'
             f'{{"question": "full question text", "difficulty": "low", "marks": 4}}'
@@ -181,7 +228,7 @@ def generate_question(topic_name, subtopics, course_name, confidence,
             f'with {n_parts}–4 labelled parts: (a), (b), (c) etc. Style: {style}.\n'
             f'Course: {course_name} | Topic: {topic_name}\n'
             f'Focus subtopics: {", ".join(rotated[:6])}'
-            f'{example_block}\n\n'
+            f'{notes_snippet}\n\n'
             f'Each part must be answerable independently. Marks per part: 1–10. Total marks up to 20.\n'
             f'Respond ONLY with this JSON (no other text):\n'
             f'{{"parts": [{{"label": "a", "text": "question text for part a", "marks": 4}}, '
@@ -279,21 +326,26 @@ def generate_mcqs(topic_infos, count=8, past_paper_context=None):
         for i, t in enumerate(assigned)
     )
 
+    notes_snippet = _notes_block_multi([t['id'] for t in assigned])
+
     if past_paper_context:
         parts_text = '\n'.join(
-            f'  ({p.get("part", "")}) [{p.get("marks", 0)} marks] {p.get("text", "")}'
+            f'  {p.get("text", "")}'
             for p in past_paper_context['parts']
         )
         pp_preamble = (
-            f'A student is about to attempt this Cambridge Part IB past paper question '
-            f'({past_paper_context["ref"]}):\n\n'
+            f'A student is about to attempt a Cambridge Part IB past paper question on '
+            f'{past_paper_context["ref"].split(" Q")[0]}. '
+            f'The question covers these areas:\n\n'
             f'{parts_text}\n\n'
-            f'Generate exactly {count} multiple-choice questions that test the prerequisite '
-            f'knowledge and concepts needed to answer the above question well.\n'
+            f'Generate exactly {count} standalone multiple-choice warm-up questions that '
+            f'build the background knowledge needed to approach the above topic area.\n'
         )
         focus_rule = (
-            f'- Each question should target a specific concept, definition, or technique '
-            f'that would directly help a student tackle the past paper question above\n'
+            f'- Each MCQ must be fully self-contained — do NOT reference "the question", '
+            f'part labels (a/b/c), question numbers, or paper numbers\n'
+            f'- Test a specific concept, definition, or technique that is prerequisite knowledge '
+            f'for the topic area described above\n'
         )
     else:
         pp_preamble = (
@@ -306,7 +358,8 @@ def generate_mcqs(topic_infos, count=8, past_paper_context=None):
     prompt = (
         f'{pp_preamble}'
         f'Each question must cover the SPECIFIC topic assigned to it:\n\n'
-        f'{assignments}\n\n'
+        f'{assignments}'
+        f'{notes_snippet}\n\n'
         f'Rules:\n'
         f'{focus_rule}'
         f'- Keep each question concise (1-2 sentences)\n'

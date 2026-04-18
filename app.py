@@ -281,6 +281,7 @@ def api_submit_answer():
 def api_generate_mcqs():
     data = request.get_json() or {}
     course_id = data.get('course_id')
+    topic_ids = data.get('topic_ids')  # explicit list overrides course_id
     count = min(max(int(data.get('count', 8)), 3), 15)
     past_paper = data.get('past_paper')  # {course_id, year, paper, question_num}
 
@@ -339,12 +340,15 @@ def api_generate_mcqs():
         else:
             topic_infos = []
     else:
+        topic_ids_set = set(topic_ids) if topic_ids else None
         topic_infos = []
         for term_id, term in courses['terms'].items():
             for cid, course in term['courses'].items():
                 if course_id and cid != course_id:
                     continue
                 for topic in course['topics']:
+                    if topic_ids_set and topic['id'] not in topic_ids_set:
+                        continue
                     k = knowledge.get(topic['id'], {})
                     conf = k.get('confidence', DEFAULT_CONFIDENCE)
                     topic_infos.append({
