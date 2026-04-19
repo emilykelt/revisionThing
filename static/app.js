@@ -18,6 +18,7 @@ const app = {
     historyOffset: 0,
     historyFilter: '',
     skipCount: 0,
+    sessionAiOnly: false,
 
     // Graph state
     graphData: null,
@@ -25,6 +26,10 @@ const app = {
     graphZoom: null,
     graphSimulation: null,
     _graphTooltipTimer: null,
+
+    // Past Papers state
+    _ppData: null,
+    warmupReturnToPastPaper: null,
 
     // Warm-up state
     warmupMcqs: [],
@@ -232,7 +237,7 @@ const app = {
             const res = await fetch('/api/question/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic_id: topicId, attempt: skipCount }),
+                body: JSON.stringify({ topic_id: topicId, attempt: skipCount, ai_only: this.sessionAiOnly }),
             });
             const question = await res.json();
 
@@ -264,9 +269,16 @@ const app = {
         }
 
         let bodyHtml = '';
-        if (q.parts && q.parts.length > 0) {
-            // Multi-part question
-            bodyHtml = q.parts.map((part, i) => `
+        const isMultiPart = q.parts && q.parts.length > 0;
+        if (isMultiPart) {
+            // Progress dots — one per part, fill as user types
+            const dots = q.parts.map((part, i) =>
+                `<span class="pp-progress-dot" id="pp-dot-${i}" data-label="${this.escapeAttr(part.label)}">(${this.escapeHtml(part.label)})</span>`
+            ).join('');
+            bodyHtml = `<div class="pp-progress-bar">${dots}</div>`;
+
+            // Multi-part question — each part gets its own hint button (pass index, not text)
+            bodyHtml += q.parts.map((part, i) => `
                 <div class="question-part">
                     <div class="question-part-text">
                         <span class="part-label">(${this.escapeHtml(part.label)})</span>
@@ -280,10 +292,14 @@ const app = {
                             data-label="${this.escapeHtml(part.label)}"
                             data-question="${this.escapeAttr(part.text)}"
                             data-marks="${part.marks}"
+                            data-part-index="${i}"
                             placeholder="Type your answer to part (${this.escapeHtml(part.label)})..."
                             autocomplete="off" spellcheck="true"
                             ${i === 0 ? 'id="first-answer"' : ''}
                         ></textarea>
+                        <button class="btn btn-ghost hint-part-btn" id="hint-btn-${i}"
+                            onclick="app.requestHint(${i})">Hint</button>
+                        <div class="hint-container" id="hint-container-${i}"></div>
                     </div>
                 </div>
             `).join('');
@@ -302,6 +318,11 @@ const app = {
         }
 
         const isDifficult = q.difficult || false;
+        const ppActionsHtml = q.is_actual_past_paper ? `
+            <div class="pp-question-actions">
+                <button class="btn btn-ghost pp-warmup-btn" onclick="app.startWarmupFromPastPaper()">☀ Warm up first</button>
+                <button class="btn btn-ghost pp-similar-btn" onclick="app.toggleSimilarPastPapers()">Similar papers</button>
+            </div>` : '';
         container.innerHTML = `
             <div class="question-header">
                 <div class="question-breadcrumb">
@@ -319,11 +340,15 @@ const app = {
                     </button>
                 </div>
             </div>
+            ${ppActionsHtml}
+            <div id="similar-pp-container"></div>
             ${bodyHtml}
             <div class="question-actions">
                 <button class="btn btn-primary" id="submit-btn" onclick="app.submitAnswer()">Submit Answer</button>
+                ${!isMultiPart ? '<button class="btn btn-ghost" id="hint-btn" onclick="app.requestHint(null)">Hint</button>' : ''}
                 <button class="btn btn-secondary" onclick="app.skipQuestion()">Skip</button>
             </div>
+            ${!isMultiPart ? '<div id="hint-container"></div>' : ''}
             <div id="feedback-container"></div>
         `;
 
@@ -333,12 +358,67 @@ const app = {
             if (ta) ta.focus();
         }, 100);
 
-        // Ctrl+Enter to submit on any textarea
+        // Ctrl+Enter to submit on any textarea; update progress dots on input
         container.querySelectorAll('.answer-textarea').forEach(ta => {
             ta.addEventListener('keydown', (e) => {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') this.submitAnswer();
             });
+            if (ta.dataset.partIndex !== undefined) {
+                ta.addEventListener('input', () => {
+                    const dot = document.getElementById(`pp-dot-${ta.dataset.partIndex}`);
+                    if (dot) dot.classList.toggle('filled', ta.value.trim().length > 0);
+                });
+            }
         });
+    },
+
+    async requestHint(partIndex) {
+        const q = this.currentQuestion;
+        const isPartHint = partIndex != null;
+        const btnId = isPartHint ? `hint-btn-${partIndex}` : 'hint-btn';
+        const containerId = isPartHint ? `hint-container-${partIndex}` : 'hint-container';
+        const hintBtn = document.getElementById(btnId);
+        const hintContainer = document.getElementById(containerId);
+        if (!hintBtn || !hintContainer) return;
+
+        const questionText = isPartHint
+            ? (q.parts[partIndex] ? q.parts[partIndex].text : '')
+            : (q.question || '');
+
+        hintBtn.disabled = true;
+        hintBtn.textContent = 'Getting hint…';
+        hintContainer.innerHTML = '<div class="hint-loading"><span class="spinner"></span></div>';
+
+        try {
+            const res = await fetch('/api/question/hint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: questionText,
+                    topic_name: q.topic_name,
+                    course_name: q.course_name,
+                    topic_id: q.topic_id,
+                }),
+            });
+            const data = await res.json();
+            if (data.hint) {
+                hintContainer.innerHTML = `
+                    <div class="hint-box">
+                        <div class="hint-label">Hint</div>
+                        <div class="hint-text">${this.escapeHtml(data.hint)}</div>
+                    </div>`;
+                hintBtn.textContent = 'Another hint';
+                hintBtn.disabled = false;
+            } else {
+                hintContainer.innerHTML = '';
+                hintBtn.textContent = 'Hint';
+                hintBtn.disabled = false;
+            }
+        } catch (err) {
+            hintContainer.innerHTML = '';
+            hintBtn.textContent = 'Hint';
+            hintBtn.disabled = false;
+        }
     },
 
     async submitAnswer() {
@@ -358,11 +438,11 @@ const app = {
             });
             // Require at least one non-empty answer
             if (!partAnswers.some(p => p.answer.trim())) return;
-            body = { topic_id: q.topic_id, course_id: q.course_id, parts: partAnswers };
+            body = { topic_id: q.topic_id, course_id: q.course_id, parts: partAnswers, all_topic_ids: q._all_topic_ids || [] };
         } else {
             const answer = document.getElementById('answer-input').value;
             if (!answer.trim()) return;
-            body = { topic_id: q.topic_id, course_id: q.course_id, question: q.question, answer };
+            body = { topic_id: q.topic_id, course_id: q.course_id, question: q.question, answer, all_topic_ids: q._all_topic_ids || [] };
         }
 
         const submitBtn = document.getElementById('submit-btn');
@@ -534,6 +614,7 @@ const app = {
     },
 
     async startSession(mode, courseId) {
+        this.sessionAiOnly = document.getElementById('session-ai-only')?.checked || false;
         this.closeModal();
 
         const body = { mode };
@@ -1333,6 +1414,20 @@ const app = {
         document.getElementById('warmup-score-emoji').textContent = emoji;
         this.renderWarmupHeatmap('warmup-heatmap-results');
 
+        // Submit MCQ results to update confidence (reduced weight)
+        const mcqResults = this.warmupAnswered.map((a, i) => ({
+            topic_id: this.warmupMcqs[i]?.topic_id || '',
+            course_id: this.warmupMcqs[i]?.course_id || '',
+            is_correct: a.isCorrect,
+        })).filter(r => r.topic_id);
+        if (mcqResults.length > 0) {
+            fetch('/api/mcq/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ results: mcqResults }),
+            }).catch(() => {});
+        }
+
         const wrong = this.warmupAnswered.filter(a => !a.isCorrect);
         let reviewHtml = '';
         if (wrong.length === 0) {
@@ -1359,6 +1454,24 @@ const app = {
             `;
         }
         document.getElementById('warmup-review-section').innerHTML = reviewHtml;
+
+        // Show "Back to Question" button if we came from a past paper
+        const actionsEl = document.querySelector('.warmup-results-actions');
+        if (actionsEl) {
+            const existing = actionsEl.querySelector('.btn-back-to-pp');
+            if (existing) existing.remove();
+            if (this.warmupReturnToPastPaper) {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-primary btn-back-to-pp';
+                btn.textContent = 'Back to Question →';
+                btn.onclick = () => {
+                    const r = this.warmupReturnToPastPaper;
+                    this.warmupReturnToPastPaper = null;
+                    this.practicePastPaper(r.courseId, r.year, r.paper, r.qnum);
+                };
+                actionsEl.insertBefore(btn, actionsEl.firstChild);
+            }
+        }
     },
 
     // ---- Helpers ----
@@ -1423,6 +1536,300 @@ const app = {
         if (diffHours < 24) return `${diffHours}h ago`;
         if (diffDays < 7) return `${diffDays}d ago`;
         return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    },
+
+    // ---- Past Papers ----
+    async showPastPapers() {
+        this.showView('pastpapers');
+        if (!this._ppData) {
+            document.getElementById('pp-list').innerHTML = '<div class="loading"><span class="spinner"></span>Loading…</div>';
+            const res = await fetch('/api/pastpapers/all');
+            this._ppData = await res.json();
+            // Populate course filter
+            const courseSel = document.getElementById('pp-course-filter');
+            this._ppData.courses.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.course_id; opt.textContent = c.course_name;
+                courseSel.appendChild(opt);
+            });
+            // Populate year filter
+            const years = new Set();
+            for (const c of this._ppData.courses) {
+                for (const q of c.questions) years.add(q.year);
+            }
+            const yearSel = document.getElementById('pp-year-filter');
+            [...years].sort((a, b) => b - a).forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y;
+                yearSel.appendChild(opt);
+            });
+        }
+        this.renderPastPapers();
+    },
+
+    renderPastPapers() {
+        if (!this._ppData) return;
+        const yearFilter = document.getElementById('pp-year-filter').value;
+        const courseFilter = document.getElementById('pp-course-filter').value;
+        const container = document.getElementById('pp-list');
+        const html = this._ppData.courses.map(course => {
+            if (courseFilter && course.course_id !== courseFilter) return '';
+            const qs = yearFilter
+                ? course.questions.filter(q => String(q.year) === yearFilter)
+                : course.questions;
+            if (!qs.length) return '';
+            const rows = qs.map(q => {
+                const topicCount = (q.topic_ids || []).length;
+                return `<div class="pp-row">
+                    <div class="pp-row-ref">${this.escapeHtml(q.ref)}</div>
+                    <div class="pp-row-meta">
+                        <span class="pp-marks">${q.total_marks} marks</span>
+                        <span class="pp-parts">${q.parts.length} parts</span>
+                        ${q.pdf_url ? `<a class="pp-pdf-link" href="${q.pdf_url}" target="_blank" rel="noopener">PDF ↗</a>` : ''}
+                    </div>
+                    <button class="btn btn-primary pp-practice-btn"
+                        onclick="app.practicePastPaper('${this.escapeAttr(course.course_id)}', ${q.year}, ${q.paper}, ${q.question})">
+                        Practice →
+                    </button>
+                </div>`;
+            }).join('');
+            return `<div class="pp-course-section">
+                <div class="pp-course-header">
+                    <span class="pp-course-name">${this.escapeHtml(course.course_name)}</span>
+                    <span class="pp-course-count">${qs.length} question${qs.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div class="pp-course-rows">${rows}</div>
+            </div>`;
+        }).join('');
+        container.innerHTML = html || '<div class="empty-state">No past papers found.</div>';
+    },
+
+    async startWarmupFromPastPaper() {
+        const q = this.currentQuestion;
+        if (!q) return;
+
+        // Store where to return after warmup
+        this.warmupReturnToPastPaper = {
+            courseId: q.course_id,
+            year: parseInt(q.source?.match(/^(\d{4})/)?.[1]),
+            paper: parseInt(q.source?.match(/Paper (\d+)/)?.[1]),
+            qnum: parseInt(q.source?.match(/Q(\d+)/)?.[1]),
+        };
+
+        // Set up warmup state
+        this.warmupIndex = 0;
+        this.warmupCorrect = 0;
+        this.warmupAnswered = [];
+        this.warmupCount = 5;
+
+        // Build the past_paper context for focused warmup
+        const year   = parseInt(q.source?.match(/^(\d{4})/)?.[1]);
+        const paper  = parseInt(q.source?.match(/Paper (\d+)/)?.[1]);
+        const qnum   = parseInt(q.source?.match(/Q(\d+)/)?.[1]);
+        const body = {
+            count: 5,
+            past_paper: {
+                course_id:    q.course_id,
+                year,
+                paper,
+                question_num: qnum,
+            },
+        };
+        if ((q._all_topic_ids || []).length > 0) {
+            body.topic_ids = q._all_topic_ids;
+        }
+
+        // Switch to warmup view and skip setup screen
+        this.showView('warmup');
+        document.getElementById('warmup-setup').style.display = 'none';
+        document.getElementById('warmup-quiz').style.display = 'block';
+        document.getElementById('warmup-results').style.display = 'none';
+
+        const ppLabel = document.getElementById('warmup-pp-label');
+        if (ppLabel) {
+            ppLabel.textContent = q.source || '';
+            ppLabel.style.display = 'block';
+        }
+
+        document.getElementById('warmup-card').innerHTML = `
+            <div class="loading" style="margin-top: 3rem;"><span class="spinner"></span>Generating warm-up questions for ${this.escapeHtml(q.source || 'this question')}…</div>
+        `;
+
+        try {
+            const res = await fetch('/api/mcq/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            this.warmupMcqs = data.mcqs || [];
+
+            if (this.warmupMcqs.length === 0) {
+                document.getElementById('warmup-card').innerHTML =
+                    '<div class="empty-state">Couldn\'t generate questions. Please try again.</div>';
+                return;
+            }
+
+            this.warmupCount = this.warmupMcqs.length;
+            this.renderWarmupQuestion();
+        } catch (err) {
+            document.getElementById('warmup-card').innerHTML =
+                '<div class="empty-state">Failed to load questions. Is the server running?</div>';
+        }
+    },
+
+    async toggleSimilarPastPapers() {
+        const container = document.getElementById('similar-pp-container');
+        if (!container) return;
+
+        // Toggle off if already showing
+        if (container.innerHTML.trim() && !container.innerHTML.includes('loading')) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const q = this.currentQuestion;
+        const topicIds = q?._all_topic_ids || [];
+        if (topicIds.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="margin-top:1rem;">No topic tags for this question.</div>';
+            return;
+        }
+
+        container.innerHTML = '<div class="loading" style="margin-top:1rem;"><span class="spinner"></span>Finding similar papers…</div>';
+
+        // Ensure pp data is loaded
+        if (!this._ppData) {
+            try {
+                const res = await fetch('/api/pastpapers/all');
+                this._ppData = await res.json();
+            } catch (e) {
+                container.innerHTML = '<div class="empty-state" style="margin-top:1rem;">Failed to load past papers.</div>';
+                return;
+            }
+        }
+
+        // Gather knowledge for sorting by weak topics
+        const knowledge = {};
+        if (this.dashboardData) {
+            for (const term of Object.values(this.dashboardData.terms)) {
+                for (const course of Object.values(term.courses)) {
+                    for (const t of course.topics) {
+                        knowledge[t.id] = t.confidence;
+                    }
+                }
+            }
+        }
+
+        const currentSource = q.source || '';
+        const matches = [];
+
+        for (const course of (this._ppData.courses || [])) {
+            for (const pq of (course.questions || [])) {
+                const ref = `${pq.year} Paper ${pq.paper} Q${pq.question}`;
+                if (ref === currentSource) continue; // skip self
+
+                const pqTopics = pq.topic_ids || pq.topics || [];
+                const overlap = pqTopics.filter(t => topicIds.includes(t));
+                if (overlap.length === 0) continue;
+
+                // Score: overlap count + weak-topic bonus
+                let score = overlap.length;
+                for (const tid of overlap) {
+                    const conf = knowledge[tid] ?? 0.5;
+                    score += (1 - conf); // weak topics boost the score
+                }
+
+                matches.push({ ref, courseId: course.course_id, courseName: course.course_name, year: pq.year, paper: pq.paper, qnum: pq.question, overlap: overlap.length, score, pdfUrl: pq.pdf_url });
+            }
+        }
+
+        matches.sort((a, b) => b.score - a.score);
+        const top = matches.slice(0, 8);
+
+        if (top.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="margin-top:1rem;">No similar past paper questions found.</div>';
+            return;
+        }
+
+        const rows = top.map(m => `
+            <div class="pp-row similar-pp-row">
+                <div class="pp-row-left">
+                    <span class="pp-row-ref">${this.escapeHtml(m.ref)}</span>
+                    <span class="pp-row-meta">${this.escapeHtml(m.courseName)} &middot; ${m.overlap} shared topic${m.overlap > 1 ? 's' : ''}</span>
+                </div>
+                <div class="pp-row-right">
+                    ${m.pdfUrl ? `<a class="pp-pdf-link" href="${m.pdfUrl}" target="_blank" rel="noopener">PDF ↗</a>` : ''}
+                    <button class="btn btn-primary pp-practice-btn"
+                        onclick="app.practicePastPaper('${this.escapeAttr(m.courseId)}', ${m.year}, ${m.paper}, ${m.qnum})">
+                        Practice →
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = `
+            <div class="similar-pp-section">
+                <div class="feedback-section-title" style="margin-bottom:0.75rem;">Similar past paper questions</div>
+                ${rows}
+            </div>
+        `;
+    },
+
+    async practicePastPaper(courseId, year, paper, qnum) {
+        const container = document.getElementById('question-container');
+        container.innerHTML = '<div class="loading"><span class="spinner"></span>Loading question…</div>';
+
+        const backBtn = document.getElementById('question-back-btn');
+        backBtn.onclick = () => this.showPastPapers();
+        this.showView('question');
+
+        try {
+            const res = await fetch(`/api/pastpapers/${courseId}`);
+            const data = await res.json();
+            const q = (data.tagged_questions || []).find(
+                x => x.year === year && x.paper === paper && x.question === qnum
+            );
+            if (!q) {
+                container.innerHTML = '<div class="empty-state">Question not found.</div>';
+                return;
+            }
+
+            // Find course name
+            const courseEntry = this._ppData && this._ppData.courses.find(c => c.course_id === courseId);
+            const courseName = courseEntry ? courseEntry.course_name : courseId;
+
+            // Normalise part key: pastpapers.json uses 'part', renderQuestion expects 'label'
+            const parts = (q.parts || []).map(p => ({
+                label: p.label || p.part || '?',
+                text: p.text || '',
+                marks: p.marks || 0,
+                topics: p.topics || [],
+            }));
+
+            const primaryTopicId = (q.topics || [])[0] || '';
+
+            const question = {
+                parts,
+                total_marks: parts.reduce((s, p) => s + p.marks, 0),
+                difficulty: 'high',
+                is_actual_past_paper: true,
+                source: `${year} Paper ${paper} Q${qnum}`,
+                pdf_url: q.pdf_url || null,
+                topic_id: primaryTopicId,
+                course_id: courseId,
+                topic_name: `Paper ${paper} Q${qnum}`,
+                course_name: courseName,
+                difficult: false,
+                _all_topic_ids: q.topics || [],
+            };
+
+            this.currentQuestion = question;
+            this.sessionTopics = [{ topic_id: primaryTopicId, course_id: courseId }];
+            this.sessionIndex = 0;
+            this.renderQuestion(question);
+        } catch (err) {
+            container.innerHTML = '<div class="empty-state">Failed to load question.</div>';
+        }
     },
 
     escapeHtml(str) {

@@ -97,7 +97,7 @@ def update_confidence(current, score, times_tested, streak):
     return round(max(0.0, min(1.0, new_conf)), 3)
 
 
-def record_answer(topic_id, course_id, question, answer, score, feedback, model_solution):
+def record_answer(topic_id, course_id, question, answer, score, feedback, model_solution, extra_topic_ids=None):
     """Record an answer and update confidence. Returns the new confidence."""
     knowledge = load_knowledge()
     history = load_history()
@@ -121,6 +121,11 @@ def record_answer(topic_id, course_id, question, answer, score, feedback, model_
     entry['last_tested'] = datetime.now().isoformat()
     entry['history'].append(entry['confidence'])
 
+    # Update any extra topics (e.g. all topics tagged in a past paper question) without extra log entries
+    for extra_id in (extra_topic_ids or []):
+        if extra_id != topic_id:
+            update_topic_confidence_silent(knowledge, extra_id, score)
+
     save_knowledge(knowledge)
 
     # Append to history log
@@ -138,6 +143,35 @@ def record_answer(topic_id, course_id, question, answer, score, feedback, model_
     })
     save_history(history)
 
+    return entry['confidence']
+
+
+def update_topic_confidence_silent(knowledge, topic_id, score):
+    """Update confidence for a topic without writing a history log entry. Modifies knowledge in-place."""
+    entry = knowledge.get(topic_id)
+    if entry is None:
+        return
+    times = entry.get('times_tested', 0)
+    alpha = max(0.15, 0.6 / (1 + 0.3 * times))
+    entry['confidence'] = round(max(0.0, min(1.0, (1 - alpha) * entry['confidence'] + alpha * score)), 3)
+    entry['history'].append(entry['confidence'])
+    entry['last_tested'] = datetime.now().isoformat()
+
+
+def record_mcq_answer(topic_id, course_id, is_correct):
+    """Lightweight confidence update for a single MCQ result (half the weight of a full question)."""
+    knowledge = load_knowledge()
+    entry = knowledge.get(topic_id)
+    if entry is None:
+        return None
+    score = 1.0 if is_correct else 0.0
+    times = entry.get('times_tested', 0)
+    # Half the normal alpha — MCQs count less than written answers
+    alpha = max(0.07, 0.3 / (1 + 0.3 * times))
+    entry['confidence'] = round(max(0.0, min(1.0, (1 - alpha) * entry['confidence'] + alpha * score)), 3)
+    entry['history'].append(entry['confidence'])
+    entry['last_tested'] = datetime.now().isoformat()
+    save_knowledge(knowledge)
     return entry['confidence']
 
 

@@ -170,10 +170,12 @@ def extract_json_from_response(text):
 
 
 def generate_question(topic_name, subtopics, course_name, confidence,
-                      course_id=None, topic_id=None, attempt=0):
+                      course_id=None, topic_id=None, attempt=0, ai_only=False):
 
-    # --- Try to serve a real past paper question first ---
-    pp_questions = _get_past_paper_questions(course_id, topic_id) if (course_id and topic_id) else []
+    # --- Try to serve a real past paper question first (unless ai_only) ---
+    pp_questions = [] if ai_only else (
+        _get_past_paper_questions(course_id, topic_id) if (course_id and topic_id) else []
+    )
     if pp_questions:
         # Cycle through available real questions on successive attempts
         q = pp_questions[attempt % len(pp_questions)]
@@ -254,6 +256,21 @@ def generate_question(topic_name, subtopics, course_name, confidence,
         'marks': 8,
         'fallback': True,
     }
+
+
+def generate_hint(question, topic_name, course_name, topic_id=None):
+    notes_snippet = _notes_block(topic_id) if topic_id else ''
+    prompt = (
+        f'Cambridge CS supervisor. A student is attempting this question and needs a hint.\n'
+        f'Course: {course_name} | Topic: {topic_name}\n'
+        f'Question:\n{question}\n'
+        f'{notes_snippet}\n\n'
+        f'Give a single concise hint (2-4 sentences) that helps the student think about the right '
+        f'approach WITHOUT giving away the answer. Point them toward the key concept or technique '
+        f'to use. Do not solve the question. Respond with only the hint text, no preamble.'
+    )
+    response = call_claude(prompt, model=QUESTION_MODEL, max_tokens=256)
+    return response or ''
 
 
 def evaluate_answer(question, answer, topic_name, course_name, part_label=None):
@@ -380,7 +397,7 @@ def generate_mcqs(topic_infos, count=8, past_paper_context=None):
 
     if result and isinstance(result, list):
         valid = []
-        for item in result:
+        for idx, item in enumerate(result):
             if not isinstance(item, dict):
                 continue
             if not all(k in item for k in ('question', 'options', 'correct', 'explanation')):
@@ -390,6 +407,7 @@ def generate_mcqs(topic_infos, count=8, past_paper_context=None):
                 continue
             if item.get('correct') not in ('A', 'B', 'C', 'D'):
                 continue
+            t = assigned[idx] if idx < len(assigned) else {}
             mcq = {
                 'question': str(item['question']),
                 'options': {
@@ -401,6 +419,8 @@ def generate_mcqs(topic_infos, count=8, past_paper_context=None):
                 'correct': item['correct'],
                 'explanation': str(item.get('explanation', '')),
                 'topic': str(item.get('topic', '')),
+                'topic_id': t.get('id', ''),
+                'course_id': t.get('course_id', ''),
             }
             valid.append(_shuffle_mcq_options(mcq))
         return valid[:count]

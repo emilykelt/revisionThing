@@ -5,10 +5,10 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 from flask import Flask, render_template, jsonify, request
 from data import (
     load_courses, load_knowledge, load_history,
-    get_dashboard_data, record_answer, select_session_topics,
+    get_dashboard_data, record_answer, record_mcq_answer, select_session_topics,
     save_knowledge, save_json, KNOWLEDGE_FILE,
 )
-from ai import generate_question, evaluate_answer, generate_mcqs
+from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint
 from config import DEFAULT_CONFIDENCE, DATA_DIR
 
 app = Flask(__name__)
@@ -100,6 +100,19 @@ def api_history():
     })
 
 
+@app.route('/api/question/hint', methods=['POST'])
+def api_question_hint():
+    data = request.get_json()
+    question = data.get('question', '')
+    topic_name = data.get('topic_name', '')
+    course_name = data.get('course_name', '')
+    topic_id = data.get('topic_id', '')
+    if not question:
+        return jsonify({'error': 'question required'}), 400
+    hint = generate_hint(question, topic_name, course_name, topic_id)
+    return jsonify({'hint': hint})
+
+
 @app.route('/api/question/generate', methods=['POST'])
 def api_generate_question():
     data = request.get_json()
@@ -129,6 +142,7 @@ def api_generate_question():
     k = knowledge.get(topic_id, {})
     confidence = k.get('confidence', DEFAULT_CONFIDENCE)
     attempt = data.get('attempt', 0)
+    ai_only = data.get('ai_only', False)
 
     result = generate_question(
         topic_info['name'],
@@ -138,6 +152,7 @@ def api_generate_question():
         course_id=course_id,
         topic_id=topic_id,
         attempt=attempt,
+        ai_only=ai_only,
     )
     result['topic_id'] = topic_id
     result['course_id'] = course_id
@@ -190,6 +205,8 @@ def api_submit_answer():
     data = request.get_json()
     topic_id = data.get('topic_id')
     course_id = data.get('course_id')
+    all_topic_ids = data.get('all_topic_ids') or []
+    extra_topic_ids = [t for t in all_topic_ids if t != topic_id]
 
     if not topic_id:
         return jsonify({'error': 'topic_id required'}), 400
@@ -246,6 +263,7 @@ def api_submit_answer():
             overall_score,
             ' | '.join(f"({r['label']}) {r['feedback']}" for r in part_results),
             ' | '.join(f"({r['label']}) {r['model_solution']}" for r in part_results),
+            extra_topic_ids=extra_topic_ids,
         )
 
         return jsonify({
@@ -266,6 +284,7 @@ def api_submit_answer():
             evaluation['score'],
             evaluation.get('feedback', ''),
             evaluation.get('model_solution', ''),
+            extra_topic_ids=extra_topic_ids,
         )
 
         return jsonify({
@@ -275,6 +294,23 @@ def api_submit_answer():
             'key_gaps': evaluation.get('key_gaps', []),
             'new_confidence': new_confidence,
         })
+
+
+@app.route('/api/mcq/submit', methods=['POST'])
+def api_mcq_submit():
+    """Record MCQ results — updates confidence with reduced weight."""
+    data = request.get_json() or {}
+    results = data.get('results', [])  # [{topic_id, course_id, is_correct}]
+    updated = {}
+    for r in results:
+        tid = r.get('topic_id')
+        cid = r.get('course_id', '')
+        is_correct = bool(r.get('is_correct'))
+        if tid:
+            new_conf = record_mcq_answer(tid, cid, is_correct)
+            if new_conf is not None:
+                updated[tid] = new_conf
+    return jsonify({'updated': updated})
 
 
 @app.route('/api/mcq/generate', methods=['POST'])
@@ -338,7 +374,26 @@ def api_generate_mcqs():
                             'confidence': conf,
                         })
         else:
+            # Past paper question not found — fall back to topic_ids sent in body
+            topic_ids_set = set(topic_ids) if topic_ids else None
             topic_infos = []
+            for term_id, term in courses['terms'].items():
+                for cid, course in term['courses'].items():
+                    if pp_course_id and cid != pp_course_id:
+                        continue
+                    for topic in course['topics']:
+                        if topic_ids_set and topic['id'] not in topic_ids_set:
+                            continue
+                        k = knowledge.get(topic['id'], {})
+                        conf = k.get('confidence', DEFAULT_CONFIDENCE)
+                        topic_infos.append({
+                            'id': topic['id'],
+                            'name': topic['name'],
+                            'subtopics': topic.get('subtopics', []),
+                            'course_name': course['name'],
+                            'course_id': cid,
+                            'confidence': conf,
+                        })
     else:
         topic_ids_set = set(topic_ids) if topic_ids else None
         topic_infos = []

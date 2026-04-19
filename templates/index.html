@@ -17,6 +17,7 @@
                 <button class="nav-btn" data-view="warmup" onclick="app.showWarmup()">Warm Up</button>
                 <button class="nav-btn" data-view="graph" onclick="app.showGraph()">Graph</button>
                 <button class="nav-btn" data-view="session" onclick="app.startSessionModal()">Practice</button>
+                <button class="nav-btn" data-view="pastpapers" onclick="app.showPastPapers()">Past Papers</button>
                 <button class="nav-btn" data-view="history" onclick="app.showHistory()">History</button>
             </nav>
         </div>
@@ -126,6 +127,20 @@
             </div>
         </div>
 
+        <!-- Past Papers View -->
+        <div id="view-pastpapers" class="view">
+            <h2 class="section-title">Past Papers</h2>
+            <div id="pp-filters">
+                <select id="pp-course-filter" onchange="app.renderPastPapers()">
+                    <option value="">All subjects</option>
+                </select>
+                <select id="pp-year-filter" onchange="app.renderPastPapers()">
+                    <option value="">All years</option>
+                </select>
+            </div>
+            <div id="pp-list"></div>
+        </div>
+
         <!-- History View -->
         <div id="view-history" class="view">
             <h2 class="section-title">Revision History</h2>
@@ -190,6 +205,10 @@
                     </select>
                     <button class="btn btn-primary" onclick="app.startSessionCourse()">Go</button>
                 </div>
+                <label class="session-toggle">
+                    <input type="checkbox" id="session-ai-only">
+                    AI-generated questions only (skip past papers)
+                </label>
                 <button class="btn btn-ghost modal-close" onclick="app.closeModal()">Cancel</button>
             </div>
         </div>
