@@ -261,47 +261,72 @@ def generate_question(topic_name, subtopics, course_name, confidence,
 def generate_hint(question, topic_name, course_name, topic_id=None):
     notes_snippet = _notes_block(topic_id) if topic_id else ''
     prompt = (
-        f'Cambridge CS supervisor. A student is attempting this question and needs a hint.\n'
+        f'Cambridge CS supervisor. A student is stuck on this question.\n'
         f'Course: {course_name} | Topic: {topic_name}\n'
         f'Question:\n{question}\n'
         f'{notes_snippet}\n\n'
-        f'Give a single concise hint (2-4 sentences) that helps the student think about the right '
-        f'approach WITHOUT giving away the answer. Point them toward the key concept or technique '
-        f'to use. Do not solve the question. Respond with only the hint text, no preamble.'
+        f'Give a concise hint (3-5 sentences) that helps the student approach the problem. '
+        f'If the question asks the student to apply, trace, or use a specific method, algorithm, or '
+        f'protocol (e.g. Dijkstra\'s, slow start, spanning tree, type inference), briefly explain the '
+        f'key steps of that method so the student knows how to proceed. '
+        f'Otherwise, point them toward the key concept or technique to use without giving away the answer. '
+        f'Do NOT restate or rephrase the question. Do NOT solve it. '
+        f'Respond with only the hint text, no preamble.'
     )
-    response = call_claude(prompt, model=QUESTION_MODEL, max_tokens=256)
+    response = call_claude(prompt, model=QUESTION_MODEL, max_tokens=300)
     return response or ''
 
 
-def evaluate_answer(question, answer, topic_name, course_name, part_label=None):
+def evaluate_answer(question, answer, topic_name, course_name, part_label=None, marks_available=None):
     if not answer or not answer.strip():
         return {
             'score': 0.0,
+            'marks_awarded': 0,
+            'marks_available': marks_available or 0,
             'feedback': 'No answer provided.',
             'model_solution': '',
             'key_gaps': [topic_name],
         }
 
     part_context = f' (part {part_label})' if part_label else ''
+    marks_context = f' [{marks_available} marks available]' if marks_available else ''
     prompt = (
         f'Cambridge CS supervisor marking a tripos answer.\n'
-        f'Course: {course_name} | Topic: {topic_name}{part_context}\n'
+        f'Course: {course_name} | Topic: {topic_name}{part_context}{marks_context}\n'
         f'Question: {question}\n'
         f'Student answer: {answer}\n\n'
         f'Respond ONLY with this JSON:\n'
-        '{{"score": 0.7, "feedback": "...", "model_solution": "...", "key_gaps": ["concept1"]}}\n'
-        f'Score 0.0–1.0. Be specific about what was good and what was missing.'
+        + (
+            f'{{"marks_awarded": 3, "marks_available": {marks_available}, "feedback": "...", "model_solution": "...", "key_gaps": ["concept1"]}}\n'
+            f'Award marks_awarded as an integer 0–{marks_available}. Be specific about what was good and what was missing.'
+            if marks_available else
+            f'{{"score": 0.7, "feedback": "...", "model_solution": "...", "key_gaps": ["concept1"]}}\n'
+            f'Score 0.0–1.0. Be specific about what was good and what was missing.'
+        )
     )
 
     response = call_claude(prompt, model=EVAL_MODEL)
     result = extract_json_from_response(response)
 
-    if result and 'score' in result:
-        result['score'] = max(0.0, min(1.0, float(result['score'])))
-        return result
+    if result:
+        if marks_available and 'marks_awarded' in result:
+            awarded = max(0, min(marks_available, int(round(float(result['marks_awarded'])))))
+            result['marks_awarded'] = awarded
+            result['marks_available'] = marks_available
+            result['score'] = awarded / marks_available
+            return result
+        if 'score' in result:
+            score = max(0.0, min(1.0, float(result['score'])))
+            result['score'] = score
+            if marks_available:
+                result['marks_awarded'] = int(round(score * marks_available))
+                result['marks_available'] = marks_available
+            return result
 
     return {
         'score': 0.5,
+        'marks_awarded': int(round(0.5 * marks_available)) if marks_available else None,
+        'marks_available': marks_available,
         'feedback': response or 'Unable to evaluate.',
         'model_solution': '',
         'key_gaps': [],
@@ -425,4 +450,38 @@ def generate_mcqs(topic_infos, count=8, past_paper_context=None):
             valid.append(_shuffle_mcq_options(mcq))
         return valid[:count]
 
+    return []
+
+
+def generate_flashcards(question, model_solution, topic_name, course_name, topic_id=None):
+    """
+    Generate atomic Anki flashcards from a wrong answer using the minimum information principle.
+    Returns list of {front, back} dicts.
+    """
+    notes_snippet = _notes_block(topic_id) if topic_id else ''
+    prompt = (
+        f'Cambridge CS tutor creating Anki flashcards.\n'
+        f'Course: {course_name} | Topic: {topic_name}\n'
+        f'Exam question: {question}\n'
+        f'Model answer: {model_solution}\n'
+        f'{notes_snippet}\n\n'
+        f'Apply the minimum information principle: break the knowledge needed to answer this question '
+        f'into 2-4 atomic flashcards. Each card must test exactly ONE fact, definition, or step.\n'
+        f'Rules:\n'
+        f'- Front: a single specific question or cloze prompt (≤15 words)\n'
+        f'- Back: a concise direct answer (1-3 sentences max)\n'
+        f'- No card should require knowing another card to be answered\n'
+        f'- Focus on the concepts the student got wrong, not the whole topic\n'
+        f'- Do NOT create cards that just restate the exam question\n\n'
+        f'Respond ONLY with a JSON array:\n'
+        f'[{{"front": "What is X?", "back": "X is ..."}}]'
+    )
+    response = call_claude(prompt, model=EVAL_MODEL, max_tokens=1024)
+    result = extract_json_array_from_response(response)
+    if result and isinstance(result, list):
+        return [
+            {'front': str(c['front']), 'back': str(c['back'])}
+            for c in result
+            if isinstance(c, dict) and 'front' in c and 'back' in c
+        ]
     return []

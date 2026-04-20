@@ -277,9 +277,12 @@ const app = {
             ).join('');
             bodyHtml = `<div class="pp-progress-bar">${dots}</div>`;
 
-            // Multi-part question — each part gets its own hint button (pass index, not text)
-            bodyHtml += q.parts.map((part, i) => `
-                <div class="question-part">
+            // Multi-part question — each part gets hint + difficult flag buttons
+            const difficultParts = new Set(q._difficult_parts || []);
+            bodyHtml += q.parts.map((part, i) => {
+                const isDifficultPart = difficultParts.has(part.label);
+                return `
+                <div class="question-part" id="question-part-${i}">
                     <div class="question-part-text">
                         <span class="part-label">(${this.escapeHtml(part.label)})</span>
                         ${this.escapeHtml(part.text)}
@@ -297,12 +300,17 @@ const app = {
                             autocomplete="off" spellcheck="true"
                             ${i === 0 ? 'id="first-answer"' : ''}
                         ></textarea>
-                        <button class="btn btn-ghost hint-part-btn" id="hint-btn-${i}"
-                            onclick="app.requestHint(${i})">Hint</button>
+                        <div class="part-btn-row">
+                            <button class="btn btn-ghost hint-part-btn" id="hint-btn-${i}"
+                                onclick="app.requestHint(${i})">Hint</button>
+                            ${q.is_actual_past_paper ? `<button class="btn btn-ghost part-flag-btn${isDifficultPart ? ' flagged' : ''}" id="part-flag-btn-${i}"
+                                onclick="app.togglePartDifficult(${i})" title="${isDifficultPart ? 'Remove difficult flag' : 'Flag this part as difficult'}">
+                                ${isDifficultPart ? '⚑ Difficult' : '⚐'}</button>` : ''}
+                        </div>
                         <div class="hint-container" id="hint-container-${i}"></div>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         } else {
             // Single question
             bodyHtml = `
@@ -318,6 +326,16 @@ const app = {
         }
 
         const isDifficult = q.difficult || false;
+        const diagramHtml = (q.is_actual_past_paper && q.pdf_url && q.has_diagram) ? `
+            <div class="diagram-notice">
+                <span class="diagram-icon">⊞</span> This question references a diagram.
+                <button class="btn btn-ghost diagram-toggle-btn" onclick="app.toggleDiagramEmbed(this, '${this.escapeAttr(q.pdf_url)}')">Show PDF</button>
+                <div class="diagram-embed-container" style="display:none"></div>
+            </div>` : (q.is_actual_past_paper && q.pdf_url ? `
+            <div class="diagram-notice diagram-notice--subtle">
+                <button class="btn btn-ghost diagram-toggle-btn" onclick="app.toggleDiagramEmbed(this, '${this.escapeAttr(q.pdf_url)}')">View original PDF</button>
+                <div class="diagram-embed-container" style="display:none"></div>
+            </div>` : '');
         const ppActionsHtml = q.is_actual_past_paper ? `
             <div class="pp-question-actions">
                 <button class="btn btn-ghost pp-warmup-btn" onclick="app.startWarmupFromPastPaper()">☀ Warm up first</button>
@@ -342,6 +360,7 @@ const app = {
             </div>
             ${ppActionsHtml}
             <div id="similar-pp-container"></div>
+            ${diagramHtml}
             ${bodyHtml}
             <div class="question-actions">
                 <button class="btn btn-primary" id="submit-btn" onclick="app.submitAnswer()">Submit Answer</button>
@@ -402,10 +421,13 @@ const app = {
             });
             const data = await res.json();
             if (data.hint) {
+                const hintHtml = this.escapeHtml(data.hint)
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br>');
                 hintContainer.innerHTML = `
                     <div class="hint-box">
                         <div class="hint-label">Hint</div>
-                        <div class="hint-text">${this.escapeHtml(data.hint)}</div>
+                        <div class="hint-text">${hintHtml}</div>
                     </div>`;
                 hintBtn.textContent = 'Another hint';
                 hintBtn.disabled = false;
@@ -459,6 +481,20 @@ const app = {
                 body: JSON.stringify(body),
             });
             const result = await res.json();
+            // Record past paper attempt progress
+            if (q.is_actual_past_paper && q.source && result.overall_score != null) {
+                fetch('/api/pp/progress', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ref: q.source,
+                        score: result.overall_score,
+                        total_marks: result.total_marks || q.total_marks || 0,
+                        marks_awarded: result.total_marks_awarded,
+                    }),
+                }).catch(() => {});
+                this._ppData = null; // invalidate so browser shows updated score
+            }
             this.renderFeedback(result);
         } catch (err) {
             feedbackContainer.innerHTML = '<div class="empty-state">Failed to evaluate. Check your connection.</div>';
@@ -500,11 +536,17 @@ const app = {
 
         if (result.part_results) {
             // Multi-part feedback
-            const overallPct = Math.round(result.overall_score * 100);
+            const hasMarks = result.total_marks > 0;
+            const overallLabel = hasMarks
+                ? `${result.total_marks_awarded}/${result.total_marks}`
+                : `${Math.round(result.overall_score * 100)}%`;
             const overallClass = result.overall_score >= 0.7 ? 'high' : result.overall_score >= 0.4 ? 'medium' : 'low';
 
             const partsHtml = result.part_results.map(pr => {
-                const pPct = Math.round(pr.score * 100);
+                const hasPartMarks = pr.marks_awarded != null && pr.marks_available > 0;
+                const partLabel = hasPartMarks
+                    ? `${pr.marks_awarded}/${pr.marks_available}`
+                    : `${Math.round(pr.score * 100)}%`;
                 const pClass = pr.score >= 0.7 ? 'high' : pr.score >= 0.4 ? 'medium' : 'low';
                 const modelHtml = pr.model_solution
                     ? `<button class="model-solution-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.textContent = this.textContent.includes('Show') ? 'Hide model solution' : 'Show model solution'">Show model solution</button>
@@ -514,8 +556,7 @@ const app = {
                     <div class="part-feedback-block">
                         <div class="part-feedback-header">
                             <span class="part-label-feedback">(${this.escapeHtml(pr.label)})</span>
-                            <div class="score-gauge-small ${pClass}">${pPct}%</div>
-                            <span class="part-marks-label">${pr.marks} marks</span>
+                            <div class="score-gauge-small ${pClass}">${partLabel}</div>
                         </div>
                         <div class="feedback-text">${this.escapeHtml(pr.feedback || '')}</div>
                         ${modelHtml}
@@ -526,9 +567,9 @@ const app = {
             feedbackContainer.innerHTML = `
                 <div class="feedback-panel">
                     <div class="feedback-score">
-                        <div class="score-gauge ${overallClass}">${overallPct}%</div>
+                        <div class="score-gauge ${overallClass}">${overallLabel}</div>
                         <div>
-                            <div class="feedback-label">Overall Score</div>
+                            <div class="feedback-label">Total marks</div>
                             ${confHtml}
                         </div>
                     </div>
@@ -1579,12 +1620,27 @@ const app = {
                 : course.questions;
             if (!qs.length) return '';
             const rows = qs.map(q => {
-                const topicCount = (q.topic_ids || []).length;
-                return `<div class="pp-row">
-                    <div class="pp-row-ref">${this.escapeHtml(q.ref)}</div>
+                const attempted = q.attempts > 0;
+                const marksLabel = (attempted && q.best_marks != null)
+                    ? `${q.best_marks}/${q.total_marks}`
+                    : attempted ? `${Math.round(q.best_score * 100)}%` : null;
+                const scoreClass = attempted
+                    ? (q.best_score >= 0.7 ? 'pp-score--good' : q.best_score >= 0.4 ? 'pp-score--mid' : 'pp-score--low')
+                    : '';
+                const completionHtml = marksLabel
+                    ? `<span class="pp-score ${scoreClass}" title="${q.attempts} attempt${q.attempts !== 1 ? 's' : ''}">${marksLabel}</span>`
+                    : '';
+                const diagHtml = q.has_diagram ? `<span class="pp-diagram-badge" title="Contains diagram">⊞</span>` : '';
+                const hardParts = (q.difficult_parts || []);
+                const hardHtml = hardParts.length > 0
+                    ? `<span class="pp-hard-badge" title="Parts flagged difficult: ${hardParts.join(', ')}">⚑ ${hardParts.join('')}</span>`
+                    : '';
+                return `<div class="pp-row${attempted ? ' pp-row--attempted' : ''}">
+                    <div class="pp-row-ref">${this.escapeHtml(q.ref)} ${completionHtml}</div>
                     <div class="pp-row-meta">
                         <span class="pp-marks">${q.total_marks} marks</span>
                         <span class="pp-parts">${q.parts.length} parts</span>
+                        ${diagHtml}${hardHtml}
                         ${q.pdf_url ? `<a class="pp-pdf-link" href="${q.pdf_url}" target="_blank" rel="noopener">PDF ↗</a>` : ''}
                     </div>
                     <button class="btn btn-primary pp-practice-btn"
@@ -1808,19 +1864,29 @@ const app = {
 
             const primaryTopicId = (q.topics || [])[0] || '';
 
+            // Load any saved progress (difficult_parts) from pp data cache
+            const ref = `${year} Paper ${paper} Q${qnum}`;
+            const ppEntry = this._ppData?.courses
+                ?.find(c => c.course_id === courseId)?.questions
+                ?.find(pq => pq.ref === ref);
+            const has_diagram = ppEntry?.has_diagram || false;
+            const difficultParts = ppEntry?.difficult_parts || [];
+
             const question = {
                 parts,
                 total_marks: parts.reduce((s, p) => s + p.marks, 0),
                 difficulty: 'high',
                 is_actual_past_paper: true,
-                source: `${year} Paper ${paper} Q${qnum}`,
+                source: ref,
                 pdf_url: q.pdf_url || null,
+                has_diagram,
                 topic_id: primaryTopicId,
                 course_id: courseId,
                 topic_name: `Paper ${paper} Q${qnum}`,
                 course_name: courseName,
                 difficult: false,
                 _all_topic_ids: q.topics || [],
+                _difficult_parts: difficultParts,
             };
 
             this.currentQuestion = question;
@@ -1830,6 +1896,146 @@ const app = {
         } catch (err) {
             container.innerHTML = '<div class="empty-state">Failed to load question.</div>';
         }
+    },
+
+    async showAnkiBank() {
+        this.showView('anki');
+        await this.loadAnkiBank();
+    },
+
+    async loadAnkiBank() {
+        const container = document.getElementById('anki-bank-list');
+        container.innerHTML = '<div class="loading"><span class="spinner"></span>Loading…</div>';
+        try {
+            const res = await fetch('/api/anki/bank');
+            const data = await res.json();
+            this.renderAnkiBank(data);
+            // Update nav badge
+            const navBtn = document.getElementById('nav-anki');
+            if (navBtn) {
+                navBtn.textContent = data.total > 0 ? `Anki Bank (${data.total})` : 'Anki Bank';
+            }
+            const exportAll = document.getElementById('anki-export-all-btn');
+            if (exportAll) exportAll.disabled = data.total === 0;
+        } catch (e) {
+            container.innerHTML = '<div class="empty-state">Failed to load bank.</div>';
+        }
+    },
+
+    renderAnkiBank(data) {
+        const container = document.getElementById('anki-bank-list');
+        if (data.total === 0) {
+            container.innerHTML = '<div class="empty-state">No flashcards yet. Answer questions incorrectly and cards will appear here automatically.</div>';
+            return;
+        }
+        container.innerHTML = data.topics.map(topic => `
+            <div class="anki-topic-section">
+                <div class="anki-topic-header">
+                    <div>
+                        <span class="anki-topic-name">${this.escapeHtml(topic.topic_name)}</span>
+                        <span class="anki-topic-course">${this.escapeHtml(topic.course_name)}</span>
+                    </div>
+                    <div class="anki-topic-actions">
+                        <span class="anki-card-count">${topic.cards.length} card${topic.cards.length !== 1 ? 's' : ''}</span>
+                        <button class="btn btn-primary anki-export-btn" onclick="app.exportAnki('${this.escapeAttr(topic.topic_id)}')">Export topic</button>
+                    </div>
+                </div>
+                <div class="anki-cards">
+                    ${topic.cards.map(card => `
+                        <div class="anki-card" id="anki-card-${this.escapeAttr(card.id)}">
+                            <div class="anki-card-front">${this.escapeHtml(card.front)}</div>
+                            <div class="anki-card-back">${this.escapeHtml(card.back)}</div>
+                            <button class="anki-delete-btn" onclick="app.deleteAnkiCard('${this.escapeAttr(card.id)}')" title="Remove card">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    },
+
+    async exportAnki(topicId) {
+        const btn = topicId
+            ? document.querySelector(`button[onclick="app.exportAnki('${this.escapeAttr(topicId)}')"]`)
+            : document.getElementById('anki-export-all-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Exporting…'; }
+
+        try {
+            const res = await fetch('/api/anki/export', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic_id: topicId || null }),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                alert(err.error || 'Export failed');
+                if (btn) { btn.disabled = false; btn.textContent = topicId ? 'Export topic' : 'Export all as .apkg'; }
+                return;
+            }
+            // Trigger download
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = res.headers.get('Content-Disposition')?.match(/filename="?([^"]+)"?/)?.[1] || 'cards.apkg';
+            a.click();
+            URL.revokeObjectURL(url);
+            // Reload bank (cards were cleared server-side)
+            await this.loadAnkiBank();
+        } catch (e) {
+            alert('Export failed. Is the server running?');
+            if (btn) { btn.disabled = false; btn.textContent = topicId ? 'Export topic' : 'Export all as .apkg'; }
+        }
+    },
+
+    async deleteAnkiCard(cardId) {
+        const el = document.getElementById(`anki-card-${cardId}`);
+        if (el) el.style.opacity = '0.4';
+        await fetch('/api/anki/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: [cardId] }),
+        });
+        await this.loadAnkiBank();
+    },
+
+    toggleDiagramEmbed(btn, pdfUrl) {
+        const embedContainer = btn.nextElementSibling;
+        if (!embedContainer) return;
+        if (embedContainer.style.display === 'none') {
+            embedContainer.style.display = 'block';
+            if (!embedContainer.innerHTML) {
+                embedContainer.innerHTML = `<iframe src="${pdfUrl}" class="diagram-embed-frame" title="Past paper question PDF"></iframe>`;
+            }
+            btn.textContent = 'Hide PDF';
+        } else {
+            embedContainer.style.display = 'none';
+            btn.textContent = btn.closest('.diagram-notice')?.classList.contains('diagram-notice--subtle') ? 'View original PDF' : 'Show PDF';
+        }
+    },
+
+    async togglePartDifficult(partIndex) {
+        const q = this.currentQuestion;
+        if (!q?.is_actual_past_paper || !q.source) return;
+        const part = q.parts[partIndex];
+        if (!part) return;
+
+        const btn = document.getElementById(`part-flag-btn-${partIndex}`);
+        const res = await fetch('/api/pp/progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ref: q.source, toggle_difficult_part: part.label }),
+        });
+        const data = await res.json();
+        const difficultParts = new Set(data.difficult_parts || []);
+        const isFlagged = difficultParts.has(part.label);
+        q._difficult_parts = data.difficult_parts || [];
+        if (btn) {
+            btn.classList.toggle('flagged', isFlagged);
+            btn.textContent = isFlagged ? '⚑ Difficult' : '⚐';
+            btn.title = isFlagged ? 'Remove difficult flag' : 'Flag this part as difficult';
+        }
+        // Invalidate pp cache so browser shows updated flags
+        this._ppData = null;
     },
 
     escapeHtml(str) {

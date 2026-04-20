@@ -19,6 +19,7 @@
                 <button class="nav-btn" data-view="session" onclick="app.startSessionModal()">Practice</button>
                 <button class="nav-btn" data-view="pastpapers" onclick="app.showPastPapers()">Past Papers</button>
                 <button class="nav-btn" data-view="history" onclick="app.showHistory()">History</button>
+                <button class="nav-btn" data-view="anki" onclick="app.showAnkiBank()" id="nav-anki">Anki Bank</button>
             </nav>
         </div>
     </header>
@@ -139,6 +140,18 @@
                 </select>
             </div>
             <div id="pp-list"></div>
+        </div>
+
+        <!-- Anki Bank View -->
+        <div id="view-anki" class="view">
+            <div class="anki-header">
+                <h2 class="section-title">Anki Bank</h2>
+                <div class="anki-header-actions">
+                    <button class="btn btn-primary" onclick="app.exportAnki(null)" id="anki-export-all-btn">Export all as .apkg</button>
+                </div>
+            </div>
+            <p class="anki-subtitle">Flashcards are generated automatically when you answer a question poorly. Export them to import into Anki — they'll be cleared from here once exported.</p>
+            <div id="anki-bank-list"></div>
         </div>
 
         <!-- History View -->

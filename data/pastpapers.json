@@ -6853,145 +6853,34 @@
     },
     "tagged_questions": [
       {
-        "year": 2024,
+        "year": 2018,
         "paper": 5,
-        "question": 1,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q1.pdf",
-        "topics": [
-          "cn-link",
-          "cn-ip",
-          "cn-transport",
-          "cn-application",
-          "cn-wireless"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "A 2.4 GHz physical layer.",
-            "marks": 4,
-            "topics": [
-              "cn-wireless"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A data-link layer.",
-            "marks": 4,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "An IPv4 network layer.",
-            "marks": 4,
-            "topics": [
-              "cn-ip"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "A TCP transport layer.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "A web server using HTTP v1.2.",
-            "marks": 4,
-            "topics": [
-              "cn-application"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2024,
-        "paper": 5,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q2.pdf",
-        "topics": [
-          "cn-link",
-          "cn-wireless"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Physical line coding, for fiber or copper, discusses the design of systems that transform digital communications into an analog channel; the analog channel is often referred to as the physical layer. (i) Compare and contrast the two physical line coding systems: a pure scrambling system, and a pure block codec. (ii) For each of scrambler and block code, outline the disadvantages in their sole use. Then indicate how a hybrid schema can solve such drawbacks.",
-            "marks": 10,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Wireless networking faces several challenges due to the physics of radio communications. Explain, with the use of illustration, two distinct collision-detection issues unique to wireless networks, and then describe a protocol-centered approach that will overcome each issue.",
-            "marks": 10,
-            "topics": [
-              "cn-wireless"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2024,
-        "paper": 5,
-        "question": 3,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q3.pdf",
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q4.pdf",
         "topics": [
           "cn-transport"
         ],
         "parts": [
           {
             "label": "a",
-            "text": "Define the terms latency and capacity as applied to communication channels",
-            "marks": 2,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Is there a strict relation between the two?",
-            "marks": 1,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "ci",
-            "text": "In this context, describe a basic system that provides reliable transmission of packet data. Include a description of the essential features of your approach.",
-            "marks": 8,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "cii",
-            "text": "The network channel will impact the effective throughput of your reliable transport protocol. Outline an example of why this occurs.",
-            "marks": 2,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "ciii",
-            "text": "Describe a straightforward extension to your protocol that would improve the performance of your transport protocol without changing the channel provided by the underlying network.",
+            "text": "Describe two drawbacks of layering. Provide an example for each.",
             "marks": 4,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "civ",
-            "text": "In what circumstances might these improvements have only limited benefit?",
-            "marks": 3,
+            "label": "b",
+            "text": "(i) Explain the single-bit parity error-detection code using a single byte of data. How many bit errors can this code detect? (ii) Based on the single-bit parity error-detection code devise a new code to detect and correct a single 1-bit error in 4 bytes of data. How many parity bits do you require? You may assume that parity bits are error-free.",
+            "marks": 8,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Consider a wireless network. For each of the following cases, state whether the packet transmission would be successful; assume no collision avoidance. Explain your answers. (i) Nodes A and B are in range of each other; no other node is within range. Node A sends a packet to B. (ii) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. Both A and C send a packet to B simultaneously. (iii) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. C is transmitting and A wants to send a packet to B. (iv) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. A is transmitting and B wants to send a packet to C.",
+            "marks": 8,
             "topics": [
               "cn-transport"
             ]
@@ -6999,6 +6888,617 @@
         ],
         "_text_extracted": true,
         "total_marks": 20
+      },
+      {
+        "year": 2018,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q5.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Consider two clusters A and B each hosting multiple applications. All applications send bursty traffic between A and B over a link E. Under what conditions is circuit switching more efficient to use as opposed to packet switching?",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Compare the link state and distance-vector protocols in terms of message complexity, processing complexity and robustness.",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Cambridge University is about to open a new School with three new departments A, B and C. The IPv4 address prefix of the new School is 128.232.1.0/24 and it is expecting each department to have the following number of hosts: Department A: between 40 and 60 hosts, Department B: between 100 and 120 hosts, Department C: between 20 and 30 hosts. (i) The university wishes to allocate a subnet for each department. Give possible IPv4 subnet masks for each new department. (ii) Later, the School opens a fourth department D with 30 hosts. Provide possible IPv4 subnet masks to accommodate all four departments. (iii) Finally, the School opens a fifth department E of similar size to B. Provide possible IPv4 subnet masks to accommodate all five departments. (iv) Are there any practical problems with your answer to Part (c)(iii)? Briefly discuss an alternative solution to accommodate all five departments.",
+            "marks": 12,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2018,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q6.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Briefly describe the main differences and similarities between routers and switches.",
+            "marks": 4,
+            "topics": [
+              "cn-network"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Consider the network shown in the figure below with four nodes. Cost links are shown in the diagram. Give the distance-vector routing tables for node C in the following two consecutive steps. (i) Step 0: C knows the distances to its immediate neighbours and (ii) Step 1: information from step 0 is exchanged as per the distance-vector algorithm.",
+            "marks": 4,
+            "topics": [
+              "cn-routing"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "(i) What is the problem that the Karn-Partridge algorithm aims to solve? (ii) Karn and Partridge proposed the use of exponential backoff in the TCP timeout value. Why is it that an exponential increase in the timeout value is more efficient than a linear increase for example?",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "What is the difference between congestion control and flow control in TCP?",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "Assume that three TCP flows f1, f2, f3, share a single link. The bandwidth of the link is 200 Mbps. The desired bandwidth of each flow is: f1 60 Mbps, f2 80 Mbps, and f3 100 Mbps. (i) What would be the max-min bandwidth allocation of the flows? (ii) Propose a way to \"cheat\" max-min fairness so that f3 increases its allocated bandwidth as computed in Part (e)(i).",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2019,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q4.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Provide a definition of an ARQ.",
+            "marks": 1,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Describe the design and operation of a simple ARQ for a lossy communication channel.",
+            "marks": 3,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "When and why does a simple ARQ at the transport layer have a significant negative impact upon application performance?",
+            "marks": 3,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Describe what additions are required to a simple ARQ to support windowing. When and why will an ARQ which supports windowing provide better application performance than a simple ARQ?",
+            "marks": 5,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "Describe two situations when the performance of a windowed ARQ is no better than a simple ARQ.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "f",
+            "text": "Would the QUIC protocol, when based upon UDP rather than TCP, overcome the two situations you outlined when answering Part (e)?",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2019,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q5.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "You need to urgently deliver 500 TByte of data from Zurich to London. (i) NoWayNet is offering a 10 Gbit/s reliable delivery service between Zurich and London (about 776km). Should you use either NoWayNet, or an overnight package delivery? Why? (ii) A new company, UnlikelyComms, is offering a 400 Gbit/s reliable delivery service between Zurich and London, but it takes a very indirect 2600 km path. Should you use UnlikelyComms? (iii) Following your successful urgent delivery of 500 TBytes of data, this has become an hourly task. Alongside the need to regularly deliver 500 TByte data between Zurich and London, you have an interactive virtual reality system; it requires six displays each needing 50 Gbit/s and an end-to-end latency of less than 5ms. Fortunately, a startup, FlyByNight, boasts an offering with an effective bandwidth of over 16 Tbit/s, using a special transport with no end-to-end latency at all. The downside is it can only transfer data in 500 TByte units, once every 4 minutes. Explain whether FlyByNight is, or is not, suited to your two workloads.",
+            "marks": 8,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Ethernet standards enable 1Gbit/s over 4 pairs of twisted cabling, yet the physical media has a bandwidth much less than 1GHz, e.g., 250MHz is common. (i) Explain how such high data rates are achieved, and (ii) explain how physical media errors are reduced or eliminated.",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Explain, with the aid of diagrams, how Code-Division Multiple Access permits two or more pairs of nodes to communicate over a common medium (e.g., wireless) simultaneously.",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2019,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q6.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Provide five examples of resource-multiplexing in computer networks. In each case state the layer of the network stack where this takes place, which resource is multiplexed and the multiplexing mechanism.",
+            "marks": 10,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "A relative has contacted you for help; they believe the Internet is broken. The fault turns out to be that a piece of network-protection software had installed a specific IP address entry for an (alternative) default DNS server. (i) What should have provided the correct DNS entry? (ii) By concentrating on how DNS is intended to work, describe why network applications may not work correctly. (iii) How would you diagnose this problem?",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "DNS substitution may also be used maliciously. (i) Outline how spyware might use an (alternative) DNS entry. (ii) Describe a network-centric method for overcoming such treachery.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2020,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q4.pdf",
+        "topics": [
+          "cn-transport",
+          "cn-intro"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Compute the steady state routing/forwarding table for Switch 3.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Noting which switches recompute a solution, enumerate the changed forwarding tables in switches of this network resulting from the complete failure and removal of link D.",
+            "marks": 9,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Following the removal of Link D, a new link H is added between Switch 1 and 4; however, this link fails frequently. Denied access to monitor the network-traffic, outline a diagnostic strategy to identify the faulty Link H, making clear how the network-operator might use interrogation of network switch forwarding tables.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Now suppose the switches do not permit interrogation of switch forwarding tables and that the link status information is untrustworthy. Outline other techniques that might be used to identify the failed link.",
+            "marks": 3,
+            "topics": [
+              "cn-transport",
+              "cn-intro"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2020,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q5.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Using a diagram, illustrate how long a packet of length L bytes will take to travel over an idle network from Host 4 to Host 1? The routers use a store-and-forward architecture.",
+            "marks": 5,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Computers in Calm building are often not getting allocated IP addresses and the performance is quite poor. The department router serves DHCP for the College network and is operating correctly. Residents in Blue report intermittent performance issues, but no one in Admin reports any problems. Network measurements reveal that the per-router packet loss for each switch under load can be as high as one packet in five thousand, but it is significantly worse for packets smaller than 1000 bytes, where as many as one packet in twenty are lost. With these insights, explain the cause of the problems experienced. Make clear any simplifying assumptions you have made.",
+            "marks": 5,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Some students in Calm have found using IPv6 will 'work' (i.e., connecting to the wider University services is possible, but not to Internet services); although still not performing as well as when they are in the Admin building. Describe the steps by which IPv6 addresses are allocated without DHCP and consider why this service may be working more reliably than IPv4?",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Two approaches to improve the network performance are available: one is to upgrade the performance of the physical links between the buildings to 10Gbit/s. The alternative approach is to significantly change the topology of the network by adding an additional high performance router, but leaving the performance of the physical links unchanged. Briefly give the advantages and disadvantages of each approach.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2020,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q6.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Arriving at your college room, you plug into the wired Ethernet jack for the first time. The network admin has a record of your MAC address and your machine can join the network without further action on your part. Assume: Your laptop's Ethernet address is 0a:0b:0c:0d:0e:0f, DHCP server address is 131.111.7.3, your IPv4 address will be 131.111.7.121, the gateway's IP address is 131.111.7.1, and Ethernet address is 00:01:02:03:04:05, the network netmask is 255.255.255.0. Write the series of protocol/packet exchanges that occur on the wired Ethernet link, up until you can send a single packet to 128.232.0.20. You do not need to describe packets after this packet has left the link. Include ARP and DHCP packets, stating the IP and Ethernet addresses of the packets where possible.",
+            "marks": 10,
+            "topics": []
+          },
+          {
+            "label": "b",
+            "text": "Consider two neighbours, Alice and Bob. Each have wireless IPv4 routers with integrated NAT. Each neighbour connects their laptop to their own wireless router, and each uses appropriate utilities to examine the IP address of each laptop. They realise the laptops have the same IP address. (i) How is that possible? (ii) Justify one reason that wide-spread deployment of IPv6 would remove the need for the NAT devices. (iii) Justify one reason that an IPv6 user might want to continue using their NAT. (iv) Further investigations show the two wireless routers are using the same wireless channel, although with different SSIDs. Detail what this situation means, why this situation is both possible and perfectly standards-compliant behaviour, and what implications there are for this situation \u2014 including how any negative effects can be made less severe.",
+            "marks": 10,
+            "topics": []
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2021,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q4.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Consider the layer-2 switch topology shown below.\n\nSwitch A Switch C Switch B\nHost X Host Y Host Z\nPort number Port number Port number 1 2 7 3 4 5 6\n\nAssuming all switches start with empty switch-forwarding tables; Host X (with physical address X) sends a packet destined for Host Z. Enumerate in the style below, all packets sent across the network until the message arrives at Host Z.\n\nYou may assume packet-processing, latency and transmission time are negligible. Additionally, indicate packets transmitted simultaneously.\n\nTime Sent Frame\nStep by Device on Link Source Destination\n0 X X-A1 X Z\n... ... ... ... ...\n? C C7-Z X Z",
+            "marks": 5,
+            "topics": [
+              "cn-switching"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Enumerate in the style below, the forwarding table of Switch B at the end of Part (a).\n\nDestination Port\n... ...",
+            "marks": 2,
+            "topics": [
+              "cn-switching"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Consider a layer-2 network consisting of S+1 switches, S directly attached to H hosts. Each host runs V virtual machines, each with a single address. S switches are connected using a star topology with a single switch C at the centre. Each host exchanges data with a selected and stable subset of other hosts.\n\nEstimate the worst case number of entries in the forwarding table for any typical switch S and the number of entries in the forwarding table for switch C.",
+            "marks": 3,
+            "topics": [
+              "cn-switching"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Users of this cluster of machines complain of occasional misbehaviour attributed to network timeouts and network slowdown.\n\nOutline two plausible chains of events causing the problem. Describe two appropriate, cost-effective, strategies for overcoming the issues faced by the users. You may assume the switches are state-of-the-art and buying more hosts is not the answer.",
+            "marks": 10,
+            "topics": [
+              "cn-switching"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2021,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q5.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "A user complains that their web application Times Out after successfully connecting to a remote host, yet, an investigation with ping indicates the remote host is alive. Propose a cause of this fault and outline a test-strategy that could be used automatically to detect such a fault.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "A user would like to infer the path between two hosts; they suggest using the utility ping. Make your argument for why traceroute is the more appropriate utility, comparing and contrasting their operation.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Consider the test network below; Y and Z are two unix IPv4 hosts, while nodes A through E represent fully-conformant IPv4 routers providing the only connectivity between the two hosts. Per-packet load balancing by A and E means packets may be sent on any valid path. No firewalls or packet filtering is used anywhere in the network. (i) Using traceroute infers the following paths: (Y-A-B-C-E-Z), (Y-A-D-E-Z), (Y-A-B-D-E-Z), and (Y-A-B-E-E-Z) Explain (with diagrams as appropriate) why these results have occurred and identify the two true and two false results; (ii) A firmware upgrade for routers A and E means they now do per-flow and not per-packet load balancing. Despite the functions of the flow-based load balancing, traceroute results have not changed; two false paths are inferred along with two true paths. Explain this outcome and a strategy to identify only true paths.",
+            "marks": 12,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2021,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q6.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "For IPv4 ISPs, each domestic installation typically gets a /32 network. You have a complicated configuration requiring NAT and multiple IPv4 subnets. (i) Why would an IPv6 based provider allocate four /64 networks for your premises when each /64 represents 2^64 addresses? (ii) A colleague has IPv6 with another provider; they only allow one /64 for each domestic installation. In the past your colleague has used a NAT and many IPv4 private address blocks, but keenly adopted IPv6 permitting them to upgrade their home network. They are now using blocks of the allocated /64 and a router in their home to interconnect the subnets. Not everything is working as they hoped; for example, sometimes IoT devices can't connect to the Internet to update and your colleague can not connect to their front-door camera when at work. Explain what sort of problems your colleague may face along with methods by which they could verify the root cause. (iii) Explain to your colleague why you might not be able to lend them one of your /64 allocations, even though the /64 blocks (provided to you by your ISP) are each globally routable addresses.",
+            "marks": 10,
+            "topics": [
+              "cn-ipv6"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "A local area network may carry several different LANs simultaneously; such a network would be designated for known sets of HomePlug devices. Describe a physical line coding approach for the HomePlug devices that: allows two or more simultaneous virtual local area networks to fairly share the same physical channel, but does not permit trivial interception of network traffic. Outline your approach along with its benefits and drawbacks, comparing it with the simplest use of VLAN tags in Ethernet.",
+            "marks": 10,
+            "topics": [
+              "cn-link-layer"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2022,
+        "paper": 5,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p5q1.pdf",
+        "topics": [
+          "cn-routing",
+          "cn-intro",
+          "cn-link"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Outline a protocol (including message formats) for a node to learn about its immediate neighbours.",
+            "marks": 3,
+            "topics": [
+              "cn-intro",
+              "cn-link"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Design a protocol (including message formats) for distributing this information across the network.",
+            "marks": 7,
+            "topics": [
+              "cn-routing",
+              "cn-intro"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Give a bound on the total amount of non-redundant information which is transmitted to ensure that every node acquires complete topology information.",
+            "marks": 5,
+            "topics": [
+              "cn-routing",
+              "cn-intro"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "The channel bandwidth is given as B, an approximation of 3 \u00d7 10\u2078 meters per second may be used for the speed of light, and per node packet processing time may be considered zero.",
+            "marks": 0,
+            "topics": [
+              "cn-link"
+            ]
+          },
+          {
+            "label": "d(i)",
+            "text": "Make an estimate of the worst-case total amount of time the exchange of this information will take to propagate across the network.",
+            "marks": 2,
+            "topics": [
+              "cn-routing",
+              "cn-link"
+            ]
+          },
+          {
+            "label": "d(ii)",
+            "text": "Outline one method to improve the time-period. Speculate on the improved upper bound of total time for the information exchange.",
+            "marks": 3,
+            "topics": [
+              "cn-routing",
+              "cn-link"
+            ]
+          }
+        ],
+        "_text_extracted": true
+      },
+      {
+        "year": 2022,
+        "paper": 5,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p5q2.pdf",
+        "topics": [
+          "cn-application",
+          "cn-link",
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "When and why are they correct? Explain your answer clearly.",
+            "marks": 8,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "QUIC is a new transport protocol that offers many advantages over TCP, it may not solve the issues the enthusiast of the last question discusses. Prototyping new protocols to replace TCP has proven difficult in the past. Discuss the QUIC approach to this particular challenge.",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Considering the capacity and limits of end-system components (e.g., CPU(s), cache(s), main memory, peripheral interconnects, network adapters), propose a practical strategy for end-systems to deliver the next generation of Ethernet speeds (100Gbit/s and 400Gbit/s). Alongside your strategy you may wish to also consider the particular challenges invoked by improved security in networking such as the wider use of IP header encryption (IPsec), the increasing use of full application-payload encryption, and so-forth. Justify your approach by stating your assumptions throughout. Hint: your approach need not be universal. It may help to consider aspects of Computer Architecture, Algorithms and Computer Networking in you approach.",
+            "marks": 10,
+            "topics": [
+              "cn-transport",
+              "cn-link",
+              "cn-application"
+            ]
+          }
+        ],
+        "_text_extracted": true
+      },
+      {
+        "year": 2022,
+        "paper": 5,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p5q3.pdf",
+        "topics": [
+          "cn-wireless",
+          "cn-transport",
+          "cn-multimedia",
+          "cn-ip",
+          "cn-application"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Using an explanation of the difference between flow-control and congestion-control, discuss the impact of a stable end-to-end latency.",
+            "marks": 5,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Mobile end-points present a challenge for any connection-based application on an IP network. Using an example, discuss how this challenge might be resolved without a complete reworking of the end-system application.",
+            "marks": 5,
+            "topics": [
+              "cn-wireless",
+              "cn-ip",
+              "cn-application"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "A reverse proxy such as Varnish makes static snapshots of the content of a dynamic webpage. Outline a use-case for using such a reverse proxy, paying particular attention to a case when an otherwise useful system might need disabling.",
+            "marks": 5,
+            "topics": [
+              "cn-application"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "In 2021 a large social network had to reboot all its systems after systemic failure. Discussing the extensive use of image caching, outline the challenges that face an image serving system in the social media space (that is, one that uses popularity, hashtags, and so-forth). Discuss in particular why, for weeks after the reboot, many users complained of poor performance, and of being served irrelevant or old images. Hint: A distinguishing feature of social networks has been a heavy-tailed distribution of interest among images and users. For your information: a large image sharing site has 500 \u00d7 10^6 active daily users, 500 \u00d7 10^6 active posts (groups of images and interactions) and 100 \u00d7 10^6 new images each day. Sizes varies considerably but an average image size approaches 100 Kbytes.",
+            "marks": 5,
+            "topics": [
+              "cn-application",
+              "cn-multimedia"
+            ]
+          }
+        ],
+        "_text_extracted": true
       },
       {
         "year": 2023,
@@ -7150,487 +7650,145 @@
         "total_marks": 20
       },
       {
-        "year": 2021,
+        "year": 2024,
         "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q4.pdf",
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q1.pdf",
+        "topics": [
+          "cn-link",
+          "cn-ip",
+          "cn-transport",
+          "cn-application",
+          "cn-wireless"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "A 2.4 GHz physical layer.",
+            "marks": 4,
+            "topics": [
+              "cn-wireless"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "A data-link layer.",
+            "marks": 4,
+            "topics": [
+              "cn-link"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "An IPv4 network layer.",
+            "marks": 4,
+            "topics": [
+              "cn-ip"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "A TCP transport layer.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "A web server using HTTP v1.2.",
+            "marks": 4,
+            "topics": [
+              "cn-application"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q2.pdf",
+        "topics": [
+          "cn-link",
+          "cn-wireless"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Physical line coding, for fiber or copper, discusses the design of systems that transform digital communications into an analog channel; the analog channel is often referred to as the physical layer. (i) Compare and contrast the two physical line coding systems: a pure scrambling system, and a pure block codec. (ii) For each of scrambler and block code, outline the disadvantages in their sole use. Then indicate how a hybrid schema can solve such drawbacks.",
+            "marks": 10,
+            "topics": [
+              "cn-link"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Wireless networking faces several challenges due to the physics of radio communications. Explain, with the use of illustration, two distinct collision-detection issues unique to wireless networks, and then describe a protocol-centered approach that will overcome each issue.",
+            "marks": 10,
+            "topics": [
+              "cn-wireless"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q3.pdf",
         "topics": [
           "cn-transport"
         ],
         "parts": [
           {
             "label": "a",
-            "text": "Consider the layer-2 switch topology shown below.\n\nSwitch A Switch C Switch B\nHost X Host Y Host Z\nPort number Port number Port number 1 2 7 3 4 5 6\n\nAssuming all switches start with empty switch-forwarding tables; Host X (with physical address X) sends a packet destined for Host Z. Enumerate in the style below, all packets sent across the network until the message arrives at Host Z.\n\nYou may assume packet-processing, latency and transmission time are negligible. Additionally, indicate packets transmitted simultaneously.\n\nTime Sent Frame\nStep by Device on Link Source Destination\n0 X X-A1 X Z\n... ... ... ... ...\n? C C7-Z X Z",
-            "marks": 5,
-            "topics": [
-              "cn-switching"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Enumerate in the style below, the forwarding table of Switch B at the end of Part (a).\n\nDestination Port\n... ...",
+            "text": "Define the terms latency and capacity as applied to communication channels",
             "marks": 2,
             "topics": [
-              "cn-switching"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Consider a layer-2 network consisting of S+1 switches, S directly attached to H hosts. Each host runs V virtual machines, each with a single address. S switches are connected using a star topology with a single switch C at the centre. Each host exchanges data with a selected and stable subset of other hosts.\n\nEstimate the worst case number of entries in the forwarding table for any typical switch S and the number of entries in the forwarding table for switch C.",
-            "marks": 3,
-            "topics": [
-              "cn-switching"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Users of this cluster of machines complain of occasional misbehaviour attributed to network timeouts and network slowdown.\n\nOutline two plausible chains of events causing the problem. Describe two appropriate, cost-effective, strategies for overcoming the issues faced by the users. You may assume the switches are state-of-the-art and buying more hosts is not the answer.",
-            "marks": 10,
-            "topics": [
-              "cn-switching"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2021,
-        "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q5.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "A user complains that their web application Times Out after successfully connecting to a remote host, yet, an investigation with ping indicates the remote host is alive. Propose a cause of this fault and outline a test-strategy that could be used automatically to detect such a fault.",
-            "marks": 4,
-            "topics": [
               "cn-transport"
             ]
           },
           {
             "label": "b",
-            "text": "A user would like to infer the path between two hosts; they suggest using the utility ping. Make your argument for why traceroute is the more appropriate utility, comparing and contrasting their operation.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Consider the test network below; Y and Z are two unix IPv4 hosts, while nodes A through E represent fully-conformant IPv4 routers providing the only connectivity between the two hosts. Per-packet load balancing by A and E means packets may be sent on any valid path. No firewalls or packet filtering is used anywhere in the network. (i) Using traceroute infers the following paths: (Y-A-B-C-E-Z), (Y-A-D-E-Z), (Y-A-B-D-E-Z), and (Y-A-B-E-E-Z) Explain (with diagrams as appropriate) why these results have occurred and identify the two true and two false results; (ii) A firmware upgrade for routers A and E means they now do per-flow and not per-packet load balancing. Despite the functions of the flow-based load balancing, traceroute results have not changed; two false paths are inferred along with two true paths. Explain this outcome and a strategy to identify only true paths.",
-            "marks": 12,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2021,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q6.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "For IPv4 ISPs, each domestic installation typically gets a /32 network. You have a complicated configuration requiring NAT and multiple IPv4 subnets. (i) Why would an IPv6 based provider allocate four /64 networks for your premises when each /64 represents 2^64 addresses? (ii) A colleague has IPv6 with another provider; they only allow one /64 for each domestic installation. In the past your colleague has used a NAT and many IPv4 private address blocks, but keenly adopted IPv6 permitting them to upgrade their home network. They are now using blocks of the allocated /64 and a router in their home to interconnect the subnets. Not everything is working as they hoped; for example, sometimes IoT devices can't connect to the Internet to update and your colleague can not connect to their front-door camera when at work. Explain what sort of problems your colleague may face along with methods by which they could verify the root cause. (iii) Explain to your colleague why you might not be able to lend them one of your /64 allocations, even though the /64 blocks (provided to you by your ISP) are each globally routable addresses.",
-            "marks": 10,
-            "topics": [
-              "cn-ipv6"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A local area network may carry several different LANs simultaneously; such a network would be designated for known sets of HomePlug devices. Describe a physical line coding approach for the HomePlug devices that: allows two or more simultaneous virtual local area networks to fairly share the same physical channel, but does not permit trivial interception of network traffic. Outline your approach along with its benefits and drawbacks, comparing it with the simplest use of VLAN tags in Ethernet.",
-            "marks": 10,
-            "topics": [
-              "cn-link-layer"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2020,
-        "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q4.pdf",
-        "topics": [
-          "cn-transport",
-          "cn-intro"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Compute the steady state routing/forwarding table for Switch 3.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Noting which switches recompute a solution, enumerate the changed forwarding tables in switches of this network resulting from the complete failure and removal of link D.",
-            "marks": 9,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Following the removal of Link D, a new link H is added between Switch 1 and 4; however, this link fails frequently. Denied access to monitor the network-traffic, outline a diagnostic strategy to identify the faulty Link H, making clear how the network-operator might use interrogation of network switch forwarding tables.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Now suppose the switches do not permit interrogation of switch forwarding tables and that the link status information is untrustworthy. Outline other techniques that might be used to identify the failed link.",
-            "marks": 3,
-            "topics": [
-              "cn-transport",
-              "cn-intro"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2020,
-        "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q5.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Using a diagram, illustrate how long a packet of length L bytes will take to travel over an idle network from Host 4 to Host 1? The routers use a store-and-forward architecture.",
-            "marks": 5,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Computers in Calm building are often not getting allocated IP addresses and the performance is quite poor. The department router serves DHCP for the College network and is operating correctly. Residents in Blue report intermittent performance issues, but no one in Admin reports any problems. Network measurements reveal that the per-router packet loss for each switch under load can be as high as one packet in five thousand, but it is significantly worse for packets smaller than 1000 bytes, where as many as one packet in twenty are lost. With these insights, explain the cause of the problems experienced. Make clear any simplifying assumptions you have made.",
-            "marks": 5,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Some students in Calm have found using IPv6 will 'work' (i.e., connecting to the wider University services is possible, but not to Internet services); although still not performing as well as when they are in the Admin building. Describe the steps by which IPv6 addresses are allocated without DHCP and consider why this service may be working more reliably than IPv4?",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Two approaches to improve the network performance are available: one is to upgrade the performance of the physical links between the buildings to 10Gbit/s. The alternative approach is to significantly change the topology of the network by adding an additional high performance router, but leaving the performance of the physical links unchanged. Briefly give the advantages and disadvantages of each approach.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2020,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q6.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Arriving at your college room, you plug into the wired Ethernet jack for the first time. The network admin has a record of your MAC address and your machine can join the network without further action on your part. Assume: Your laptop's Ethernet address is 0a:0b:0c:0d:0e:0f, DHCP server address is 131.111.7.3, your IPv4 address will be 131.111.7.121, the gateway's IP address is 131.111.7.1, and Ethernet address is 00:01:02:03:04:05, the network netmask is 255.255.255.0. Write the series of protocol/packet exchanges that occur on the wired Ethernet link, up until you can send a single packet to 128.232.0.20. You do not need to describe packets after this packet has left the link. Include ARP and DHCP packets, stating the IP and Ethernet addresses of the packets where possible.",
-            "marks": 10,
-            "topics": []
-          },
-          {
-            "label": "b",
-            "text": "Consider two neighbours, Alice and Bob. Each have wireless IPv4 routers with integrated NAT. Each neighbour connects their laptop to their own wireless router, and each uses appropriate utilities to examine the IP address of each laptop. They realise the laptops have the same IP address. (i) How is that possible? (ii) Justify one reason that wide-spread deployment of IPv6 would remove the need for the NAT devices. (iii) Justify one reason that an IPv6 user might want to continue using their NAT. (iv) Further investigations show the two wireless routers are using the same wireless channel, although with different SSIDs. Detail what this situation means, why this situation is both possible and perfectly standards-compliant behaviour, and what implications there are for this situation \u2014 including how any negative effects can be made less severe.",
-            "marks": 10,
-            "topics": []
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2019,
-        "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q4.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Provide a definition of an ARQ.",
+            "text": "Is there a strict relation between the two?",
             "marks": 1,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "b",
-            "text": "Describe the design and operation of a simple ARQ for a lossy communication channel.",
-            "marks": 3,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "When and why does a simple ARQ at the transport layer have a significant negative impact upon application performance?",
-            "marks": 3,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Describe what additions are required to a simple ARQ to support windowing. When and why will an ARQ which supports windowing provide better application performance than a simple ARQ?",
-            "marks": 5,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Describe two situations when the performance of a windowed ARQ is no better than a simple ARQ.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "f",
-            "text": "Would the QUIC protocol, when based upon UDP rather than TCP, overcome the two situations you outlined when answering Part (e)?",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2019,
-        "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q5.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "You need to urgently deliver 500 TByte of data from Zurich to London. (i) NoWayNet is offering a 10 Gbit/s reliable delivery service between Zurich and London (about 776km). Should you use either NoWayNet, or an overnight package delivery? Why? (ii) A new company, UnlikelyComms, is offering a 400 Gbit/s reliable delivery service between Zurich and London, but it takes a very indirect 2600 km path. Should you use UnlikelyComms? (iii) Following your successful urgent delivery of 500 TBytes of data, this has become an hourly task. Alongside the need to regularly deliver 500 TByte data between Zurich and London, you have an interactive virtual reality system; it requires six displays each needing 50 Gbit/s and an end-to-end latency of less than 5ms. Fortunately, a startup, FlyByNight, boasts an offering with an effective bandwidth of over 16 Tbit/s, using a special transport with no end-to-end latency at all. The downside is it can only transfer data in 500 TByte units, once every 4 minutes. Explain whether FlyByNight is, or is not, suited to your two workloads.",
+            "label": "ci",
+            "text": "In this context, describe a basic system that provides reliable transmission of packet data. Include a description of the essential features of your approach.",
             "marks": 8,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "b",
-            "text": "Ethernet standards enable 1Gbit/s over 4 pairs of twisted cabling, yet the physical media has a bandwidth much less than 1GHz, e.g., 250MHz is common. (i) Explain how such high data rates are achieved, and (ii) explain how physical media errors are reduced or eliminated.",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Explain, with the aid of diagrams, how Code-Division Multiple Access permits two or more pairs of nodes to communicate over a common medium (e.g., wireless) simultaneously.",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2019,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q6.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Provide five examples of resource-multiplexing in computer networks. In each case state the layer of the network stack where this takes place, which resource is multiplexed and the multiplexing mechanism.",
-            "marks": 10,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A relative has contacted you for help; they believe the Internet is broken. The fault turns out to be that a piece of network-protection software had installed a specific IP address entry for an (alternative) default DNS server. (i) What should have provided the correct DNS entry? (ii) By concentrating on how DNS is intended to work, describe why network applications may not work correctly. (iii) How would you diagnose this problem?",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "DNS substitution may also be used maliciously. (i) Outline how spyware might use an (alternative) DNS entry. (ii) Describe a network-centric method for overcoming such treachery.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2018,
-        "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q4.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Describe two drawbacks of layering. Provide an example for each.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "(i) Explain the single-bit parity error-detection code using a single byte of data. How many bit errors can this code detect? (ii) Based on the single-bit parity error-detection code devise a new code to detect and correct a single 1-bit error in 4 bytes of data. How many parity bits do you require? You may assume that parity bits are error-free.",
-            "marks": 8,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Consider a wireless network. For each of the following cases, state whether the packet transmission would be successful; assume no collision avoidance. Explain your answers. (i) Nodes A and B are in range of each other; no other node is within range. Node A sends a packet to B. (ii) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. Both A and C send a packet to B simultaneously. (iii) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. C is transmitting and A wants to send a packet to B. (iv) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. A is transmitting and B wants to send a packet to C.",
-            "marks": 8,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2018,
-        "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q5.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Consider two clusters A and B each hosting multiple applications. All applications send bursty traffic between A and B over a link E. Under what conditions is circuit switching more efficient to use as opposed to packet switching?",
+            "label": "cii",
+            "text": "The network channel will impact the effective throughput of your reliable transport protocol. Outline an example of why this occurs.",
             "marks": 2,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "b",
-            "text": "Compare the link state and distance-vector protocols in terms of message complexity, processing complexity and robustness.",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Cambridge University is about to open a new School with three new departments A, B and C. The IPv4 address prefix of the new School is 128.232.1.0/24 and it is expecting each department to have the following number of hosts: Department A: between 40 and 60 hosts, Department B: between 100 and 120 hosts, Department C: between 20 and 30 hosts. (i) The university wishes to allocate a subnet for each department. Give possible IPv4 subnet masks for each new department. (ii) Later, the School opens a fourth department D with 30 hosts. Provide possible IPv4 subnet masks to accommodate all four departments. (iii) Finally, the School opens a fifth department E of similar size to B. Provide possible IPv4 subnet masks to accommodate all five departments. (iv) Are there any practical problems with your answer to Part (c)(iii)? Briefly discuss an alternative solution to accommodate all five departments.",
-            "marks": 12,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2018,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q6.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Briefly describe the main differences and similarities between routers and switches.",
-            "marks": 4,
-            "topics": [
-              "cn-network"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Consider the network shown in the figure below with four nodes. Cost links are shown in the diagram. Give the distance-vector routing tables for node C in the following two consecutive steps. (i) Step 0: C knows the distances to its immediate neighbours and (ii) Step 1: information from step 0 is exchanged as per the distance-vector algorithm.",
-            "marks": 4,
-            "topics": [
-              "cn-routing"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "(i) What is the problem that the Karn-Partridge algorithm aims to solve? (ii) Karn and Partridge proposed the use of exponential backoff in the TCP timeout value. Why is it that an exponential increase in the timeout value is more efficient than a linear increase for example?",
+            "label": "ciii",
+            "text": "Describe a straightforward extension to your protocol that would improve the performance of your transport protocol without changing the channel provided by the underlying network.",
             "marks": 4,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "d",
-            "text": "What is the difference between congestion control and flow control in TCP?",
-            "marks": 2,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Assume that three TCP flows f1, f2, f3, share a single link. The bandwidth of the link is 200 Mbps. The desired bandwidth of each flow is: f1 60 Mbps, f2 80 Mbps, and f3 100 Mbps. (i) What would be the max-min bandwidth allocation of the flows? (ii) Propose a way to \"cheat\" max-min fairness so that f3 increases its allocated bandwidth as computed in Part (e)(i).",
-            "marks": 6,
+            "label": "civ",
+            "text": "In what circumstances might these improvements have only limited benefit?",
+            "marks": 3,
             "topics": [
               "cn-transport"
             ]

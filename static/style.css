@@ -2080,7 +2080,200 @@ body {
     flex-shrink: 0;
 }
 
+/* Per-part difficult flag */
+.part-btn-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.4rem;
+}
+
+.part-flag-btn {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    opacity: 0.6;
+}
+
+.part-flag-btn.flagged {
+    opacity: 1;
+    color: #A85555;
+    border-color: #A85555;
+}
+
+/* PP browser completion & badge indicators */
+.pp-row--attempted .pp-row-ref {
+    color: var(--text);
+}
+
+.pp-score {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    margin-left: 0.5rem;
+}
+
+.pp-score--good { background: #d4edda; color: #2d6a4f; }
+.pp-score--mid  { background: #fff3cd; color: #7d5a00; }
+.pp-score--low  { background: #f8d7da; color: #842029; }
+
+.pp-diagram-badge {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-right: 0.25rem;
+}
+
+.pp-hard-badge {
+    font-size: 0.78rem;
+    color: #A85555;
+    font-weight: 500;
+}
+
+/* Diagram/PDF embed in question view */
+.diagram-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    background: #FFF8F0;
+    border: 1px solid #E8D8C0;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+    flex-wrap: wrap;
+}
+
+.diagram-notice--subtle {
+    background: transparent;
+    border-color: var(--border-light);
+}
+
+.diagram-icon {
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+.diagram-toggle-btn {
+    font-size: 0.82rem;
+    padding: 0.25rem 0.75rem;
+}
+
+.diagram-embed-container {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.diagram-embed-frame {
+    width: 100%;
+    height: 600px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
 /* ---- Responsive ---- */
+/* ---- Anki Bank ---- */
+.anki-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+
+.anki-header-actions { display: flex; gap: 0.75rem; }
+
+.anki-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.anki-topic-section {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+
+.anki-topic-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.anki-topic-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.anki-topic-course {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+}
+
+.anki-topic-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.anki-card-count {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.anki-export-btn {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.85rem;
+}
+
+.anki-cards {
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.anki-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.6rem 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border-light);
+    border-radius: calc(var(--radius) - 2px);
+    font-size: 0.88rem;
+    transition: opacity 0.2s;
+}
+
+.anki-card-front {
+    font-weight: 500;
+}
+
+.anki-card-back {
+    color: var(--text-muted);
+}
+
+.anki-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.15rem 0.3rem;
+    border-radius: 3px;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+}
+
+.anki-delete-btn:hover { opacity: 1; color: #A85555; }
+
 @media (max-width: 640px) {
     .header-inner {
         flex-direction: column;
