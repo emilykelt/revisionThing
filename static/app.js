@@ -851,14 +851,16 @@ const app = {
         };
 
         // ---- Force simulation ----
+        const nodeRadius = d => Math.min(5 + (d.times_tested || 0) * 0.5, 10);
         const sim = d3.forceSimulation(data.nodes)
             .force('link', d3.forceLink(data.links).id(d => d.id)
-                .distance(d => d.type === 'intra' ? 52 : 140)
-                .strength(d => d.type === 'intra' ? 0.6 : d.strength * 0.22))
-            .force('charge', d3.forceManyBody().strength(-140).distanceMax(320))
+                .distance(d => d.type === 'intra' ? 68 : 160)
+                .strength(d => d.type === 'intra' ? 0.5 : d.strength * 0.18))
+            .force('charge', d3.forceManyBody().strength(-260).distanceMax(400))
             .force('center', d3.forceCenter(width / 2, height / 2).strength(0.04))
-            .force('collide', d3.forceCollide(15))
+            .force('collide', d3.forceCollide(d => nodeRadius(d) + 14).strength(0.85).iterations(3))
             .force('cluster', clusterForce)
+            .alphaDecay(0.018)
             .on('tick', ticked)
             .on('end', drawLabels);
         this.graphSimulation = sim;
@@ -882,7 +884,7 @@ const app = {
             .data(data.nodes)
             .join('circle')
             .attr('class', d => 'graph-node' + (d.difficult ? ' graph-node--difficult' : ''))
-            .attr('r', d => Math.min(5 + (d.times_tested || 0) * 0.5, 10))
+            .attr('r', d => nodeRadius(d))
             .attr('fill', d => self.getConfColor(d.confidence))
             .attr('fill-opacity', 0.88)
             .attr('stroke', d => d.difficult ? '#A85555' : '#FAF6F0')
@@ -948,6 +950,26 @@ const app = {
         }
 
         // ---- Draw course labels when simulation settles ----
+        const COURSE_ABBREV = {
+            'concurrent-distributed': 'CDS',
+            'data-science': 'Data Sci',
+            'econ-law-ethics': 'ELE',
+            'further-graphics': 'F.Graphics',
+            'intro-comp-arch': 'Comp Arch',
+            'prog-c-cpp': 'C/C++',
+            'unix-tools': 'Unix Tools',
+            'compiler-construction': 'Compilers',
+            'computation-theory': 'Comp Theory',
+            'computer-networking': 'Networking',
+            'further-hci': 'HCI',
+            'logic-proof': 'Logic & Proof',
+            'prolog': 'Prolog',
+            'semantics': 'Semantics',
+            'artificial-intelligence': 'AI',
+            'complexity-theory': 'Complexity',
+            'cybersecurity': 'Cybersecurity',
+            'formal-models-language': 'Formal Models',
+        };
         const labelGroup = g.append('g').attr('class', 'label-group');
         function drawLabels() {
             labelGroup.selectAll('*').remove();
@@ -956,16 +978,25 @@ const app = {
                 const pts = data.nodes.filter(n => n.course_id === cid);
                 if (pts.length === 0) return;
                 const cx = pts.reduce((s, n) => s + n.x, 0) / pts.length;
-                // Place label above the cluster
+                const cy = pts.reduce((s, n) => s + n.y, 0) / pts.length;
                 const minY = Math.min(...pts.map(n => n.y));
+                const labelY = minY - 24;
                 const color = COURSE_PALETTE[meta.color_index % COURSE_PALETTE.length];
-                // Abbreviate long names
-                const shortName = meta.name.length > 28 ? meta.name.substring(0, 26) + '…' : meta.name;
-                labelGroup.append('text')
+                const label = COURSE_ABBREV[cid] || (meta.name.length > 18 ? meta.name.substring(0, 16) + '…' : meta.name);
+                // Background rect for readability
+                const grp = labelGroup.append('g');
+                const txt = grp.append('text')
                     .attr('class', 'course-hull-label')
-                    .attr('x', cx).attr('y', minY - 40)
+                    .attr('x', cx).attr('y', labelY)
                     .attr('fill', color)
-                    .text(shortName);
+                    .text(label);
+                try {
+                    const bbox = txt.node().getBBox();
+                    grp.insert('rect', 'text')
+                        .attr('x', bbox.x - 3).attr('y', bbox.y - 2)
+                        .attr('width', bbox.width + 6).attr('height', bbox.height + 4)
+                        .attr('rx', 3).attr('fill', '#FAF6F0').attr('fill-opacity', 0.75);
+                } catch(e) {}
             });
         }
 

@@ -1,0 +1,4 @@
+#!/bin/bash
+DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$DIR"
+exec "/Users/emilykelt/Library/Mobile Documents/com~apple~CloudDocs/Coding/revisionThing/venv/bin/python3" launch_app.py
