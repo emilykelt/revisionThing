@@ -219,6 +219,7 @@ def generate_question(topic_name, subtopics, course_name, confidence,
             f'Focus subtopics: {", ".join(rotated[:4])}'
             f'{notes_snippet}\n\n'
             f'Marks must be 1–10 (simple recall = 2–3, explanation = 4–6, analysis = 7–10).\n'
+            f'Use LaTeX for any maths: inline with $...$ and display with $$...$$.\n'
             f'Respond ONLY with this JSON (no other text):\n'
             f'{{"question": "full question text", "difficulty": "low", "marks": 4}}'
         )
@@ -232,6 +233,7 @@ def generate_question(topic_name, subtopics, course_name, confidence,
             f'Focus subtopics: {", ".join(rotated[:6])}'
             f'{notes_snippet}\n\n'
             f'Each part must be answerable independently. Marks per part: 1–10. Total marks up to 20.\n'
+            f'Use LaTeX for any maths: inline with $...$ and display with $$...$$.\n'
             f'Respond ONLY with this JSON (no other text):\n'
             f'{{"parts": [{{"label": "a", "text": "question text for part a", "marks": 4}}, '
             f'{{"label": "b", "text": "question text for part b", "marks": 8}}], '
@@ -295,6 +297,7 @@ def evaluate_answer(question, answer, topic_name, course_name, part_label=None, 
         f'Course: {course_name} | Topic: {topic_name}{part_context}{marks_context}\n'
         f'Question: {question}\n'
         f'Student answer: {answer}\n\n'
+        f'Use LaTeX for any maths ($...$ inline, $$...$$ display).\n'
         f'Respond ONLY with this JSON:\n'
         + (
             f'{{"marks_awarded": 3, "marks_available": {marks_available}, "feedback": "...", "model_solution": "...", "key_gaps": ["concept1"]}}\n'
@@ -411,7 +414,8 @@ def generate_mcqs(topic_infos, count=8, past_paper_context=None):
         f'A student should not be able to guess by looking at option length or complexity.\n'
         f'- One-sentence explanation of why the correct answer is right\n'
         f'- "topic" field: copy the topic name exactly from the assignment above\n'
-        f'- Return questions in the same order as the assignments (Q1 first)\n\n'
+        f'- Return questions in the same order as the assignments (Q1 first)\n'
+        f'- Use LaTeX for any maths: inline $...$ and display $$...$$\n\n'
         f'Respond ONLY with a JSON array, no other text:\n'
         f'[{{"question":"...","options":{{"A":"...","B":"...","C":"...","D":"..."}},'
         f'"correct":"A","explanation":"...","topic":"..."}}]'

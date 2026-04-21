@@ -285,7 +285,7 @@ const app = {
                 <div class="question-part" id="question-part-${i}">
                     <div class="question-part-text">
                         <span class="part-label">(${this.escapeHtml(part.label)})</span>
-                        ${this.escapeHtml(part.text)}
+                        ${this.renderContent(part.text)}
                         <span class="question-marks">[${part.marks} marks]</span>
                     </div>
                     <div class="answer-area">
@@ -315,7 +315,7 @@ const app = {
             // Single question
             bodyHtml = `
                 <div class="question-box">
-                    ${this.escapeHtml(q.question)}
+                    ${this.renderContent(q.question)}
                     ${q.marks ? `<div class="question-marks">[${q.marks} marks]</div>` : ''}
                 </div>
                 <div class="answer-area">
@@ -421,9 +421,7 @@ const app = {
             });
             const data = await res.json();
             if (data.hint) {
-                const hintHtml = this.escapeHtml(data.hint)
-                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\n/g, '<br>');
+                const hintHtml = this.renderContent(data.hint).replace(/\n/g, '<br>');
                 hintContainer.innerHTML = `
                     <div class="hint-box">
                         <div class="hint-label">Hint</div>
@@ -550,7 +548,7 @@ const app = {
                 const pClass = pr.score >= 0.7 ? 'high' : pr.score >= 0.4 ? 'medium' : 'low';
                 const modelHtml = pr.model_solution
                     ? `<button class="model-solution-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.textContent = this.textContent.includes('Show') ? 'Hide model solution' : 'Show model solution'">Show model solution</button>
-                       <div class="history-detail"><div class="model-solution">${this.escapeHtml(pr.model_solution)}</div></div>`
+                       <div class="history-detail"><div class="model-solution">${this.renderContent(pr.model_solution)}</div></div>`
                     : '';
                 return `
                     <div class="part-feedback-block">
@@ -558,7 +556,7 @@ const app = {
                             <span class="part-label-feedback">(${this.escapeHtml(pr.label)})</span>
                             <div class="score-gauge-small ${pClass}">${partLabel}</div>
                         </div>
-                        <div class="feedback-text">${this.escapeHtml(pr.feedback || '')}</div>
+                        <div class="feedback-text">${this.renderContent(pr.feedback || '')}</div>
                         ${modelHtml}
                     </div>
                 `;
@@ -588,7 +586,7 @@ const app = {
             const modelSolHtml = result.model_solution
                 ? `<button class="model-solution-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.textContent = this.textContent.includes('Show') ? 'Hide model solution' : 'Show model solution'">Show model solution</button>
                    <div class="history-detail" style="margin-top: 0.5rem;">
-                       <div class="model-solution">${this.escapeHtml(result.model_solution)}</div>
+                       <div class="model-solution">${this.renderContent(result.model_solution)}</div>
                    </div>`
                 : '';
 
@@ -602,7 +600,7 @@ const app = {
                         </div>
                     </div>
                     <div class="feedback-section-title">Feedback</div>
-                    <div class="feedback-text">${this.escapeHtml(result.feedback || '')}</div>
+                    <div class="feedback-text">${this.renderContent(result.feedback || '')}</div>
                     ${gapsHtml}
                     ${modelSolHtml}
                     <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
@@ -1351,7 +1349,7 @@ const app = {
         const optionsHtml = ['A', 'B', 'C', 'D'].map(letter => `
             <button class="mcq-option" onclick="app.selectMcqOption('${letter}')" id="mcq-opt-${letter}">
                 <span class="option-letter">${letter}.</span>
-                <span>${this.escapeHtml(q.options[letter])}</span>
+                <span>${this.renderContent(q.options[letter])}</span>
             </button>
         `).join('');
 
@@ -1360,7 +1358,7 @@ const app = {
         document.getElementById('warmup-card').innerHTML = `
             <div class="warmup-card">
                 ${q.topic ? `<div class="warmup-q-topic">${this.escapeHtml(q.topic)}</div>` : ''}
-                <div class="warmup-q-text">${this.escapeHtml(q.question)}</div>
+                <div class="warmup-q-text">${this.renderContent(q.question)}</div>
                 <div class="mcq-options" id="mcq-options">${optionsHtml}</div>
                 <div class="mcq-explanation" id="mcq-explanation" style="display:none"></div>
                 <div id="mcq-next-wrap" style="margin-top:1.25rem; text-align:right; display:none">
@@ -1394,7 +1392,7 @@ const app = {
         // Show explanation
         const expDiv = document.getElementById('mcq-explanation');
         const resultText = isCorrect ? '✓ Correct!' : `✗ Incorrect — the answer was ${correct}.`;
-        expDiv.innerHTML = `<strong>${resultText}</strong> ${this.escapeHtml(q.explanation)}`;
+        expDiv.innerHTML = `<strong>${resultText}</strong> ${this.renderContent(q.explanation)}`;
         expDiv.className = `mcq-explanation ${isCorrect ? 'correct' : 'wrong'}`;
         expDiv.style.display = 'block';
 
@@ -1508,13 +1506,13 @@ const app = {
             const items = wrong.map(a => `
                 <div class="warmup-review-item">
                     <div>
-                        <div class="warmup-review-q">${this.escapeHtml(a.question)}</div>
+                        <div class="warmup-review-q">${this.renderContent(a.question)}</div>
                         <div class="warmup-review-meta">
                             <span class="warmup-review-wrong">You chose ${a.selected}</span>
                             &middot;
                             <span class="warmup-review-correct">Correct: ${a.correct}</span>
                         </div>
-                        <div class="warmup-review-exp">${this.escapeHtml(a.explanation)}</div>
+                        <div class="warmup-review-exp">${this.renderContent(a.explanation)}</div>
                     </div>
                 </div>
             `).join('');
@@ -2074,6 +2072,42 @@ const app = {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    },
+
+    // Renders text with KaTeX math ($...$, $$...$$) and **bold** markdown
+    renderContent(text) {
+        if (!text) return '';
+        const blocks = [];
+        // Use unique token unlikely to appear in content
+        const mkPH = i => `\x00\x00MATH${i}\x00\x00`;
+        const rePH = /\x00\x00MATH(\d+)\x00\x00/g;
+        let s = text
+            // Display math: $$...$$ or \[...\]
+            .replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]/g, (m, g1, g2) => {
+                const expr = (g1 || g2).trim();
+                const idx = blocks.length;
+                if (typeof katex !== 'undefined') {
+                    try { blocks.push(katex.renderToString(expr, { displayMode: true, throwOnError: false })); }
+                    catch(e) { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
+                } else { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
+                return mkPH(idx);
+            })
+            // Inline math: $...$ or \(...\)
+            .replace(/\$([^$\n]+?)\$|\\\((.+?)\\\)/g, (m, g1, g2) => {
+                const expr = (g1 || g2).trim();
+                const idx = blocks.length;
+                if (typeof katex !== 'undefined') {
+                    try { blocks.push(katex.renderToString(expr, { displayMode: false, throwOnError: false })); }
+                    catch(e) { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
+                } else { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
+                return mkPH(idx);
+            });
+        // Escape HTML using regex (avoids DOM node that might strip null bytes)
+        s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        // Apply bold markdown, then restore math blocks
+        s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+             .replace(rePH, (_, i) => blocks[+i]);
+        return s;
     },
 
     escapeAttr(str) {

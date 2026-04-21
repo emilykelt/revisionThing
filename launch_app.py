@@ -6,12 +6,44 @@ import threading
 import time
 import os
 import sys
+import socket
+import signal
 
-# Make sure we can import app from this directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 PORT = 5001
+
+
+def _kill_port(port):
+    """Kill any process already using the port so we can bind cleanly."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ['lsof', '-ti', f':{port}'],
+            capture_output=True, text=True
+        )
+        pids = result.stdout.strip().split()
+        for pid in pids:
+            try:
+                os.kill(int(pid), signal.SIGTERM)
+            except (ProcessLookupError, ValueError):
+                pass
+        if pids:
+            time.sleep(0.4)
+    except Exception:
+        pass
+
+
+def _wait_for_port(port, timeout=10.0):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection(('127.0.0.1', port), timeout=0.2):
+                return True
+        except OSError:
+            time.sleep(0.1)
+    return False
 
 
 def run_server():
@@ -22,27 +54,33 @@ def run_server():
     app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False)
 
 
+# Free the port if something is squatting on it
+_kill_port(PORT)
+
 # Start Flask in background thread
 t = threading.Thread(target=run_server, daemon=True)
 t.start()
 
-# Wait until server is ready
-import urllib.request
-for _ in range(30):
-    try:
-        urllib.request.urlopen(f'http://127.0.0.1:{PORT}', timeout=1)
-        break
-    except Exception:
-        time.sleep(0.3)
+# Wait until server is ready (fast socket poll, 10s max)
+ready = _wait_for_port(PORT, timeout=10.0)
 
 import webview
 
-window = webview.create_window(
-    'IB Revision',
-    f'http://127.0.0.1:{PORT}',
-    width=1280,
-    height=900,
-    min_size=(800, 600),
-)
+if not ready:
+    # Show an error window instead of silently doing nothing
+    w = webview.create_window(
+        'IB Revision — Error',
+        html='<body style="font:16px sans-serif;padding:2rem"><h2>Server failed to start</h2>'
+             '<p>Check that the virtual environment is set up correctly.</p></body>',
+        width=480, height=200,
+    )
+else:
+    w = webview.create_window(
+        'IB Revision',
+        f'http://127.0.0.1:{PORT}',
+        width=1280,
+        height=900,
+        min_size=(800, 600),
+    )
+
 webview.start()
-# Server thread is daemon so it dies when this process exits
