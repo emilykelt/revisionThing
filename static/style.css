@@ -63,37 +63,41 @@ body {
 }
 
 .header-inner {
-    max-width: 960px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 1rem 1.5rem;
+    padding: 0.6rem 1.25rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 1rem;
 }
 
 .logo {
-    font-size: 1.35rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
     cursor: pointer;
     letter-spacing: -0.01em;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .nav {
     display: flex;
-    gap: 0.25rem;
+    flex-wrap: wrap;
+    gap: 0.1rem;
 }
 
 .nav-btn {
     font-family: var(--font-serif);
-    font-size: 0.9rem;
-    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.65rem;
     border: none;
     background: none;
     color: var(--text-secondary);
     cursor: pointer;
     border-radius: var(--radius);
     transition: all 0.15s ease;
+    white-space: nowrap;
 }
 
 .nav-btn:hover {
@@ -109,7 +113,7 @@ body {
 
 /* ---- Main ---- */
 .main {
-    max-width: 960px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 1.5rem;
 }
@@ -2293,3 +2297,86 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ---- Exam Planner ---- */
+.planner-header { margin-bottom: 1.5rem; }
+.planner-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+
+.planner-paper {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+
+.planner-paper-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.planner-paper-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-right: 0.6rem;
+}
+
+.planner-paper-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.planner-count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    background: var(--border);
+}
+.planner-count.exact { background: #3a5a3a; color: #a8d4a8; }
+.planner-count.over  { background: #5a3a3a; color: #d4a8a8; }
+.planner-count.under { background: var(--border); color: var(--text-muted); }
+
+.planner-courses { padding: 0.25rem 0; }
+
+.planner-course-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    user-select: none;
+}
+.planner-course-row:last-child { border-bottom: none; }
+.planner-course-row:hover { background: rgba(255,255,255,0.03); }
+.planner-course-row.checked { background: rgba(90,138,90,0.08); }
+
+.planner-cb { width: 16px; height: 16px; accent-color: #5a8a5a; flex-shrink: 0; cursor: pointer; }
+
+.planner-course-name { flex: 1; font-size: 0.9rem; }
+.planner-course-qs {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--border);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.planner-conf-bar {
+    width: 80px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.planner-conf-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.planner-conf-pct { font-size: 0.78rem; font-weight: 500; width: 34px; text-align: right; flex-shrink: 0; }
+.planner-conf-na { font-size: 0.75rem; color: var(--text-muted); width: 34px; }

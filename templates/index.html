@@ -26,6 +26,7 @@
                 <button class="nav-btn" data-view="pastpapers" onclick="app.showPastPapers()">Past Papers</button>
                 <button class="nav-btn" data-view="history" onclick="app.showHistory()">History</button>
                 <button class="nav-btn" data-view="anki" onclick="app.showAnkiBank()" id="nav-anki">Anki Bank</button>
+                <button class="nav-btn" data-view="planner" onclick="app.showPlanner()">Exam Planner</button>
             </nav>
         </div>
     </header>
@@ -170,6 +171,15 @@
             </div>
             <div id="history-list"></div>
             <button class="btn btn-secondary" id="history-load-more" onclick="app.loadMoreHistory()" style="display:none">Load more</button>
+        </div>
+
+        <!-- Exam Planner View -->
+        <div id="view-planner" class="view">
+            <div class="planner-header">
+                <h2 class="section-title">Exam Planner</h2>
+                <p class="planner-subtitle">Tick the questions you plan to answer in each paper. Colours show your confidence.</p>
+            </div>
+            <div id="planner-papers"></div>
         </div>
 
         <!-- Graph View -->

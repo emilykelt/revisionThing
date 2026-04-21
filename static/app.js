@@ -458,7 +458,8 @@ const app = {
             });
             // Require at least one non-empty answer
             if (!partAnswers.some(p => p.answer.trim())) return;
-            body = { topic_id: q.topic_id, course_id: q.course_id, parts: partAnswers, all_topic_ids: q._all_topic_ids || [] };
+            body = { topic_id: q.topic_id, course_id: q.course_id, parts: partAnswers, all_topic_ids: q._all_topic_ids || [],
+                     has_diagram: q.has_diagram || false, source: q.source || '' };
         } else {
             const answer = document.getElementById('answer-input').value;
             if (!answer.trim()) return;
@@ -1927,6 +1928,144 @@ const app = {
         }
     },
 
+    // ---- Exam Planner ----
+    showPlanner() {
+        this.showView('planner');
+        this._renderPlanner();
+    },
+
+    _renderPlanner() {
+        const PAPERS = [
+            {
+                num: 1, total: 10, choose: 5,
+                courses: [
+                    { id: 'compiler-construction', name: 'Compilers', qs: 2 },
+                    { id: 'prog-c-cpp',             name: 'C/C++',    qs: 2 },
+                    { id: 'prolog',                 name: 'Prolog',   qs: 2 },
+                    { id: 'cybersecurity',          name: 'Cybersecurity', qs: 2 },
+                    { id: null,                     name: 'Concepts in Programming Languages', qs: 2 },
+                ],
+            },
+            {
+                num: 2, total: 8, choose: 5,
+                courses: [
+                    { id: 'computer-networking',   name: 'Networking',                      qs: 3 },
+                    { id: 'concurrent-distributed', name: 'Concurrent & Distributed Systems', qs: 2 },
+                    { id: 'intro-comp-arch',        name: 'Intro to Computer Architecture',  qs: 3 },
+                ],
+            },
+            {
+                num: 3, total: 10, choose: 5,
+                courses: [
+                    { id: 'complexity-theory',  name: 'Complexity Theory',  qs: 2 },
+                    { id: 'computation-theory', name: 'Computation Theory', qs: 2 },
+                    { id: 'data-science',       name: 'Data Science',       qs: 2 },
+                    { id: 'logic-proof',        name: 'Logic & Proof',      qs: 2 },
+                    { id: 'semantics',          name: 'Semantics',          qs: 2 },
+                ],
+            },
+            {
+                num: 4, total: 10, choose: 5,
+                courses: [
+                    { id: 'artificial-intelligence', name: 'Artificial Intelligence',    qs: 2 },
+                    { id: 'econ-law-ethics',         name: 'Economics, Law & Ethics',    qs: 2 },
+                    { id: 'formal-models-language',  name: 'Formal Models of Language',  qs: 2 },
+                    { id: 'further-graphics',        name: 'Further Graphics',           qs: 2 },
+                    { id: 'further-hci',             name: 'Further HCI',                qs: 2 },
+                ],
+            },
+        ];
+
+        // Build confidence map from dashboard data
+        const confMap = {};
+        if (this.dashboardData) {
+            for (const term of Object.values(this.dashboardData.terms)) {
+                for (const [courseId, course] of Object.entries(term.courses)) {
+                    confMap[courseId] = course.confidence;
+                }
+            }
+        }
+
+        // Load saved selections from localStorage
+        const saved = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
+
+        const container = document.getElementById('planner-papers');
+        container.innerHTML = '';
+
+        PAPERS.forEach(paper => {
+            const paperEl = document.createElement('div');
+            paperEl.className = 'planner-paper';
+
+            // Count selected Qs
+            const selKey = `p${paper.num}`;
+            const sel = saved[selKey] || {};
+
+            const selectedQs = paper.courses.reduce((s, c) => s + (sel[c.name] ? c.qs : 0), 0);
+            const overClass = selectedQs > paper.choose ? 'over' : selectedQs === paper.choose ? 'exact' : 'under';
+
+            paperEl.innerHTML = `
+                <div class="planner-paper-header">
+                    <div>
+                        <span class="planner-paper-title">Paper ${paper.num}</span>
+                        <span class="planner-paper-meta">${paper.total} questions, answer 5</span>
+                    </div>
+                    <div class="planner-count ${overClass}" id="planner-count-${paper.num}">
+                        ${selectedQs} / ${paper.choose} selected
+                    </div>
+                </div>
+                <div class="planner-courses" id="planner-courses-${paper.num}"></div>
+            `;
+            container.appendChild(paperEl);
+
+            const coursesEl = document.getElementById(`planner-courses-${paper.num}`);
+            paper.courses.forEach(course => {
+                const conf = course.id ? (confMap[course.id] ?? null) : null;
+                const checked = sel[course.name] || false;
+                const confPct = conf !== null ? Math.round(conf * 100) : null;
+                const confColor = conf === null ? '#888'
+                    : conf >= 0.7 ? '#5a8a5a'
+                    : conf >= 0.4 ? '#a07a30'
+                    : '#8a4a4a';
+
+                const row = document.createElement('label');
+                row.className = 'planner-course-row' + (checked ? ' checked' : '');
+                row.innerHTML = `
+                    <input type="checkbox" class="planner-cb" ${checked ? 'checked' : ''}
+                        data-paper="${paper.num}" data-course="${this.escapeAttr(course.name)}" data-qs="${course.qs}">
+                    <span class="planner-course-name">${this.escapeHtml(course.name)}</span>
+                    <span class="planner-course-qs">${course.qs}Q</span>
+                    ${confPct !== null ? `
+                        <span class="planner-conf-bar">
+                            <span class="planner-conf-fill" style="width:${confPct}%;background:${confColor}"></span>
+                        </span>
+                        <span class="planner-conf-pct" style="color:${confColor}">${confPct}%</span>
+                    ` : '<span class="planner-conf-na">no data</span>'}
+                `;
+                coursesEl.appendChild(row);
+
+                row.querySelector('.planner-cb').addEventListener('change', e => {
+                    const paperNum = +e.target.dataset.paper;
+                    const courseName = e.target.dataset.course;
+                    const qs = +e.target.dataset.qs;
+                    const allSaved = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
+                    const pKey = `p${paperNum}`;
+                    if (!allSaved[pKey]) allSaved[pKey] = {};
+                    allSaved[pKey][courseName] = e.target.checked;
+                    localStorage.setItem('plannerSelections', JSON.stringify(allSaved));
+                    row.classList.toggle('checked', e.target.checked);
+                    // Update count
+                    const thisPaper = PAPERS.find(p => p.num === paperNum);
+                    const newSel = allSaved[pKey];
+                    const newQs = thisPaper.courses.reduce((s, c) => s + (newSel[c.name] ? c.qs : 0), 0);
+                    const countEl = document.getElementById(`planner-count-${paperNum}`);
+                    const cls = newQs > thisPaper.choose ? 'over' : newQs === thisPaper.choose ? 'exact' : 'under';
+                    countEl.textContent = `${newQs} / ${thisPaper.choose} selected`;
+                    countEl.className = `planner-count ${cls}`;
+                });
+            });
+        });
+    },
+
     async showAnkiBank() {
         this.showView('anki');
         await this.loadAnkiBank();
@@ -2092,8 +2231,9 @@ const app = {
                 } else { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
                 return mkPH(idx);
             })
-            // Inline math: $...$ or \(...\)
-            .replace(/\$([^$\n]+?)\$|\\\((.+?)\\\)/g, (m, g1, g2) => {
+            // Inline math: $...$ (only if content has a math char — avoids matching $5 / prices)
+            // or \(...\)
+            .replace(/\$(?=[^$\n]*[\\^_{}\|])([^$\n]+?)\$|\\\((.+?)\\\)/g, (m, g1, g2) => {
                 const expr = (g1 || g2).trim();
                 const idx = blocks.length;
                 if (typeof katex !== 'undefined') {

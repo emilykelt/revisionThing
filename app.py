@@ -234,6 +234,21 @@ def api_submit_answer():
         combined_q = []
         combined_a = []
 
+        # Build full context so each part evaluation has the whole question
+        has_diagram = data.get('has_diagram', False)
+        source = data.get('source', '')
+        context_lines = []
+        if source:
+            context_lines.append(f'Source: {source}')
+        if has_diagram:
+            context_lines.append('Note: this question includes a diagram that cannot be shown here. '
+                                  'Award marks based on the text parts only; do not penalise for anything '
+                                  'that would only be answerable with the diagram unless the student\'s '
+                                  'answer makes clear they missed it.')
+        for p in parts:
+            context_lines.append(f'({p.get("label","")}) {p.get("question","")} [{p.get("marks",0)} marks]')
+        full_context = '\n'.join(context_lines) if context_lines else None
+
         for part in parts:
             label = part.get('label', '')
             q_text = part.get('question', '')
@@ -241,7 +256,8 @@ def api_submit_answer():
             marks = part.get('marks', 8)
 
             ev = evaluate_answer(q_text, a_text, topic_name, course_name,
-                                 part_label=label, marks_available=marks)
+                                 part_label=label, marks_available=marks,
+                                 full_context=full_context)
             part_results.append({
                 'label': label,
                 'score': ev['score'],

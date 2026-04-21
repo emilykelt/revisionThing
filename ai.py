@@ -279,7 +279,7 @@ def generate_hint(question, topic_name, course_name, topic_id=None):
     return response or ''
 
 
-def evaluate_answer(question, answer, topic_name, course_name, part_label=None, marks_available=None):
+def evaluate_answer(question, answer, topic_name, course_name, part_label=None, marks_available=None, full_context=None):
     if not answer or not answer.strip():
         return {
             'score': 0.0,
@@ -292,10 +292,14 @@ def evaluate_answer(question, answer, topic_name, course_name, part_label=None, 
 
     part_context = f' (part {part_label})' if part_label else ''
     marks_context = f' [{marks_available} marks available]' if marks_available else ''
+    context_block = ''
+    if full_context:
+        context_block = f'Full question context (for reference):\n{full_context}\n\n'
     prompt = (
         f'Cambridge CS supervisor marking a tripos answer.\n'
         f'Course: {course_name} | Topic: {topic_name}{part_context}{marks_context}\n'
-        f'Question: {question}\n'
+        f'{context_block}'
+        f'Question being marked: {question}\n'
         f'Student answer: {answer}\n\n'
         f'Use LaTeX for any maths ($...$ inline, $$...$$ display).\n'
         f'Respond ONLY with this JSON:\n'
@@ -469,16 +473,14 @@ def generate_flashcards(question, model_solution, topic_name, course_name, topic
         f'Exam question: {question}\n'
         f'Model answer: {model_solution}\n'
         f'{notes_snippet}\n\n'
-        f'Apply the minimum information principle: break the knowledge needed to answer this question '
-        f'into 2-4 atomic flashcards. Each card must test exactly ONE fact, definition, or step.\n'
+        f'Apply the minimum information principle: 2-4 atomic flashcards, each testing ONE fact.\n'
         f'Rules:\n'
-        f'- Front: a single specific question or cloze prompt (≤15 words)\n'
-        f'- Back: a concise direct answer (1-3 sentences max)\n'
-        f'- No card should require knowing another card to be answered\n'
-        f'- Focus on the concepts the student got wrong, not the whole topic\n'
-        f'- Do NOT create cards that just restate the exam question\n\n'
+        f'- Front: ≤12 words, one specific question\n'
+        f'- Back: bullet points only, 2-4 bullets max, each ≤10 words. No prose.\n'
+        f'- Focus only on what the student got wrong\n'
+        f'- No card should require knowing another card\n\n'
         f'Respond ONLY with a JSON array:\n'
-        f'[{{"front": "What is X?", "back": "X is ..."}}]'
+        f'[{{"front": "What is X?", "back": "• point 1\\n• point 2"}}]'
     )
     response = call_claude(prompt, model=EVAL_MODEL, max_tokens=1024)
     result = extract_json_array_from_response(response)
