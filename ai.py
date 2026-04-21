@@ -461,6 +461,59 @@ def generate_mcqs(topic_infos, count=8, past_paper_context=None):
     return []
 
 
+def generate_learning_content(topic_name, course_name, topic_id=None, subtopics=None, mode='full'):
+    """
+    Generate learning material: explanation, worked examples, Mermaid diagram, key points.
+    mode: 'full' | 'examples' (just new examples) | 'diagram' (just diagram)
+    """
+    notes_snippet = _notes_block(topic_id) if topic_id else ''
+    subtopic_hint = f'\nSubtopics to cover: {", ".join(subtopics[:6])}' if subtopics else ''
+
+    if mode == 'examples':
+        prompt = (
+            f'Cambridge CS tutor. Generate 2 fresh worked examples for a student.\n'
+            f'Course: {course_name} | Topic: {topic_name}{subtopic_hint}\n'
+            f'{notes_snippet}\n\n'
+            f'Each example should be concrete and step-by-step. Use $...$ for inline maths.\n'
+            f'Respond ONLY with JSON:\n'
+            f'{{"examples": [{{"title": "...", "setup": "problem statement", '
+            f'"steps": ["step 1 with working", "step 2", "..."], "conclusion": "final answer/insight"}}]}}'
+        )
+    elif mode == 'diagram':
+        prompt = (
+            f'Cambridge CS tutor. Generate a Mermaid.js diagram for this topic.\n'
+            f'Course: {course_name} | Topic: {topic_name}{subtopic_hint}\n'
+            f'{notes_snippet}\n\n'
+            f'Choose the most appropriate Mermaid diagram type: flowchart TD/LR, sequenceDiagram, '
+            f'stateDiagram-v2, or graph TD. Keep it clear and not too large (max ~15 nodes).\n'
+            f'Respond ONLY with JSON:\n'
+            f'{{"diagram": {{"code": "flowchart TD\\n  A --> B", "caption": "what it shows"}}}}\n'
+            f'If no diagram is suitable, respond with {{"diagram": null}}'
+        )
+    else:
+        prompt = (
+            f'Cambridge CS tutor creating learning material.\n'
+            f'Course: {course_name} | Topic: {topic_name}{subtopic_hint}\n'
+            f'{notes_snippet}\n\n'
+            f'Create comprehensive learning material. Use $...$ for inline maths.\n'
+            f'For diagrams use Mermaid.js syntax (flowchart TD/LR, sequenceDiagram, stateDiagram-v2, graph TD). '
+            f'Keep diagrams concise (max 15 nodes). Only include a diagram if it genuinely aids understanding.\n\n'
+            f'Respond ONLY with this JSON (no markdown, no code fences, raw JSON only):\n'
+            f'{{"explanation": "3-4 paragraph explanation", '
+            f'"examples": [{{"title": "short title", "setup": "problem statement", '
+            f'"steps": ["step 1 with working", "step 2"], "conclusion": "insight"}}], '
+            f'"diagram": {{"code": "flowchart TD\\n  A-->B", "caption": "what it shows"}} or null, '
+            f'"key_points": ["4-6 bullet point takeaways"], '
+            f'"common_pitfalls": ["2-3 common mistakes"]}}'
+        )
+
+    response = call_claude(prompt, model=EVAL_MODEL, max_tokens=2000)
+    result = extract_json_from_response(response)
+    if result and isinstance(result, dict):
+        return result
+    return {'error': 'Failed to generate content', 'raw': response[:200]}
+
+
 def generate_flashcards(question, model_solution, topic_name, course_name, topic_id=None):
     """
     Generate atomic Anki flashcards from a wrong answer using the minimum information principle.

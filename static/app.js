@@ -816,187 +816,168 @@ const app = {
     },
 
     renderGraph(data) {
+        const COURSE_ABBREV = {
+            'concurrent-distributed': 'Conc. & Dist. Systems',
+            'data-science': 'Data Science',
+            'econ-law-ethics': 'Econ, Law & Ethics',
+            'further-graphics': 'Further Graphics',
+            'intro-comp-arch': 'Computer Architecture',
+            'prog-c-cpp': 'Programming C/C++',
+            'unix-tools': 'Unix Tools',
+            'compiler-construction': 'Compiler Construction',
+            'computation-theory': 'Computation Theory',
+            'computer-networking': 'Computer Networking',
+            'further-hci': 'Further HCI',
+            'logic-proof': 'Logic & Proof',
+            'prolog': 'Prolog',
+            'semantics': 'Semantics',
+            'artificial-intelligence': 'Artificial Intelligence',
+            'complexity-theory': 'Complexity Theory',
+            'cybersecurity': 'Cybersecurity',
+            'formal-models-language': 'Formal Models of Language',
+        };
+
         const container = document.getElementById('graph-container');
-        const width  = container.offsetWidth;
-        const height = Math.min(window.innerHeight - 200, 720);
+        container.innerHTML = '';
+        const width = container.offsetWidth || 1000;
+        const height = Math.max(620, window.innerHeight - 180);
 
         const svg = d3.select(container).append('svg')
             .attr('width', width).attr('height', height);
 
         const g = svg.append('g');
 
-        const zoom = d3.zoom().scaleExtent([0.2, 6])
+        const zoom = d3.zoom().scaleExtent([0.2, 4])
             .on('zoom', e => g.attr('transform', e.transform));
         svg.call(zoom);
         this.graphSvg = svg; this.graphZoom = zoom;
 
-        // ---- Custom cluster force ----
+        // ---- Grid layout: one cell per course ----
         const courseIds = Object.keys(data.courses);
-        const clusterTargets = {};
+        const N = courseIds.length;
+        const COLS = 5;
+        const ROWS = Math.ceil(N / COLS);
+        const GAP = 12;
+        const HEADER_H = 26;
+        const NODE_PAD = 10;
+        const cellW = Math.floor((width - GAP * (COLS + 1)) / COLS);
+        const cellH = Math.floor((height - GAP * (ROWS + 1)) / ROWS);
+
+        const cellPos = {};
         courseIds.forEach((cid, i) => {
-            const angle = (i / courseIds.length) * 2 * Math.PI;
-            clusterTargets[cid] = {
-                x: width  / 2 + Math.cos(angle) * width  * 0.32,
-                y: height / 2 + Math.sin(angle) * height * 0.32,
+            const col = i % COLS;
+            const row = Math.floor(i / COLS);
+            cellPos[cid] = {
+                x: GAP + col * (cellW + GAP),
+                y: GAP + row * (cellH + GAP),
+                w: cellW, h: cellH,
             };
         });
-        const clusterForce = alpha => {
-            data.nodes.forEach(n => {
-                const t = clusterTargets[n.course_id];
-                if (!t) return;
-                n.vx += (t.x - n.x) * 0.045 * alpha;
-                n.vy += (t.y - n.y) * 0.045 * alpha;
-            });
-        };
 
-        // ---- Force simulation ----
-        const nodeRadius = d => Math.min(5 + (d.times_tested || 0) * 0.5, 10);
-        const sim = d3.forceSimulation(data.nodes)
-            .force('link', d3.forceLink(data.links).id(d => d.id)
-                .distance(d => d.type === 'intra' ? 68 : 160)
-                .strength(d => d.type === 'intra' ? 0.5 : d.strength * 0.18))
-            .force('charge', d3.forceManyBody().strength(-260).distanceMax(400))
-            .force('center', d3.forceCenter(width / 2, height / 2).strength(0.04))
-            .force('collide', d3.forceCollide(d => nodeRadius(d) + 14).strength(0.85).iterations(3))
-            .force('cluster', clusterForce)
-            .alphaDecay(0.018)
-            .on('tick', ticked)
-            .on('end', drawLabels);
-        this.graphSimulation = sim;
+        // Initialise node positions inside their cell
+        const nodeR = d => Math.min(5 + (d.times_tested || 0) * 0.5, 9);
+        data.nodes.forEach(n => {
+            const c = cellPos[n.course_id];
+            if (!c) return;
+            n.x = c.x + c.w / 2 + (Math.random() - 0.5) * (c.w * 0.45);
+            n.y = c.y + HEADER_H + (c.h - HEADER_H) / 2 + (Math.random() - 0.5) * ((c.h - HEADER_H) * 0.5);
+        });
 
-        // ---- Hull layer (drawn under everything) ----
-        const hullGroup = g.append('g').attr('class', 'hull-group');
+        // ---- Cell backgrounds (drawn first, under everything) ----
+        const self = this;
+        courseIds.forEach(cid => {
+            const meta = data.courses[cid];
+            const c = cellPos[cid];
+            if (!c) return;
+            const color = COURSE_PALETTE[meta.color_index % COURSE_PALETTE.length];
+            const label = COURSE_ABBREV[cid] || meta.name;
 
-        // ---- Links ----
-        const linkEl = g.append('g').attr('class', 'links-group')
-            .selectAll('line')
-            .data(data.links)
-            .join('line')
-            .attr('class', d => `graph-link graph-link--${d.type}`)
-            .attr('stroke-width', d => d.type === 'cross' ? 1.4 : 0.8)
-            .attr('stroke-opacity', d => d.type === 'cross' ? d.strength * 0.55 : 0.18);
+            const cellG = g.append('g').attr('class', 'cell-group');
+
+            // Cell body
+            cellG.append('rect')
+                .attr('x', c.x).attr('y', c.y)
+                .attr('width', c.w).attr('height', c.h).attr('rx', 8)
+                .attr('fill', color).attr('fill-opacity', 0.07)
+                .attr('stroke', color).attr('stroke-opacity', 0.28).attr('stroke-width', 1.5);
+
+            // Header band
+            cellG.append('rect')
+                .attr('x', c.x + 1).attr('y', c.y + 1)
+                .attr('width', c.w - 2).attr('height', HEADER_H - 1).attr('rx', 7)
+                .attr('fill', color).attr('fill-opacity', 0.22);
+
+            // Course label
+            const labelText = label.length > 24 ? label.substring(0, 22) + '…' : label;
+            cellG.append('text')
+                .attr('x', c.x + c.w / 2).attr('y', c.y + HEADER_H / 2 + 4.5)
+                .attr('text-anchor', 'middle')
+                .attr('fill', color)
+                .attr('font-size', '10.5px').attr('font-weight', '600')
+                .attr('font-family', 'Georgia, serif')
+                .text(labelText);
+        });
+
+        // ---- Cross-course links ----
+        // Resolve link source/target to node objects for drawing
+        const nodeById = Object.fromEntries(data.nodes.map(n => [n.id, n]));
+        const crossLinks = data.links
+            .filter(l => l.type === 'cross')
+            .map(l => ({ ...l, src: nodeById[l.source] || nodeById[l.source?.id], tgt: nodeById[l.target] || nodeById[l.target?.id] }))
+            .filter(l => l.src && l.tgt);
+
+        const showCross = document.getElementById('graph-show-cross')?.checked !== false;
+        const crossLinkEl = g.append('g').attr('class', 'links-cross')
+            .selectAll('line').data(crossLinks).join('line')
+            .attr('stroke', '#8B7355').attr('stroke-opacity', 0.18).attr('stroke-width', 1)
+            .attr('display', showCross ? null : 'none');
 
         // ---- Nodes ----
-        const self = this;
         const nodeEl = g.append('g').attr('class', 'nodes-group')
-            .selectAll('circle')
-            .data(data.nodes)
-            .join('circle')
+            .selectAll('circle').data(data.nodes).join('circle')
             .attr('class', d => 'graph-node' + (d.difficult ? ' graph-node--difficult' : ''))
-            .attr('r', d => nodeRadius(d))
+            .attr('r', d => nodeR(d))
             .attr('fill', d => self.getConfColor(d.confidence))
-            .attr('fill-opacity', 0.88)
+            .attr('fill-opacity', 0.9)
             .attr('stroke', d => d.difficult ? '#A85555' : '#FAF6F0')
-            .attr('stroke-width', d => d.difficult ? 2.5 : 1.5)
+            .attr('stroke-width', d => d.difficult ? 2 : 1.5)
             .on('click', (event, d) => { event.stopPropagation(); self.graphNodeClick(d); })
             .on('mouseenter', (event, d) => self.graphNodeHover(event, d))
             .on('mouseleave', () => self.graphHideTooltip())
             .call(d3.drag()
-                .on('start', (event, d) => {
-                    if (!event.active) sim.alphaTarget(0.3).restart();
-                    d.fx = d.x; d.fy = d.y;
-                })
+                .on('start', (event, d) => { if (!event.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
                 .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
-                .on('end', (event, d) => {
-                    if (!event.active) sim.alphaTarget(0);
-                    d.fx = null; d.fy = null;
-                }));
+                .on('end', (event, d) => { if (!event.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
 
-        // Dismiss tooltip on background click
         svg.on('click', () => self.graphHideTooltip());
 
-        // ---- Tick: update positions + redraw hulls ----
-        function ticked() {
-            linkEl
-                .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-                .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-            nodeEl.attr('cx', d => d.x).attr('cy', d => d.y);
-            drawHulls();
-        }
-
-        function drawHulls() {
-            hullGroup.selectAll('*').remove();
-            courseIds.forEach(cid => {
-                const meta = data.courses[cid];
-                const pts = data.nodes.filter(n => n.course_id === cid).map(n => [n.x, n.y]);
-                const color = COURSE_PALETTE[meta.color_index % COURSE_PALETTE.length];
-
-                if (pts.length >= 3) {
-                    const hull = d3.polygonHull(pts);
-                    if (!hull) return;
-                    const centroid = d3.polygonCentroid(hull);
-                    const inflated = hull.map(([x, y]) => {
-                        const dx = x - centroid[0], dy = y - centroid[1];
-                        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                        const f = (dist + 34) / dist;
-                        return [centroid[0] + dx * f, centroid[1] + dy * f];
-                    });
-                    hullGroup.append('path')
-                        .attr('d', d3.line().curve(d3.curveCatmullRomClosed)(inflated))
-                        .attr('fill', color).attr('fill-opacity', 0.07)
-                        .attr('stroke', color).attr('stroke-opacity', 0.22)
-                        .attr('stroke-width', 1.5);
-                } else if (pts.length > 0) {
-                    const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
-                    const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length;
-                    hullGroup.append('circle')
-                        .attr('cx', cx).attr('cy', cy).attr('r', 40)
-                        .attr('fill', color).attr('fill-opacity', 0.07)
-                        .attr('stroke', color).attr('stroke-opacity', 0.22)
-                        .attr('stroke-width', 1.5);
-                }
+        // ---- Force simulation: only collision + bounding box ----
+        const boundForce = alpha => {
+            data.nodes.forEach(n => {
+                const c = cellPos[n.course_id];
+                if (!c) return;
+                const r = nodeR(n) + 2;
+                const x0 = c.x + NODE_PAD + r, x1 = c.x + c.w - NODE_PAD - r;
+                const y0 = c.y + HEADER_H + NODE_PAD + r, y1 = c.y + c.h - NODE_PAD - r;
+                if (n.x < x0) n.vx += (x0 - n.x) * 1.5 * alpha;
+                if (n.x > x1) n.vx += (x1 - n.x) * 1.5 * alpha;
+                if (n.y < y0) n.vy += (y0 - n.y) * 1.5 * alpha;
+                if (n.y > y1) n.vy += (y1 - n.y) * 1.5 * alpha;
             });
-        }
-
-        // ---- Draw course labels when simulation settles ----
-        const COURSE_ABBREV = {
-            'concurrent-distributed': 'CDS',
-            'data-science': 'Data Sci',
-            'econ-law-ethics': 'ELE',
-            'further-graphics': 'F.Graphics',
-            'intro-comp-arch': 'Comp Arch',
-            'prog-c-cpp': 'C/C++',
-            'unix-tools': 'Unix Tools',
-            'compiler-construction': 'Compilers',
-            'computation-theory': 'Comp Theory',
-            'computer-networking': 'Networking',
-            'further-hci': 'HCI',
-            'logic-proof': 'Logic & Proof',
-            'prolog': 'Prolog',
-            'semantics': 'Semantics',
-            'artificial-intelligence': 'AI',
-            'complexity-theory': 'Complexity',
-            'cybersecurity': 'Cybersecurity',
-            'formal-models-language': 'Formal Models',
         };
-        const labelGroup = g.append('g').attr('class', 'label-group');
-        function drawLabels() {
-            labelGroup.selectAll('*').remove();
-            courseIds.forEach(cid => {
-                const meta = data.courses[cid];
-                const pts = data.nodes.filter(n => n.course_id === cid);
-                if (pts.length === 0) return;
-                const cx = pts.reduce((s, n) => s + n.x, 0) / pts.length;
-                const cy = pts.reduce((s, n) => s + n.y, 0) / pts.length;
-                const minY = Math.min(...pts.map(n => n.y));
-                const labelY = minY - 24;
-                const color = COURSE_PALETTE[meta.color_index % COURSE_PALETTE.length];
-                const label = COURSE_ABBREV[cid] || (meta.name.length > 18 ? meta.name.substring(0, 16) + '…' : meta.name);
-                // Background rect for readability
-                const grp = labelGroup.append('g');
-                const txt = grp.append('text')
-                    .attr('class', 'course-hull-label')
-                    .attr('x', cx).attr('y', labelY)
-                    .attr('fill', color)
-                    .text(label);
-                try {
-                    const bbox = txt.node().getBBox();
-                    grp.insert('rect', 'text')
-                        .attr('x', bbox.x - 3).attr('y', bbox.y - 2)
-                        .attr('width', bbox.width + 6).attr('height', bbox.height + 4)
-                        .attr('rx', 3).attr('fill', '#FAF6F0').attr('fill-opacity', 0.75);
-                } catch(e) {}
-            });
+
+        const sim = d3.forceSimulation(data.nodes)
+            .force('collide', d3.forceCollide(d => nodeR(d) + 5).strength(1).iterations(4))
+            .force('bound', boundForce)
+            .alphaDecay(0.025)
+            .on('tick', ticked);
+        this.graphSimulation = sim;
+
+        function ticked() {
+            nodeEl.attr('cx', d => d.x).attr('cy', d => d.y);
+            crossLinkEl
+                .attr('x1', d => d.src.x).attr('y1', d => d.src.y)
+                .attr('x2', d => d.tgt.x).attr('y2', d => d.tgt.y);
         }
 
         // ---- Controls ----
@@ -1004,7 +985,7 @@ const app = {
             svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
         };
         document.getElementById('graph-show-cross').onchange = e => {
-            d3.selectAll('.graph-link--cross').attr('display', e.target.checked ? null : 'none');
+            crossLinkEl.attr('display', e.target.checked ? null : 'none');
         };
     },
 
@@ -1925,6 +1906,190 @@ const app = {
             this.renderQuestion(question);
         } catch (err) {
             container.innerHTML = '<div class="empty-state">Failed to load question.</div>';
+        }
+    },
+
+    // ---- Learn ----
+    showLearn() {
+        this.showView('learn');
+        this._populateLearnCourses();
+    },
+
+    _populateLearnCourses() {
+        const sel = document.getElementById('learn-course-select');
+        if (sel.options.length > 1) return; // already populated
+        if (!this.dashboardData) return;
+        for (const [termId, term] of Object.entries(this.dashboardData.terms)) {
+            for (const [courseId, course] of Object.entries(term.courses)) {
+                const opt = document.createElement('option');
+                opt.value = courseId;
+                opt.textContent = course.name;
+                sel.appendChild(opt);
+            }
+        }
+    },
+
+    onLearnCourseChange() {
+        const courseId = document.getElementById('learn-course-select').value;
+        const topicSel = document.getElementById('learn-topic-select');
+        const goBtn = document.getElementById('learn-go-btn');
+        topicSel.innerHTML = '<option value="">Select a topic…</option>';
+        topicSel.style.display = 'none';
+        goBtn.style.display = 'none';
+        if (!courseId || !this.dashboardData) return;
+        for (const [termId, term] of Object.entries(this.dashboardData.terms)) {
+            const course = term.courses[courseId];
+            if (!course) continue;
+            course.topics.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.topic_id;
+                opt.textContent = `${t.name} (${Math.round(t.confidence * 100)}%)`;
+                topicSel.appendChild(opt);
+            });
+        }
+        topicSel.style.display = '';
+        topicSel.onchange = () => {
+            goBtn.style.display = topicSel.value ? '' : 'none';
+        };
+    },
+
+    loadWeakTopicsLearn() {
+        if (!this.dashboardData) return;
+        // Find weakest topic overall
+        let weakest = null;
+        for (const [termId, term] of Object.entries(this.dashboardData.terms)) {
+            for (const [courseId, course] of Object.entries(term.courses)) {
+                for (const t of course.topics) {
+                    if (!weakest || t.confidence < weakest.conf) {
+                        weakest = { courseId, topicId: t.topic_id, topicName: t.name, conf: t.confidence };
+                    }
+                }
+            }
+        }
+        if (!weakest) return;
+        document.getElementById('learn-course-select').value = weakest.courseId;
+        this.onLearnCourseChange();
+        setTimeout(() => {
+            document.getElementById('learn-topic-select').value = weakest.topicId;
+            document.getElementById('learn-go-btn').style.display = '';
+        }, 50);
+    },
+
+    async startLearn(mode = 'full') {
+        const courseId = document.getElementById('learn-course-select').value;
+        const topicId = document.getElementById('learn-topic-select').value;
+        if (!courseId || !topicId) return;
+
+        const content = document.getElementById('learn-content');
+        content.innerHTML = `<div class="loading"><span class="spinner"></span>${mode === 'examples' ? 'Generating examples…' : mode === 'diagram' ? 'Generating diagram…' : 'Generating learning material…'}</div>`;
+
+        try {
+            const res = await fetch('/api/learn', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic_id: topicId, course_id: courseId, mode }),
+            });
+            const data = await res.json();
+            if (data.error) { content.innerHTML = `<div class="empty-state">${this.escapeHtml(data.error)}</div>`; return; }
+            this._renderLearnContent(data, courseId, topicId, mode);
+        } catch(e) {
+            content.innerHTML = '<div class="empty-state">Failed to generate content.</div>';
+        }
+    },
+
+    _renderLearnContent(data, courseId, topicId, mode) {
+        const content = document.getElementById('learn-content');
+
+        // Get topic/course names
+        let topicName = '', courseName = '';
+        for (const [termId, term] of Object.entries(this.dashboardData?.terms || {})) {
+            const course = term.courses[courseId];
+            if (course) {
+                courseName = course.name;
+                const t = course.topics.find(t => t.topic_id === topicId);
+                if (t) topicName = t.name;
+            }
+        }
+
+        let html = `<div class="learn-result">`;
+        html += `<div class="learn-result-header">
+            <div>
+                <div class="learn-breadcrumb">${this.escapeHtml(courseName)}</div>
+                <h3 class="learn-topic-title">${this.escapeHtml(topicName)}</h3>
+            </div>
+            <div class="learn-result-actions">
+                <button class="btn btn-ghost" onclick="app.startLearn('examples')">↺ New examples</button>
+                <button class="btn btn-ghost" onclick="app.startLearn('diagram')">◎ New diagram</button>
+                <button class="btn btn-primary" onclick="app.startLearn('full')">↗ Regenerate all</button>
+            </div>
+        </div>`;
+
+        if (data.explanation) {
+            html += `<div class="learn-section">
+                <div class="learn-section-title">Explanation</div>
+                <div class="learn-explanation">${this.renderContent(data.explanation).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</div>
+            </div>`;
+        }
+
+        if (data.key_points?.length) {
+            html += `<div class="learn-section">
+                <div class="learn-section-title">Key Points</div>
+                <ul class="learn-key-points">
+                    ${data.key_points.map(p => `<li>${this.renderContent(p)}</li>`).join('')}
+                </ul>
+            </div>`;
+        }
+
+        if (data.examples?.length) {
+            html += `<div class="learn-section">
+                <div class="learn-section-title">Worked Examples</div>
+                ${data.examples.map((ex, i) => `
+                    <div class="learn-example">
+                        <div class="learn-example-title">${this.escapeHtml(ex.title || `Example ${i + 1}`)}</div>
+                        <div class="learn-example-setup">${this.renderContent(ex.setup || '')}</div>
+                        ${ex.steps?.length ? `<ol class="learn-example-steps">
+                            ${ex.steps.map(s => `<li>${this.renderContent(s)}</li>`).join('')}
+                        </ol>` : ''}
+                        ${ex.conclusion ? `<div class="learn-example-conclusion">${this.renderContent(ex.conclusion)}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>`;
+        }
+
+        if (data.diagram?.code) {
+            const diagramId = `mermaid-${Date.now()}`;
+            html += `<div class="learn-section">
+                <div class="learn-section-title">Diagram</div>
+                <div class="learn-diagram-wrap">
+                    <div class="mermaid" id="${diagramId}">${this.escapeHtml(data.diagram.code)}</div>
+                    ${data.diagram.caption ? `<div class="learn-diagram-caption">${this.escapeHtml(data.diagram.caption)}</div>` : ''}
+                </div>
+            </div>`;
+        }
+
+        if (data.common_pitfalls?.length) {
+            html += `<div class="learn-section">
+                <div class="learn-section-title">Common Pitfalls</div>
+                <ul class="learn-pitfalls">
+                    ${data.common_pitfalls.map(p => `<li>${this.renderContent(p)}</li>`).join('')}
+                </ul>
+            </div>`;
+        }
+
+        html += `</div>`;
+        content.innerHTML = html;
+
+        // Render mermaid diagrams
+        if (data.diagram?.code && typeof mermaid !== 'undefined') {
+            mermaid.initialize({ startOnLoad: false, theme: 'base',
+                themeVariables: { primaryColor: '#e8e0d4', primaryTextColor: '#3a2e22',
+                    primaryBorderColor: '#8B7355', lineColor: '#8B7355',
+                    background: '#FAF6F0', mainBkg: '#FAF6F0' }});
+            mermaid.run({ querySelector: '.mermaid' }).catch(() => {
+                // If mermaid fails, show the raw code
+                const el = content.querySelector('.mermaid');
+                if (el) el.innerHTML = `<pre style="font-size:0.8rem;overflow:auto">${this.escapeHtml(data.diagram.code)}</pre>`;
+            });
         }
     },
 

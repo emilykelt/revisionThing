@@ -19,14 +19,35 @@
         <div class="header-inner">
             <h1 class="logo" onclick="app.showDashboard()">Part IB Revision</h1>
             <nav class="nav">
-                <button class="nav-btn active" data-view="dashboard" onclick="app.showDashboard()">Dashboard</button>
-                <button class="nav-btn" data-view="warmup" onclick="app.showWarmup()">Warm Up</button>
-                <button class="nav-btn" data-view="graph" onclick="app.showGraph()">Graph</button>
-                <button class="nav-btn" data-view="session" onclick="app.startSessionModal()">Practice</button>
-                <button class="nav-btn" data-view="pastpapers" onclick="app.showPastPapers()">Past Papers</button>
-                <button class="nav-btn" data-view="history" onclick="app.showHistory()">History</button>
-                <button class="nav-btn" data-view="anki" onclick="app.showAnkiBank()" id="nav-anki">Anki Bank</button>
-                <button class="nav-btn" data-view="planner" onclick="app.showPlanner()">Exam Planner</button>
+                <button class="nav-btn active" data-view="dashboard" onclick="app.showDashboard()">
+                    <span class="nav-icon">⊞</span>Dashboard
+                </button>
+                <span class="nav-divider"></span>
+                <button class="nav-btn" data-view="warmup" onclick="app.showWarmup()">
+                    <span class="nav-icon">☀</span>Warm Up
+                </button>
+                <button class="nav-btn" data-view="session" onclick="app.startSessionModal()">
+                    <span class="nav-icon">✎</span>Practice
+                </button>
+                <button class="nav-btn" data-view="pastpapers" onclick="app.showPastPapers()">
+                    <span class="nav-icon">📄</span>Past Papers
+                </button>
+                <span class="nav-divider"></span>
+                <button class="nav-btn" data-view="graph" onclick="app.showGraph()">
+                    <span class="nav-icon">◎</span>Graph
+                </button>
+                <button class="nav-btn" data-view="history" onclick="app.showHistory()">
+                    <span class="nav-icon">↺</span>History
+                </button>
+                <button class="nav-btn" data-view="anki" onclick="app.showAnkiBank()" id="nav-anki">
+                    <span class="nav-icon">🃏</span>Anki
+                </button>
+                <button class="nav-btn" data-view="planner" onclick="app.showPlanner()">
+                    <span class="nav-icon">☑</span>Planner
+                </button>
+                <button class="nav-btn" data-view="learn" onclick="app.showLearn()">
+                    <span class="nav-icon">📖</span>Learn
+                </button>
             </nav>
         </div>
     </header>
@@ -173,6 +194,25 @@
             <button class="btn btn-secondary" id="history-load-more" onclick="app.loadMoreHistory()" style="display:none">Load more</button>
         </div>
 
+        <!-- Learn View -->
+        <div id="view-learn" class="view">
+            <div class="learn-header">
+                <h2 class="section-title">Learn</h2>
+                <p class="learn-subtitle">Generate explanations, worked examples, and diagrams for any topic.</p>
+            </div>
+            <div class="learn-picker" id="learn-picker">
+                <select id="learn-course-select" class="learn-select" onchange="app.onLearnCourseChange()">
+                    <option value="">Select a course…</option>
+                </select>
+                <select id="learn-topic-select" class="learn-select" style="display:none">
+                    <option value="">Select a topic…</option>
+                </select>
+                <button class="btn btn-primary" id="learn-go-btn" onclick="app.startLearn()" style="display:none">Generate ↗</button>
+                <button class="btn btn-ghost" id="learn-weak-btn" onclick="app.loadWeakTopicsLearn()" title="Load weakest topics">Suggest weak topics</button>
+            </div>
+            <div id="learn-content"></div>
+        </div>
+
         <!-- Exam Planner View -->
         <div id="view-planner" class="view">
             <div class="planner-header">
@@ -245,6 +285,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
     <script src="/static/app.js"></script>
 </body>

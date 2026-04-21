@@ -9,7 +9,7 @@ from data import (
     get_dashboard_data, record_answer, record_mcq_answer, select_session_topics,
     save_knowledge, save_json, KNOWLEDGE_FILE,
 )
-from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards
+from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards, generate_learning_content
 from config import DEFAULT_CONFIDENCE, DATA_DIR
 
 app = Flask(__name__)
@@ -260,6 +260,7 @@ def api_submit_answer():
                                  full_context=full_context)
             part_results.append({
                 'label': label,
+                'question_text': q_text,
                 'score': ev['score'],
                 'marks_awarded': ev.get('marks_awarded'),
                 'marks_available': marks,
@@ -289,7 +290,7 @@ def api_submit_answer():
         # Generate flashcards for parts answered poorly
         for pr in part_results:
             if pr['score'] < 0.5 and pr.get('model_solution'):
-                _queue_flashcards(pr.get('feedback', '') + '\n' + pr['model_solution'],
+                _queue_flashcards(pr.get('question_text', ''),
                                   pr.get('model_solution', ''),
                                   topic_name, course_name, topic_id, course_id)
 
@@ -645,9 +646,34 @@ def _queue_flashcards(question, model_solution, topic_name, course_name, topic_i
                     'created_at': datetime.now().isoformat(),
                 })
             _save_anki_bank(bank)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f'[anki] flashcard generation failed: {e}')
     threading.Thread(target=_run, daemon=True).start()
+
+
+@app.route('/api/learn', methods=['POST'])
+def api_learn():
+    data = request.get_json() or {}
+    topic_id = data.get('topic_id', '')
+    course_id = data.get('course_id', '')
+    mode = data.get('mode', 'full')
+
+    courses = load_courses()
+    topic_name, course_name, subtopics = '', '', []
+    for term_id, term in courses['terms'].items():
+        for cid, course in term['courses'].items():
+            if cid == course_id:
+                course_name = course['name']
+                for topic in course['topics']:
+                    if topic['id'] == topic_id:
+                        topic_name = topic['name']
+                        subtopics = topic.get('subtopics', [])
+
+    if not topic_name:
+        return jsonify({'error': 'Topic not found'}), 404
+
+    result = generate_learning_content(topic_name, course_name, topic_id, subtopics, mode=mode)
+    return jsonify(result)
 
 
 @app.route('/api/anki/bank')
