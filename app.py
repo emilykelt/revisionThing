@@ -9,7 +9,7 @@ from data import (
     get_dashboard_data, record_answer, record_mcq_answer, select_session_topics,
     save_knowledge, save_json, KNOWLEDGE_FILE,
 )
-from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards, generate_learning_content
+from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards
 from config import DEFAULT_CONFIDENCE, DATA_DIR
 
 app = Flask(__name__)
@@ -650,30 +650,6 @@ def _queue_flashcards(question, model_solution, topic_name, course_name, topic_i
             print(f'[anki] flashcard generation failed: {e}')
     threading.Thread(target=_run, daemon=True).start()
 
-
-@app.route('/api/learn', methods=['POST'])
-def api_learn():
-    data = request.get_json() or {}
-    topic_id = data.get('topic_id', '')
-    course_id = data.get('course_id', '')
-    mode = data.get('mode', 'full')
-
-    courses = load_courses()
-    topic_name, course_name, subtopics = '', '', []
-    for term_id, term in courses['terms'].items():
-        for cid, course in term['courses'].items():
-            if cid == course_id:
-                course_name = course['name']
-                for topic in course['topics']:
-                    if topic['id'] == topic_id:
-                        topic_name = topic['name']
-                        subtopics = topic.get('subtopics', [])
-
-    if not topic_name:
-        return jsonify({'error': 'Topic not found'}), 404
-
-    result = generate_learning_content(topic_name, course_name, topic_id, subtopics, mode=mode)
-    return jsonify(result)
 
 
 @app.route('/api/anki/bank')
