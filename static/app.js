@@ -388,6 +388,7 @@ const app = {
                     if (dot) dot.classList.toggle('filled', ta.value.trim().length > 0);
                 });
             }
+            this._attachMathPad(ta);
         });
     },
 
@@ -2235,6 +2236,263 @@ const app = {
     escapeAttr(str) {
         if (!str) return '';
         return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    },
+
+    // ---- Math symbol pad ----
+    MATH_GROUPS: {
+        greek: { label: 'Greek', symbols: [
+            'α','β','γ','δ','ε','ζ','η','θ','ι','κ','λ','μ','ν','ξ','π','ρ','σ','τ','υ','φ','χ','ψ','ω',
+            'Γ','Δ','Θ','Λ','Ξ','Π','Σ','Φ','Ψ','Ω'
+        ]},
+        logic: { label: 'Logic', symbols: [
+            '∧','∨','¬','⇒','⇐','⇔','∀','∃','∄','⊢','⊨','⊤','⊥','≡','∴','∵'
+        ]},
+        sets: { label: 'Sets', symbols: [
+            '∈','∉','⊆','⊂','⊇','⊃','∪','∩','∅','∖','∁','×','ℕ','ℤ','ℚ','ℝ','ℂ','℘','|'
+        ]},
+        rel: { label: 'Relations', symbols: [
+            '≤','≥','≠','≈','≡','≅','≜','≺','≻','⪯','⪰','⊑','⊒','≪','≫','∝'
+        ]},
+        arrows: { label: 'Arrows', symbols: [
+            '→','←','↔','⇒','⇐','⇔','↦','⟶','⟵','⟼','↑','↓','⤳','⇝','↪'
+        ]},
+        ops: { label: 'Operators', symbols: [
+            '±','∓','×','÷','·','∘','⊕','⊗','⊙','⊞','⊠','√','∞','⌊','⌋','⌈','⌉',
+            { btn: 'x²', ins: '$x^{}$', cursor: 4 },
+            { btn: 'xₙ', ins: '$x_{}$', cursor: 4 },
+            { btn: 'a⁄b', ins: '$\\frac{}{}$', cursor: 7 },
+            { btn: '√x', ins: '$\\sqrt{}$', cursor: 7 }
+        ]},
+        calc: { label: 'Calculus', symbols: [
+            '∑','∏','∫','∮','∂','∇','Δ','→',
+            { btn: '∑_{i=0}^{n}', ins: '$\\sum_{i=0}^{n} $', cursor: 17 },
+            { btn: '∏_{i=1}^{n}', ins: '$\\prod_{i=1}^{n} $', cursor: 18 },
+            { btn: '∫_a^b', ins: '$\\int_{a}^{b} \\, dx$', cursor: 14 },
+            { btn: 'lim', ins: '$\\lim_{x \\to \\infty} $', cursor: 22 },
+            { btn: '∂/∂x', ins: '$\\frac{\\partial }{\\partial x}$', cursor: 16 }
+        ]},
+        sem: { label: 'Semantics', symbols: [
+            '⇓','⇑','⟶','↦','⇒','⊢','≡','⊑','⟨','⟩','⟦','⟧','σ','ρ','Γ','∅',
+            { btn: '⟨e,σ⟩', ins: '⟨, σ⟩', cursor: 1 },
+            { btn: '⟦e⟧', ins: '⟦⟧', cursor: 1 },
+            { btn: 'λx.', ins: 'λ.', cursor: 1 },
+            { btn: 'e[v/x]', ins: '[v/x]', cursor: 0 },
+            { btn: 'Γ ⊢ e:τ', ins: 'Γ ⊢ : τ', cursor: 4 }
+        ]},
+    },
+
+    _attachMathPad(textarea) {
+        if (textarea.dataset.mathPad) return;
+        textarea.dataset.mathPad = '1';
+        const q = this.currentQuestion || {};
+        const courseStr = `${q.course_id || ''} ${q.course_name || ''}`.toLowerCase();
+        const isSem = courseStr.includes('semantics');
+        const questionText = [q.question, q.topic_name, ...((q.parts || []).map(p => p.text))].filter(Boolean).join(' ');
+        const relevant = this._extractRelevantSymbols(questionText);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'math-pad';
+        const preview = document.createElement('div');
+        preview.className = 'math-preview';
+        preview.style.display = 'none';
+
+        const groups = Object.entries(this.MATH_GROUPS).filter(([k]) => isSem || k !== 'sem');
+        const tabsHtml = groups.map(([k, g], i) => `<button type="button" class="math-pad-tab${i === 0 ? ' active' : ''}" data-tab="${k}">${g.label}</button>`).join('');
+        const relevantHtml = relevant.length
+            ? `<div class="math-pad-relevant"><span class="math-pad-label">Relevant:</span>${relevant.map(s => this._symButtonHtml(s)).join('')}</div>`
+            : '';
+        const semToolsHtml = isSem
+            ? `<div class="math-pad-semtools">
+                <button type="button" class="btn btn-ghost math-pad-tool-btn" data-action="rule">▤ Insert rule</button>
+                <button type="button" class="btn btn-ghost math-pad-tool-btn" data-action="induction">⊢ Induction scaffold</button>
+              </div>`
+            : '';
+
+        wrap.innerHTML = `
+            <button type="button" class="math-pad-toggle" aria-expanded="false">∑ Maths ▾</button>
+            <div class="math-pad-body" style="display:none">
+                ${relevantHtml}
+                ${semToolsHtml}
+                <div class="math-pad-tabs">${tabsHtml}</div>
+                <div class="math-pad-grid"></div>
+            </div>`;
+
+        textarea.insertAdjacentElement('afterend', wrap);
+        wrap.insertAdjacentElement('afterend', preview);
+
+        const grid = wrap.querySelector('.math-pad-grid');
+        const renderTab = (key) => {
+            const g = this.MATH_GROUPS[key];
+            if (!g) return;
+            grid.innerHTML = g.symbols.map(s => this._symButtonHtml(s)).join('');
+        };
+        renderTab(groups[0][0]);
+
+        // Prevent focus loss on any mouse interaction inside the pad
+        wrap.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.math-sym, .math-pad-tool-btn, .math-pad-toggle, .math-pad-tab')) {
+                e.preventDefault();
+            }
+        });
+
+        wrap.addEventListener('click', (e) => {
+            const toggle = e.target.closest('.math-pad-toggle');
+            if (toggle) {
+                const body = wrap.querySelector('.math-pad-body');
+                const open = body.style.display === 'none';
+                body.style.display = open ? '' : 'none';
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.textContent = open ? '∑ Maths ▴' : '∑ Maths ▾';
+                return;
+            }
+            const tab = e.target.closest('.math-pad-tab');
+            if (tab) {
+                wrap.querySelectorAll('.math-pad-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderTab(tab.dataset.tab);
+                return;
+            }
+            const sym = e.target.closest('.math-sym');
+            if (sym) {
+                const cursor = sym.dataset.cursor != null ? parseInt(sym.dataset.cursor, 10) : null;
+                this._insertAtTextarea(textarea, sym.dataset.ins, cursor);
+                return;
+            }
+            const tool = e.target.closest('.math-pad-tool-btn');
+            if (tool) {
+                if (tool.dataset.action === 'rule') this._openRuleBuilder(textarea);
+                else if (tool.dataset.action === 'induction') this._openInductionScaffold(textarea);
+            }
+        });
+
+        const updatePreview = () => {
+            const v = textarea.value;
+            const hasMath = /[\$\\]|[α-ωΑ-Ω∀∃∈∉∑∏∫∂∇∅⇒⇔⇓⟶↦⊢⊨≤≥≠≈≡⊑⟨⟩⟦⟧]/.test(v);
+            if (hasMath && v.trim()) {
+                preview.style.display = '';
+                preview.innerHTML = `<div class="math-preview-label">Preview</div><div class="math-preview-body">${this.renderContent(v)}</div>`;
+            } else {
+                preview.style.display = 'none';
+                preview.innerHTML = '';
+            }
+        };
+        textarea.addEventListener('input', updatePreview);
+        updatePreview();
+    },
+
+    _symButtonHtml(s) {
+        if (typeof s === 'string') {
+            const esc = this.escapeAttr(s);
+            return `<button type="button" class="math-sym" data-ins="${esc}" title="${esc}">${this.escapeHtml(s)}</button>`;
+        }
+        const cursorAttr = s.cursor != null ? ` data-cursor="${s.cursor}"` : '';
+        return `<button type="button" class="math-sym math-sym-wide" data-ins="${this.escapeAttr(s.ins)}"${cursorAttr} title="${this.escapeAttr(s.ins)}">${this.escapeHtml(s.btn)}</button>`;
+    },
+
+    _extractRelevantSymbols(text) {
+        if (!text) return [];
+        const uni = /[α-ωΑ-Ω∀∃∈∉∑∏∫∂∇∅⇒⇔⇓⇑⟶⟵↦⊢⊨≤≥≠≈≡⊑⊒⟨⟩⟦⟧∧∨¬→←↔·∘±×÷√∞ℕℤℚℝℂλμφψ]/g;
+        const found = new Set();
+        let m;
+        while ((m = uni.exec(text)) !== null) found.add(m[0]);
+        return Array.from(found).slice(0, 12);
+    },
+
+    _insertAtTextarea(ta, text, cursorOffset = null) {
+        ta.focus();
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const before = ta.value.substring(0, start);
+        const after = ta.value.substring(end);
+        ta.value = before + text + after;
+        const pos = cursorOffset != null ? start + cursorOffset : start + text.length;
+        ta.selectionStart = ta.selectionEnd = pos;
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+    },
+
+    _openRuleBuilder(textarea) {
+        const overlay = document.createElement('div');
+        overlay.className = 'math-modal-overlay';
+        overlay.innerHTML = `
+            <div class="math-modal">
+                <div class="math-modal-header">
+                    <h3>Insert inference rule</h3>
+                    <button type="button" class="math-modal-close">×</button>
+                </div>
+                <div class="math-modal-body">
+                    <label>Rule name</label>
+                    <input type="text" class="math-modal-input" id="rb-name" placeholder="e.g. Plus, If-True, App">
+                    <label>Premises (one per line)</label>
+                    <textarea class="math-modal-textarea" id="rb-prem" rows="4" placeholder="e₁ ⇓ v₁&#10;e₂ ⇓ v₂"></textarea>
+                    <label>Conclusion</label>
+                    <input type="text" class="math-modal-input" id="rb-conc" placeholder="e₁ + e₂ ⇓ v₁ + v₂">
+                </div>
+                <div class="math-modal-footer">
+                    <button type="button" class="btn btn-ghost math-modal-cancel">Cancel</button>
+                    <button type="button" class="btn btn-primary math-modal-ok">Insert</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        const close = () => overlay.remove();
+        overlay.querySelector('.math-modal-close').onclick = close;
+        overlay.querySelector('.math-modal-cancel').onclick = close;
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        overlay.querySelector('#rb-name').focus();
+        overlay.querySelector('.math-modal-ok').onclick = () => {
+            const name = overlay.querySelector('#rb-name').value.trim();
+            const prem = overlay.querySelector('#rb-prem').value.split('\n').map(s => s.trim()).filter(Boolean);
+            const conc = overlay.querySelector('#rb-conc').value.trim();
+            if (!conc) { overlay.querySelector('#rb-conc').focus(); return; }
+            const premLatex = prem.length ? prem.join(' \\quad ') : '\\;';
+            const rule = `$$\\dfrac{${premLatex}}{${conc}}${name ? ' \\quad \\text{(' + name + ')}' : ''}$$`;
+            this._insertAtTextarea(textarea, '\n' + rule + '\n');
+            close();
+        };
+    },
+
+    _openInductionScaffold(textarea) {
+        const overlay = document.createElement('div');
+        overlay.className = 'math-modal-overlay';
+        overlay.innerHTML = `
+            <div class="math-modal">
+                <div class="math-modal-header">
+                    <h3>Rule induction scaffold</h3>
+                    <button type="button" class="math-modal-close">×</button>
+                </div>
+                <div class="math-modal-body">
+                    <label>Property to prove <span class="math-modal-hint">(e.g. ∀e,v. e ⇓ v ⇒ P(e,v))</span></label>
+                    <input type="text" class="math-modal-input" id="is-prop" placeholder="P(e, v)">
+                    <label>Judgement being inducted on</label>
+                    <input type="text" class="math-modal-input" id="is-judge" placeholder="e ⇓ v">
+                    <label>Rule names (one per line)</label>
+                    <textarea class="math-modal-textarea" id="is-rules" rows="5" placeholder="Num&#10;Plus&#10;If-True&#10;If-False"></textarea>
+                </div>
+                <div class="math-modal-footer">
+                    <button type="button" class="btn btn-ghost math-modal-cancel">Cancel</button>
+                    <button type="button" class="btn btn-primary math-modal-ok">Insert scaffold</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        const close = () => overlay.remove();
+        overlay.querySelector('.math-modal-close').onclick = close;
+        overlay.querySelector('.math-modal-cancel').onclick = close;
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        overlay.querySelector('#is-prop').focus();
+        overlay.querySelector('.math-modal-ok').onclick = () => {
+            const prop = overlay.querySelector('#is-prop').value.trim() || 'P(…)';
+            const judge = overlay.querySelector('#is-judge').value.trim() || 'e ⇓ v';
+            const rules = overlay.querySelector('#is-rules').value.split('\n').map(s => s.trim()).filter(Boolean);
+            const cases = rules.length ? rules : ['Rule1', 'Rule2'];
+            const scaffold = [
+                `Claim: ${prop}.`,
+                `Proof by rule induction on ${judge}.`,
+                '',
+                ...cases.map(r => `Case (${r}):\n  Assumptions: …\n  Inductive hypothesis: …\n  Goal: show ${prop}.\n  Argument: …\n`),
+                '∎'
+            ].join('\n');
+            this._insertAtTextarea(textarea, '\n' + scaffold + '\n');
+            close();
+        };
     },
 };
 

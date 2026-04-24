@@ -2419,3 +2419,202 @@ body {
 .planner-conf-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
 .planner-conf-pct { font-size: 0.78rem; font-weight: 500; width: 34px; text-align: right; flex-shrink: 0; }
 .planner-conf-na { font-size: 0.75rem; color: var(--text-muted); width: 34px; }
+
+/* KaTeX: override inherited white-space so pre-wrap parents don't
+   break every glyph onto its own line. */
+.katex, .katex *, .katex-display, .katex-display * {
+    white-space: normal !important;
+}
+
+/* ---- Math pad ---- */
+.math-pad {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.math-pad-toggle {
+    align-self: flex-start;
+    font-family: var(--font-serif);
+    font-size: 0.82rem;
+    padding: 0.3rem 0.7rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.math-pad-toggle:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+.math-pad-body {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.math-pad-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-right: 0.4rem;
+}
+.math-pad-relevant,
+.math-pad-semtools,
+.math-pad-tabs,
+.math-pad-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    align-items: center;
+}
+.math-pad-relevant {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--border);
+}
+.math-pad-semtools {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--border);
+    gap: 0.5rem;
+}
+.math-pad-tool-btn {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.65rem;
+}
+.math-pad-tabs {
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+}
+.math-pad-tab {
+    font-family: var(--font-serif);
+    font-size: 0.78rem;
+    padding: 0.25rem 0.6rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.math-pad-tab:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+.math-pad-tab.active {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+    border-color: var(--border);
+    font-weight: 600;
+}
+.math-sym {
+    min-width: 34px;
+    height: 32px;
+    padding: 0 0.45rem;
+    font-family: 'KaTeX_Main', 'Times New Roman', serif;
+    font-size: 1rem;
+    background: var(--bg-cream);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+}
+.math-sym:hover { background: var(--bg-card-hover); border-color: var(--accent); }
+.math-sym:active { transform: translateY(1px); }
+.math-sym-wide { font-size: 0.85rem; padding: 0 0.6rem; font-family: var(--font-mono); }
+
+.math-preview {
+    margin-top: 0.4rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg-cream);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    font-size: 0.92rem;
+}
+.math-preview-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+}
+.math-preview-body { line-height: 1.6; }
+
+/* Math modals (rule builder + induction) */
+.math-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 22, 15, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+.math-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+}
+.math-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+}
+.math-modal-header h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+.math-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1;
+}
+.math-modal-close:hover { color: var(--text-primary); }
+.math-modal-body {
+    padding: 1rem 1.2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.math-modal-body label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: 0.3rem;
+}
+.math-modal-hint { font-weight: 400; color: var(--text-muted); font-size: 0.75rem; }
+.math-modal-input,
+.math-modal-textarea {
+    font-family: var(--font-serif);
+    font-size: 0.92rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-cream);
+    color: var(--text-primary);
+    resize: vertical;
+}
+.math-modal-textarea { font-family: var(--font-mono); font-size: 0.88rem; }
+.math-modal-input:focus,
+.math-modal-textarea:focus { outline: none; border-color: var(--accent); }
+.math-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.8rem 1.2rem;
+    border-top: 1px solid var(--border);
+}
