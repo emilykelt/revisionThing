@@ -4599,7 +4599,7 @@
     ]
   },
   "intro-comp-arch": {
-    "total_questions": 18,
+    "total_questions": 6,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-IntroductiontoComputerArchitecture.html",
     "topic_frequencies": {
       "ica-digital": 9,
@@ -6208,9 +6208,9 @@
     ]
   },
   "logic-proof": {
-    "total_questions": 10,
+    "total_questions": 14,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-LogicandProof.html",
-    "_paper_note": "Logic and Proof appears in Paper 6, Q7 and Q8 (2024 onwards).",
+    "_paper_note": "Logic and Proof: Paper 6, Q9+Q10 (2018-2022); Paper 6, Q7+Q8 (2023 onwards).",
     "topic_frequencies": {
       "lp-modal": 3,
       "lp-clausal": 3,
@@ -6315,10 +6315,162 @@
         "total_marks": 20
       },
       {
-        "year": 2021,
+        "year": 2023,
         "paper": 6,
         "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p6q7.pdf",
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q7.pdf",
+        "topics": [
+          "lp-resolution",
+          "lp-skolem",
+          "lp-fol"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Exhibit a model for the following set of formulas, or prove that none exists. Briefly explain your work in each step. P, P \u2192 (R \u2192 Q), P \u2228 \u00acQ \u2228 \u00acP, Q \u2192 S \u2227 \u00acT, S \u2192 Q \u2228 T",
+            "marks": 6,
+            "topics": [
+              "lp-fol"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "For each of the following sets of formulas, either exhibit an interpretation in S4 modal logic that satisfies them simultaneously at a particular world, w, or show through a formal proof that they cannot be satisfied. (i) 3\u25a1P, Q, \u25a13\u25a1\u00acQ, \u25a1(P \u2192 3R \u2227 3\u00acR), \u25a1(\u25a1\u00acQ \u2228 \u00ac3P) (ii) \u25a1(P \u2228 Q), 3\u00acP, \u00ac3Q",
+            "marks": 14,
+            "topics": [
+              "lp-fol"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2023,
+        "paper": 6,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q8.pdf",
+        "topics": [
+          "lp-resolution",
+          "lp-clausal",
+          "lp-fol"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "( \u2200x [\u00acQ(x, x) \u2192 P (x)]) \u2192 \u2200x [P (x) \u2228 \u2203y Q(x, y)]",
+            "marks": 7,
+            "topics": [
+              "lp-fol",
+              "lp-resolution"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "[ \u2203x P(x)] \u2192 \u2203x P(f(x))",
+            "marks": 6,
+            "topics": [
+              "lp-fol",
+              "lp-resolution"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "\u2203z \u2200w [(\u2200x [P (x) \u2192 \u2203y Q(x, y)]) \u2192 (P (w) \u2192 Q(w, z))]",
+            "marks": 7,
+            "topics": [
+              "lp-fol",
+              "lp-resolution"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2022,
+        "paper": 6,
+        "question": 9,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q9.pdf",
+        "topics": [
+          "lp-clausal",
+          "lp-resolution",
+          "lp-skolem",
+          "lp-fol"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "You have to write a program to classify given propositional formulas as unsatisfiable, valid or neither. You have the option of using either BDDs or DPLL for this. For each option, sketch how to carry out the classification and comment briefly on its advantages (e.g. from the standpoint of performance or space) compared with the alternative.",
+            "marks": 4,
+            "topics": [
+              "lp-clausal"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "It is possible to modify DPLL such that, whenever the empty clause is encountered within the search, a subset of the current variable assignments are identified that contradict the original set of clauses. These assignments are then used to create a new clause. For example, if P true, Q false, S false contradict the original clauses, then the new clause {\u00acP, Q, S} is added to the others. (i) In what sense is adding this clause logically correct? (ii) How is this new clause likely to affect the operation of DPLL?",
+            "marks": 4,
+            "topics": [
+              "lp-resolution"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "For each of the following formulas, either exhibit a formal proof in the free-variable tableau calculus, or exhibit a falsifying interpretation (a is a constant): (i) [\u00acP(a) \u2227 \u2200x (\u00acP(f(x)) \u2192 P(x))] \u2192 \u2203x(P(x) \u2227 \u00acP(f(x))) (ii) (\u2200x P(x)) \u2227 (\u2200x Q(x)) \u2228 \u2203x(P(x) \u2192 \u00acQ(x))",
+            "marks": 12,
+            "topics": [
+              "lp-fol",
+              "lp-skolem"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2022,
+        "paper": 6,
+        "question": 10,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q10.pdf",
+        "topics": [
+          "lp-resolution",
+          "lp-fol"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "List three significant differences between the DPLL method and resolution.",
+            "marks": 3,
+            "topics": [
+              "lp-fol"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "To what extent is pure literal elimination applicable to (i) resolution theorem proving and (ii) Prolog?",
+            "marks": 3,
+            "topics": [
+              "lp-fol"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "For each of the following sets of clauses, either exhibit a model or show that none exists using resolution. Note: a and b are constants, while x and y are variables. (i) {P (a)} {\u00ac P (x), M(x)} {\u00ac P (x), L(x)} {\u00ac Q(x), \u00acP (x)} {\u00acL(x), \u00acM(x), \u00acR(x)} {\u00ac P (x), Q(x), P(b)} {\u00ac P (x), Q(x), R(b)} (ii) {\u00acP (x), Q(x, x)} {\u00ac Q(x, y), \u00acQ(y, x), R(x, y)} {\u00acR(x, y), \u00acR(a, x)} { P (a), P(b)}",
+            "marks": 14,
+            "topics": [
+              "lp-resolution"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2021,
+        "paper": 6,
+        "question": 9,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p6q9.pdf",
         "topics": [
           "lp-fol",
           "lp-skolem",
@@ -6328,15 +6480,25 @@
         "parts": [
           {
             "label": "a",
-            "text": "Let xt be the number of new COVID infections on date t. We anticipate approximately exponential growth or decay, xt+1 \u2248 (1 +\u03bb)xt, and we would like to estimate \u03bb from a dataset (x1,...,x T ). (i) Find the maximum likelihood estimator for \u03bb for the model Xt+1 \u223c Poisson((1 +\u03bb)xt) (ii) Find the maximum likelihood estimator for \u03bb for the model Xt+1 \u223c Normal((1 +\u03bb)xt, (\u03c3xt)2) (iii) For the latter model, explain how to compute a 95% confidence interval for \u03bb. Explain the resampling step carefully.",
-            "marks": 9,
-            "topics": []
+            "text": "Suppose we have the propositional symbols P1, P2, . . . , Pn, where n > 2, and consider the set of clauses {\u00acP1, P2} {\u00acP2, P3} \u00b7\u00b7\u00b7 {\u00acPn, P1}. (i) List the satisfying interpretations (if any) of this set of clauses, with brief justification. (ii) Regarding the set of clauses above as a single propositional formula, and using the variable ordering P1, P2, . . . ,Pn, sketch the corresponding BDD. Does the choice of variable ordering here significantly affect the size of the resulting BDD? (iii) Briefly describe the set of clauses that would be generated by a resolution theorem prover, starting with the set of clauses above.",
+            "marks": 11,
+            "topics": [
+              "propositional-logic",
+              "satisfiability",
+              "BDD",
+              "resolution"
+            ]
           },
           {
             "label": "b",
-            "text": "We don't actually know the number of new infections xt on datet: we only know the number of new positive test results, yt. We anticipate yt \u2248\u03b2dow(t)xt, where dow(t) gives the day of the week for date t. We would like to estimate not only \u03bb but also \u03b2Mon,...,\u03b2 Sun from the dataset (y1,...,y T ). (i) Propose a probability model for Yt+1 in terms of yt. (ii) Explain briefly how to estimate the parameters of your model. In your answer, you should consider whether or not the parameters are identifiable.",
-            "marks": 11,
-            "topics": []
+            "text": "For the following set of clauses, either exhibit a model, or show that none exists using resolution. Below, a and b are constants, while y and z are variables. {P(a, f(a)), P(a, b)} {P(a, f(a)), \u00acP(z, b), P(z, f(a))} {\u00acP(a, f(a)), P(g(y), y), \u00acP(a, y)} {\u00acP(a, f(a)), \u00acP(g(y), f(a)), \u00acP(a, y)}",
+            "marks": 9,
+            "topics": [
+              "first-order-logic",
+              "resolution",
+              "unification",
+              "satisfiability"
+            ]
           }
         ],
         "_text_extracted": true,
@@ -6345,8 +6507,8 @@
       {
         "year": 2021,
         "paper": 6,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p6q8.pdf",
+        "question": 10,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p6q10.pdf",
         "topics": [
           "lp-fol",
           "lp-resolution",
@@ -6355,14 +6517,79 @@
         "parts": [
           {
             "label": "a",
-            "text": "In a COVID vaccine trial, n0 subjects were given a placebo and n1 were given the vaccine; x0 of the placebo subjects developed the disease and x1 of the vaccinated subjects. Considering the probability model Xk \u223c Binomial(nk, pk), the vaccine efficacy is defined to be e = 1 \u2212 p1/p0. (i) State the maximum likelihood estimators for p0 and p1. Give a formula for the maximum likelihood estimator for e. (ii) Explain how to compute a 95% confidence interval for e. Also explain how to test whether e > 0.5.",
-            "marks": 9,
+            "text": "A mysterious propositional connective, \u2299, has the following sequent calculus rule, (\u2299l):\nA, B, \u0393\u21d2 \u2206 \u0393 \u21d2 \u2206, A, B\nA\u2299 B, \u0393\u21d2 \u2206\nPresent the corresponding right-side sequent calculus rule, (\u2299r), along with the truth table for\u2299.",
+            "marks": 5,
+            "topics": [
+              "sequent-calculus",
+              "propositional-logic",
+              "connectives"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "For the following formula, either exhibit a formal proof (using the sequent calculus, augmented with the (\u2299l) rule above) or exhibit a falsifying interpretation:\n\u2200x(P (x)\u2299 Q(x)),\u2203x P(x)\u21d2\u2203 x Q(x)",
+            "marks": 5,
+            "topics": [
+              "sequent-calculus",
+              "first-order-logic",
+              "quantifiers"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Use the DPLL method to \ufb01nd all models (if any) satisfying the following set of formulas.\n(P\u2227 R)\u2192 Q\n(\u00acQ\u2227 R)\u2192 P\nQ\u2192 (P\u2228 R)\n\u00ac(P\u2227 Q\u2227 R)\nP\u2192 R",
+            "marks": 5,
+            "topics": [
+              "DPLL",
+              "SAT-solving",
+              "propositional-logic",
+              "satisfiability"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "The modal logic S5 di\ufb00ers from S4 in requiring the accessibility relation to be symmetric, as well as re\ufb02exive and transitive. Present a formula that is valid for S5 but not for S4. Explain why it is valid for S5 and demonstrate that it is not valid for S4 by drawing an S4 modal frame for which it fails.",
+            "marks": 5,
+            "topics": [
+              "modal-logic",
+              "S4",
+              "S5",
+              "accessibility-relations",
+              "validity"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2020,
+        "paper": 6,
+        "question": 9,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p6q9.pdf",
+        "topics": [
+          "lp-fol",
+          "lp-skolem",
+          "lp-resolution",
+          "lp-clausal"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "In the context of automatic theorem proving, provide one-sentence definitions of each of the following concepts: satis\ufb01able, sound, complete. You may take as given the de\ufb01nitions of all underlying concepts.",
+            "marks": 3,
             "topics": []
           },
           {
             "label": "b",
-            "text": "Further data about the trial has been made available, and we learn that subjects weren't all enrolled for the same length of time. We are given a full dataset consisting of three features, the predictor variable di and the response variables (ti, ci) for subject i. Here di = 1 if the subject received the vaccine and di = 0 otherwise; ci = 1 if the subject developed the disease and ci = 0 otherwise; and ti is the day on which the subject developed the disease if ci = 1, and the number of days enrolled in the trial otherwise. Consider the following probability model. Among vaccinated subjects, the vaccine is effective with probability f and ineffective otherwise. Effectively vaccinated subjects never get the disease. For ineffectively vaccinated subjects, and for subjects on placebo, each day there is a probability q of developing the disease. The parameters f and q are unknown. (i) For a subject i who received placebo, give an expression for the likelihood of the pair (ti, ci). (ii) For a subject i who received the vaccine, give an expression for the likelihood of the pair (ti, ci). (iii) Give an expression for the log likelihood of the entire dataset.",
-            "marks": 11,
+            "text": "Mordred has written a resolution theorem prover, but there are bugs in his code. Very rarely, one of the following errors occurs: a literal is deleted from a clause; an entire clause is deleted; the \"occurs check\" of uni\ufb01cation is not performed. Brie\ufb02y describe, with justi\ufb01cation, the consequences of each type of error.",
+            "marks": 3,
+            "topics": []
+          },
+          {
+            "label": "c",
+            "text": "For each of the following sets of clauses, either derive the empty clause or demonstrate that the set is satis\ufb01able by exhibiting a model. Below, a and b are constants, while x, y and z are variables. (i) {R(a)} {\u00ac R(x), \u00acQ(f(x)), \u00acR(a)} {Q(z), P(z)} {\u00ac P (y), \u00acR(y)} (ii) {R(a), R(b)} {\u00ac R(x), \u00acQ(f(x)), \u00acR(y)} {Q(x), \u00acP (y)} { Q(z), P(z)}",
+            "marks": 14,
             "topics": []
           }
         ],
@@ -6372,8 +6599,8 @@
       {
         "year": 2020,
         "paper": 6,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p6q7.pdf",
+        "question": 10,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p6q10.pdf",
         "topics": [
           "lp-fol",
           "lp-skolem",
@@ -6383,159 +6610,85 @@
         "parts": [
           {
             "label": "a",
-            "text": "Write out the transition matrix for the Markov chain (X0, X1, ...). Calculate its stationary distribution.",
-            "marks": 4,
+            "text": "From n distinct propositional letters, each of which may be negated or not, 2^n distinct clauses can be created. Present a satisfying interpretation of this set of 2^n clauses or demonstrate that none exists.",
+            "marks": 3,
             "topics": []
           },
           {
             "label": "b",
-            "text": "Writing X\u20d7 for (X0, X1, ..., Xn), and writing Y\u20d7 for (Y1, ..., Yn), and similarly x\u20d7 and y\u20d7, find expressions for P(X\u20d7 = x\u20d7) and for P(Y\u20d7 = y\u20d7 | X\u20d7 = x\u20d7).",
+            "text": "Sketch the operation of the DPLL algorithm when provided with the set of clauses described above, including an estimate of its time complexity as a function of n.",
             "marks": 4,
             "topics": []
           },
           {
             "label": "c",
-            "text": "Give pseudocode for a function rx(n) that generates a random X\u20d7. Give pseudocode to generate a weighted sample from the posterior distribution of X\u20d7 conditional on the observed data Y\u20d7 = y\u20d7.",
+            "text": "For each of the following formulas, present either a proof in the sequent calculus, or a falsifying interpretation. The modal logic is S4. (i) 2(P \u2228 Q) \u2192 (2\u00acP \u2192 3Q) (ii) \u2203x P(f(x)) \u2227 \u2200x [P(x) \u2192 Q(g(x))] \u2192 \u2203y Q(y) (iii) \u2203x (P(x) \u2192 Q(x)) \u2192 [\u2203x P(x) \u2192 \u2203x Q(x)]",
+            "marks": 13,
+            "topics": []
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2019,
+        "paper": 6,
+        "question": 9,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p6q9.pdf",
+        "topics": [
+          "lp-fol",
+          "lp-skolem",
+          "lp-resolution",
+          "lp-clausal"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Prof Blunder was using a SAT solver to solve some propositional logic problems he found in a textbook, presented in clause form. Unfortunately, he typed in the problems incorrectly, making five types of error.\n\nIn each of the following cases, briefly indicate what can be deduced about the original problem from the SAT solver output for the modified problem. Consider both possible outputs for the SAT solver: reporting \"unsatisfiable\" and outputting a model.\n\n(i) Mistyping some occurrences of a propositional symbol so that it becomes two different symbols.\n\n(ii) Mistyping two different propositional symbols such that they become the same symbol.\n\n(iii) Splitting a clause in two, e.g. replacing {P, \u00acQ, R} by {P, \u00acQ} and {R}.\n\n(iv) Deleting a clause.\n\n(v) Moving a literal from one clause to another.",
+            "marks": 10,
+            "topics": [
+              "SAT",
+              "propositional-logic",
+              "satisfiability"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "This part is concerned with Binary Decision Diagrams. Use the variable ordering P, Q, R.\n\n(i) Write down the BDDs for P \u2227 Q \u2227 R and (\u00acR \u2227 Q) \u2192 P. There is no need to show your work.\n\n(ii) Use the results above to obtain the BDD of [P \u2227 Q \u2227 R] \u2194 [(\u00acR \u2227 Q) \u2192 P] \u2194 P, showing your working. Hint: In A \u2194 B \u2194 C, the order of the operands is insignificant.",
+            "marks": 10,
+            "topics": [
+              "BDD",
+              "binary-decision-diagrams",
+              "propositional-logic"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2019,
+        "paper": 6,
+        "question": 10,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p6q10.pdf",
+        "topics": [
+          "lp-fol",
+          "lp-skolem",
+          "lp-resolution",
+          "lp-clausal"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "For each of the following formulas, present either a formal resolution proof or a falsifying interpretation. Note that a and b are constants.\n(i) \u2200x[Q(x) \u2192 R(x)] \u2227 \u00acR(a) \u2227 \u2200x[\u00acR(x) \u2227 \u00acQ(x) \u2192 P(b) \u2228 Q(b)] \u2192 P(b) \u2228 R(b)\n(ii) \u2203x[\u2200yz[(P(y) \u2192 Q(z)) \u2192 (P(x) \u2192 Q(x))]]",
             "marks": 8,
             "topics": []
           },
           {
-            "label": "d",
-            "text": "Let Z = n^(-1) \u2211(i=1 to n) Xi. Give pseudocode to find a 95% confidence interval for Z, conditional on the observed data Y\u20d7 = y\u20d7.",
-            "marks": 4,
-            "topics": []
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2020,
-        "paper": 6,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p6q8.pdf",
-        "topics": [
-          "lp-fol",
-          "lp-skolem",
-          "lp-resolution",
-          "lp-clausal"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Give expressions for the maximum likelihood estimates \u02c6 pd,k. In your answer, you should state what is being maximized, over what variables.",
-            "marks": 3,
-            "topics": []
-          },
-          {
             "label": "b",
-            "text": "Let the null hypothesis H0 be that the probabilities are the same in the 1970s as in the 2010s; call these common probabilities qk. Give expressions for the maximum likelihood estimates \u02c6qk under H0.",
-            "marks": 2,
-            "topics": []
-          },
-          {
-            "label": "c",
-            "text": "We wish to test H0, using the test statistic t = \u2211d,k (\u02c6pd,k\u2212 \u02c6qk)2 / \u02c6qk. (i) Explain briefly what is meant by parametric resampling. Explain how to compute the distribution we'd expect to see for t, under H0. Give pseudocode. (ii) Explain what is meant by a one-sided test versus a two-sided test. Which should we use in this case? (iii) Give pseudocode to compute the p-value of this test.",
+            "text": "For each of the following formulas, present a proof in a sequent or tableau calculus, or alternatively, a falsifying interpretation. In Part (b)(iii) the modal logic is S4.\n(i) \u2203y \u2200x P(x, y) \u2192 \u2203z P(z, z)\n(ii) \u2200x [P(x) \u2227 \u2203y \u00acP(y)] \u2192 Q\n(iii) (\u25c7\u25a1P \u2227 \u25c7\u25a1Q) \u2192 \u25c7\u25a1(P \u2227 Q)",
             "marks": 12,
             "topics": []
-          },
-          {
-            "label": "d",
-            "text": "What are some advantages and disadvantages of this count-based test, compared to a test based on linear regression?",
-            "marks": 3,
-            "topics": []
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2019,
-        "paper": 6,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p6q7.pdf",
-        "topics": [
-          "lp-fol",
-          "lp-skolem",
-          "lp-resolution",
-          "lp-clausal"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Let X1,...,Xn be independent binary random variables, P(Xi = 1) = \u03b8, P(Xi = 0) = 1 \u2212\u03b8, for some unknown parameter \u03b8. Using Uniform[0 , 1] as the prior distribution for \u03b8, find the posterior distribution. [Note: For your answer, and in answer to parts ( b) and ( d), give either a named distribution with its parameters, or a normalised density function.]",
-            "marks": 3,
-            "topics": []
-          },
-          {
-            "label": "b",
-            "text": "Let \u03b8 be the probability that the worker labels an image incorrectly. Using Beta(0.1, 0.5) as the prior distribution for \u03b8, find the posterior.",
-            "marks": 3,
-            "topics": []
-          },
-          {
-            "label": "c",
-            "text": "For both z = nice and z = nasty, find P(worker says nice|z,\u03b8). Hence find the posterior distribution of (z,\u03b8). Your answer may be left as an un-normalised density function.",
-            "marks": 5,
-            "topics": []
-          },
-          {
-            "label": "d",
-            "text": "Find the posterior distribution of z.",
-            "marks": 5,
-            "topics": []
-          },
-          {
-            "label": "e",
-            "text": "Let \u03b8i be the probability that worker i labels an image incorrectly. Find the posterior distribution of (\u03b81,\u03b82,\u03b83). Your answer may be left as an un-normalised density function.",
-            "marks": 4,
-            "topics": []
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2019,
-        "paper": 6,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p6q8.pdf",
-        "topics": [
-          "lp-fol",
-          "lp-skolem",
-          "lp-resolution",
-          "lp-clausal"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Write this as a linear model, and identify the feature vectors.",
-            "marks": 3,
-            "topics": []
-          },
-          {
-            "label": "b",
-            "text": "Are the feature vectors in your model linearly independent? Justify your answer. If they are not independent, rewrite your model in a form with linearly independent feature vectors. [Hint: You should have 6 linearly independent feature vectors.]",
-            "marks": 5,
-            "topics": []
-          },
-          {
-            "label": "c",
-            "text": "In order to grade the students fairly, the examiners wish to fill in the blanks in the table using predicted marks. Give pseudocode to find \u03b11 + \u03b23, the predicted mark for student 1 on question 3, using your model from Part (b). Describe briefly any standard library routines you use in your answer.",
-            "marks": 4,
-            "topics": []
-          },
-          {
-            "label": "d",
-            "text": "What is meant by parametric resampling? Explain how to use parametric resampling to generate a resampled version of this dataset.",
-            "marks": 4,
-            "topics": []
-          },
-          {
-            "label": "e",
-            "text": "To find out whether question 3 is indeed harder, the examiners wish to find a confidence interval for \u03b23 \u2212 (\u03b21 + \u03b22)/2. Suggest a confidence interval, and give pseudocode to find its error probability.",
-            "marks": 4,
-            "topics": []
           }
         ],
         "_text_extracted": true,
@@ -6544,8 +6697,8 @@
       {
         "year": 2018,
         "paper": 6,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p6q7.pdf",
+        "question": 9,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p6q9.pdf",
         "topics": [
           "lp-fol",
           "lp-skolem",
@@ -6555,36 +6708,26 @@
         "parts": [
           {
             "label": "a",
-            "text": "Show that the maximum likelihood estimator for \u03bb is \u02c6\u03bb = 100/\u2211100_{i=1}X_i.",
-            "marks": 3,
+            "text": "Outline the basic ideas behind Fourier-Motzkin variable elimination, demonstrating them by applying the technique to the following set of constraints: x\u2212 z\u2264 2 x + y\u2212 z\u2265 5 y + 2z\u2264 6 x + 2\u2265 3y",
+            "marks": 8,
             "topics": [
-              "statistics-mle"
+              "logic-fourier-motzkin"
             ]
           },
           {
             "label": "b",
-            "text": "Using the central limit theorem, find a and b such that P(1/\u02c6\u03bb \u2208 [a,b]) \u2248 0.95 explaining your calculations carefully. Hence find real numbers \u03b1 and \u03b2 such that P(\u03bb \u2208 [\u03b1\u02c6\u03bb, \u03b2\u02c6\u03bb]) \u2248 0.95.",
-            "marks": 6,
+            "text": "Give and explain the inference rules of binary resolution and factoring, in the context of automated theorem proving.",
+            "marks": 4,
             "topics": [
-              "statistics-clt",
-              "statistics-confidence-intervals"
+              "logic-resolution"
             ]
           },
           {
             "label": "c",
-            "text": "Explain how to use the bootstrap resampling method to approximate the probability P(\u03bb \u2208 [\u02c6\u03bb(1\u2212\u03b5), \u02c6\u03bb(1+\u03b5)]) where \u03b5 is given. In your answer, include an explanation of what is meant by 'resampling'.",
-            "marks": 6,
+            "text": "For the following clauses in Kowalski form, express each clause as a set of literals. For the resulting set of clauses, either exhibit a model or show that none exists. Notice that a, b and c are constants, while x, y and z are variables. Brie\ufb02y justify your answer. P \u2192 Q(a)\u2228 S(x)\u2228 T (y) T (b) \u2192 Q(z) \u2192 U(b)\u2227 S(c) \u2192 T (y) U(y) \u2192 T (y)\u2228 P \u2192 U(b)",
+            "marks": 8,
             "topics": [
-              "statistics-bootstrap"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Using your answer to Part (c), give pseudocode to compute \u03b5 such that P(\u03bb \u2208 [\u02c6\u03bb(1\u2212\u03b5), \u02c6\u03bb(1+\u03b5)]) \u2248 0.95. Comment your code appropriately.",
-            "marks": 5,
-            "topics": [
-              "statistics-bootstrap",
-              "programming"
+              "logic-models"
             ]
           }
         ],
@@ -6594,8 +6737,8 @@
       {
         "year": 2018,
         "paper": 6,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p6q8.pdf",
+        "question": 10,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p6q10.pdf",
         "topics": [
           "lp-fol",
           "lp-skolem",
@@ -6605,26 +6748,20 @@
         "parts": [
           {
             "label": "a",
-            "text": "Explain what is meant by 'linear model', 'feature', and 'orthogonal projection'. Rewrite the above model as a linear model made up of linearly independent features, and explain why they are linearly independent.",
-            "marks": 7,
+            "text": "Describe the DPLL method, explaining brie\ufb02y each of its four steps.",
+            "marks": 4,
             "topics": []
           },
           {
             "label": "b",
-            "text": "You are given a library function proj(y, [e1,...,e n]). It returns a list [\u03bb1,...,\u03bb n] such that \u03bb1e1 +\u00b7\u00b7\u00b7 +\u03bbnen is the orthogonal projection of the vector y onto the subspace spanned by vectors {e1,...,e n}. Explain what is meant by the 'least squares method', and give pseudocode using proj to \ufb01nd the least squares estimators for \u03b1s and \u03b2s.",
-            "marks": 2,
+            "text": "Use the DPLL method to \ufb01nd a model satisfying the following set of clauses, or to prove that no such model exists.\n{P, Q} {R} {Q, \u00acS, \u00acQ} {\u00acQ, \u00acR, S} {P, \u00acQ} {P, Q, \u00acS} {P, \u00acR, S} {\u00acP, \u00acS}",
+            "marks": 6,
             "topics": []
           },
           {
             "label": "c",
-            "text": "Explain how to compute the maximum likelihood estimators of \u03b1s, \u03b2s, and \u03c3. In your answer, you should explain the relationship between the least squares method and maximum likelihood estimation.",
-            "marks": 5,
-            "topics": []
-          },
-          {
-            "label": "d",
-            "text": "We wish to know whether the \u03b2s coe\ufb03cients for the three species are noticeably di\ufb00erent. Outline the Bayesian approach to answering this question.",
-            "marks": 6,
+            "text": "Describe brie\ufb02y the procedure for constructing a BDD. Illustrate your answer by constructing the BDD (using the variable order P < Q < R < S ) for:\n(\u00acP \u2228 (Q \u2227 S)) \u2228 (S \u2228 (\u00acR \u2228 S))",
+            "marks": 10,
             "topics": []
           }
         ],
@@ -6841,7 +6978,7 @@
     ]
   },
   "computer-networking": {
-    "total_questions": 18,
+    "total_questions": 21,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ComputerNetworking.html",
     "topic_frequencies": {
       "cn-transport": 12,
@@ -6853,126 +6990,56 @@
     },
     "tagged_questions": [
       {
-        "year": 2018,
+        "year": 2024,
         "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q4.pdf",
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q1.pdf",
         "topics": [
-          "cn-transport"
+          "cn-link",
+          "cn-ip",
+          "cn-transport",
+          "cn-application",
+          "cn-wireless"
         ],
         "parts": [
           {
             "label": "a",
-            "text": "Describe two drawbacks of layering. Provide an example for each.",
+            "text": "A 2.4 GHz physical layer.",
             "marks": 4,
             "topics": [
-              "cn-transport"
+              "cn-wireless"
             ]
           },
           {
             "label": "b",
-            "text": "(i) Explain the single-bit parity error-detection code using a single byte of data. How many bit errors can this code detect? (ii) Based on the single-bit parity error-detection code devise a new code to detect and correct a single 1-bit error in 4 bytes of data. How many parity bits do you require? You may assume that parity bits are error-free.",
-            "marks": 8,
+            "text": "A data-link layer.",
+            "marks": 4,
             "topics": [
-              "cn-transport"
+              "cn-link"
             ]
           },
           {
             "label": "c",
-            "text": "Consider a wireless network. For each of the following cases, state whether the packet transmission would be successful; assume no collision avoidance. Explain your answers. (i) Nodes A and B are in range of each other; no other node is within range. Node A sends a packet to B. (ii) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. Both A and C send a packet to B simultaneously. (iii) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. C is transmitting and A wants to send a packet to B. (iv) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. A is transmitting and B wants to send a packet to C.",
-            "marks": 8,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2018,
-        "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q5.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Consider two clusters A and B each hosting multiple applications. All applications send bursty traffic between A and B over a link E. Under what conditions is circuit switching more efficient to use as opposed to packet switching?",
-            "marks": 2,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Compare the link state and distance-vector protocols in terms of message complexity, processing complexity and robustness.",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Cambridge University is about to open a new School with three new departments A, B and C. The IPv4 address prefix of the new School is 128.232.1.0/24 and it is expecting each department to have the following number of hosts: Department A: between 40 and 60 hosts, Department B: between 100 and 120 hosts, Department C: between 20 and 30 hosts. (i) The university wishes to allocate a subnet for each department. Give possible IPv4 subnet masks for each new department. (ii) Later, the School opens a fourth department D with 30 hosts. Provide possible IPv4 subnet masks to accommodate all four departments. (iii) Finally, the School opens a fifth department E of similar size to B. Provide possible IPv4 subnet masks to accommodate all five departments. (iv) Are there any practical problems with your answer to Part (c)(iii)? Briefly discuss an alternative solution to accommodate all five departments.",
-            "marks": 12,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2018,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q6.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Briefly describe the main differences and similarities between routers and switches.",
+            "text": "An IPv4 network layer.",
             "marks": 4,
             "topics": [
-              "cn-network"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Consider the network shown in the figure below with four nodes. Cost links are shown in the diagram. Give the distance-vector routing tables for node C in the following two consecutive steps. (i) Step 0: C knows the distances to its immediate neighbours and (ii) Step 1: information from step 0 is exchanged as per the distance-vector algorithm.",
-            "marks": 4,
-            "topics": [
-              "cn-routing"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "(i) What is the problem that the Karn-Partridge algorithm aims to solve? (ii) Karn and Partridge proposed the use of exponential backoff in the TCP timeout value. Why is it that an exponential increase in the timeout value is more efficient than a linear increase for example?",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
+              "cn-ip"
             ]
           },
           {
             "label": "d",
-            "text": "What is the difference between congestion control and flow control in TCP?",
-            "marks": 2,
+            "text": "A TCP transport layer.",
+            "marks": 4,
             "topics": [
               "cn-transport"
             ]
           },
           {
             "label": "e",
-            "text": "Assume that three TCP flows f1, f2, f3, share a single link. The bandwidth of the link is 200 Mbps. The desired bandwidth of each flow is: f1 60 Mbps, f2 80 Mbps, and f3 100 Mbps. (i) What would be the max-min bandwidth allocation of the flows? (ii) Propose a way to \"cheat\" max-min fairness so that f3 increases its allocated bandwidth as computed in Part (e)(i).",
-            "marks": 6,
+            "text": "A web server using HTTP v1.2.",
+            "marks": 4,
             "topics": [
-              "cn-transport"
+              "cn-application"
             ]
           }
         ],
@@ -6980,296 +7047,205 @@
         "total_marks": 20
       },
       {
-        "year": 2019,
+        "year": 2024,
         "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q4.pdf",
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q2.pdf",
+        "topics": [
+          "cn-link",
+          "cn-wireless"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Physical line coding, for fiber or copper, discusses the design of systems that transform digital communications into an analog channel; the analog channel is often referred to as the physical layer. (i) Compare and contrast the two physical line coding systems: a pure scrambling system, and a pure block codec. (ii) For each of scrambler and block code, outline the disadvantages in their sole use. Then indicate how a hybrid schema can solve such drawbacks.",
+            "marks": 10,
+            "topics": [
+              "cn-link"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Wireless networking faces several challenges due to the physics of radio communications. Explain, with the use of illustration, two distinct collision-detection issues unique to wireless networks, and then describe a protocol-centered approach that will overcome each issue.",
+            "marks": 10,
+            "topics": [
+              "cn-wireless"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2024,
+        "paper": 5,
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q3.pdf",
         "topics": [
           "cn-transport"
         ],
         "parts": [
           {
             "label": "a",
-            "text": "Provide a definition of an ARQ.",
+            "text": "Define the terms latency and capacity as applied to communication channels",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Is there a strict relation between the two?",
             "marks": 1,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "b",
-            "text": "Describe the design and operation of a simple ARQ for a lossy communication channel.",
-            "marks": 3,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "When and why does a simple ARQ at the transport layer have a significant negative impact upon application performance?",
-            "marks": 3,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Describe what additions are required to a simple ARQ to support windowing. When and why will an ARQ which supports windowing provide better application performance than a simple ARQ?",
-            "marks": 5,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Describe two situations when the performance of a windowed ARQ is no better than a simple ARQ.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "f",
-            "text": "Would the QUIC protocol, when based upon UDP rather than TCP, overcome the two situations you outlined when answering Part (e)?",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2019,
-        "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q5.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "You need to urgently deliver 500 TByte of data from Zurich to London. (i) NoWayNet is offering a 10 Gbit/s reliable delivery service between Zurich and London (about 776km). Should you use either NoWayNet, or an overnight package delivery? Why? (ii) A new company, UnlikelyComms, is offering a 400 Gbit/s reliable delivery service between Zurich and London, but it takes a very indirect 2600 km path. Should you use UnlikelyComms? (iii) Following your successful urgent delivery of 500 TBytes of data, this has become an hourly task. Alongside the need to regularly deliver 500 TByte data between Zurich and London, you have an interactive virtual reality system; it requires six displays each needing 50 Gbit/s and an end-to-end latency of less than 5ms. Fortunately, a startup, FlyByNight, boasts an offering with an effective bandwidth of over 16 Tbit/s, using a special transport with no end-to-end latency at all. The downside is it can only transfer data in 500 TByte units, once every 4 minutes. Explain whether FlyByNight is, or is not, suited to your two workloads.",
+            "label": "ci",
+            "text": "In this context, describe a basic system that provides reliable transmission of packet data. Include a description of the essential features of your approach.",
             "marks": 8,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "b",
-            "text": "Ethernet standards enable 1Gbit/s over 4 pairs of twisted cabling, yet the physical media has a bandwidth much less than 1GHz, e.g., 250MHz is common. (i) Explain how such high data rates are achieved, and (ii) explain how physical media errors are reduced or eliminated.",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Explain, with the aid of diagrams, how Code-Division Multiple Access permits two or more pairs of nodes to communicate over a common medium (e.g., wireless) simultaneously.",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2019,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q6.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Provide five examples of resource-multiplexing in computer networks. In each case state the layer of the network stack where this takes place, which resource is multiplexed and the multiplexing mechanism.",
-            "marks": 10,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A relative has contacted you for help; they believe the Internet is broken. The fault turns out to be that a piece of network-protection software had installed a specific IP address entry for an (alternative) default DNS server. (i) What should have provided the correct DNS entry? (ii) By concentrating on how DNS is intended to work, describe why network applications may not work correctly. (iii) How would you diagnose this problem?",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "DNS substitution may also be used maliciously. (i) Outline how spyware might use an (alternative) DNS entry. (ii) Describe a network-centric method for overcoming such treachery.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2020,
-        "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q4.pdf",
-        "topics": [
-          "cn-transport",
-          "cn-intro"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Compute the steady state routing/forwarding table for Switch 3.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Noting which switches recompute a solution, enumerate the changed forwarding tables in switches of this network resulting from the complete failure and removal of link D.",
-            "marks": 9,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Following the removal of Link D, a new link H is added between Switch 1 and 4; however, this link fails frequently. Denied access to monitor the network-traffic, outline a diagnostic strategy to identify the faulty Link H, making clear how the network-operator might use interrogation of network switch forwarding tables.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Now suppose the switches do not permit interrogation of switch forwarding tables and that the link status information is untrustworthy. Outline other techniques that might be used to identify the failed link.",
-            "marks": 3,
-            "topics": [
-              "cn-transport",
-              "cn-intro"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2020,
-        "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q5.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Using a diagram, illustrate how long a packet of length L bytes will take to travel over an idle network from Host 4 to Host 1? The routers use a store-and-forward architecture.",
-            "marks": 5,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Computers in Calm building are often not getting allocated IP addresses and the performance is quite poor. The department router serves DHCP for the College network and is operating correctly. Residents in Blue report intermittent performance issues, but no one in Admin reports any problems. Network measurements reveal that the per-router packet loss for each switch under load can be as high as one packet in five thousand, but it is significantly worse for packets smaller than 1000 bytes, where as many as one packet in twenty are lost. With these insights, explain the cause of the problems experienced. Make clear any simplifying assumptions you have made.",
-            "marks": 5,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Some students in Calm have found using IPv6 will 'work' (i.e., connecting to the wider University services is possible, but not to Internet services); although still not performing as well as when they are in the Admin building. Describe the steps by which IPv6 addresses are allocated without DHCP and consider why this service may be working more reliably than IPv4?",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Two approaches to improve the network performance are available: one is to upgrade the performance of the physical links between the buildings to 10Gbit/s. The alternative approach is to significantly change the topology of the network by adding an additional high performance router, but leaving the performance of the physical links unchanged. Briefly give the advantages and disadvantages of each approach.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2020,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q6.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Arriving at your college room, you plug into the wired Ethernet jack for the first time. The network admin has a record of your MAC address and your machine can join the network without further action on your part. Assume: Your laptop's Ethernet address is 0a:0b:0c:0d:0e:0f, DHCP server address is 131.111.7.3, your IPv4 address will be 131.111.7.121, the gateway's IP address is 131.111.7.1, and Ethernet address is 00:01:02:03:04:05, the network netmask is 255.255.255.0. Write the series of protocol/packet exchanges that occur on the wired Ethernet link, up until you can send a single packet to 128.232.0.20. You do not need to describe packets after this packet has left the link. Include ARP and DHCP packets, stating the IP and Ethernet addresses of the packets where possible.",
-            "marks": 10,
-            "topics": []
-          },
-          {
-            "label": "b",
-            "text": "Consider two neighbours, Alice and Bob. Each have wireless IPv4 routers with integrated NAT. Each neighbour connects their laptop to their own wireless router, and each uses appropriate utilities to examine the IP address of each laptop. They realise the laptops have the same IP address. (i) How is that possible? (ii) Justify one reason that wide-spread deployment of IPv6 would remove the need for the NAT devices. (iii) Justify one reason that an IPv6 user might want to continue using their NAT. (iv) Further investigations show the two wireless routers are using the same wireless channel, although with different SSIDs. Detail what this situation means, why this situation is both possible and perfectly standards-compliant behaviour, and what implications there are for this situation \u2014 including how any negative effects can be made less severe.",
-            "marks": 10,
-            "topics": []
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2021,
-        "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q4.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Consider the layer-2 switch topology shown below.\n\nSwitch A Switch C Switch B\nHost X Host Y Host Z\nPort number Port number Port number 1 2 7 3 4 5 6\n\nAssuming all switches start with empty switch-forwarding tables; Host X (with physical address X) sends a packet destined for Host Z. Enumerate in the style below, all packets sent across the network until the message arrives at Host Z.\n\nYou may assume packet-processing, latency and transmission time are negligible. Additionally, indicate packets transmitted simultaneously.\n\nTime Sent Frame\nStep by Device on Link Source Destination\n0 X X-A1 X Z\n... ... ... ... ...\n? C C7-Z X Z",
-            "marks": 5,
-            "topics": [
-              "cn-switching"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Enumerate in the style below, the forwarding table of Switch B at the end of Part (a).\n\nDestination Port\n... ...",
+            "label": "cii",
+            "text": "The network channel will impact the effective throughput of your reliable transport protocol. Outline an example of why this occurs.",
             "marks": 2,
             "topics": [
-              "cn-switching"
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "ciii",
+            "text": "Describe a straightforward extension to your protocol that would improve the performance of your transport protocol without changing the channel provided by the underlying network.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "civ",
+            "text": "In what circumstances might these improvements have only limited benefit?",
+            "marks": 3,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q1.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Provide a derivation of this equation utilising a figure. Include a description of each term of this equation and example values (including units).",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "What does this equation imply for networks of 10 Gbit/s throughput.",
+            "marks": 3,
+            "topics": [
+              "cn-transport"
             ]
           },
           {
             "label": "c",
-            "text": "Consider a layer-2 network consisting of S+1 switches, S directly attached to H hosts. Each host runs V virtual machines, each with a single address. S switches are connected using a star topology with a single switch C at the centre. Each host exchanges data with a selected and stable subset of other hosts.\n\nEstimate the worst case number of entries in the forwarding table for any typical switch S and the number of entries in the forwarding table for switch C.",
+            "text": "What important TCP congestion behaviour does this equation not capture?",
             "marks": 3,
             "topics": [
-              "cn-switching"
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "di",
+            "text": "With the aid of a diagram showing window size over time, compare how CUBIC differs from classic AIMD TCP congestion control.",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "dii",
+            "text": "With reference to the diagram used in part (d)(i) discuss how the CUBIC approach improves performance for a flow on a link with very large bandwidth delay products.",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2023,
+        "paper": 5,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q2.pdf",
+        "topics": [
+          "cn-link",
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "What is the data rate successfully traversing the buffer and the fraction of packets for each flow dropped by the buffer?",
+            "marks": 3,
+            "topics": [
+              "cn-link"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "What is the packet loss rate for each flow when using the upgraded gateway?",
+            "marks": 3,
+            "topics": [
+              "cn-link"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Approximately how many packets does each flow have in its queue?",
+            "marks": 3,
+            "topics": [
+              "cn-link"
             ]
           },
           {
             "label": "d",
-            "text": "Users of this cluster of machines complain of occasional misbehaviour attributed to network timeouts and network slowdown.\n\nOutline two plausible chains of events causing the problem. Describe two appropriate, cost-effective, strategies for overcoming the issues faced by the users. You may assume the switches are state-of-the-art and buying more hosts is not the answer.",
-            "marks": 10,
+            "text": "What is the packet loss rate for each flow when using this gateway with weighted fair-queueing?",
+            "marks": 3,
             "topics": [
-              "cn-switching"
+              "cn-link"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "Approximately how many packets does each flow have in its queue?",
+            "marks": 3,
+            "topics": [
+              "cn-link"
+            ]
+          },
+          {
+            "label": "f",
+            "text": "Throughout this question we have assumed packets are of equal length; this is not a valid assumption for the vast majority of Internet traffic. Presuming that over the long term we wish for the queue discipline to retain the desired weighted-fairness properties, discuss the issues variable length packets raise, and propose an approach to maintain the desired weighted-fairness outcome.",
+            "marks": 5,
+            "topics": [
+              "cn-link"
             ]
           }
         ],
@@ -7277,65 +7253,33 @@
         "total_marks": 20
       },
       {
-        "year": 2021,
+        "year": 2023,
         "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q5.pdf",
+        "question": 3,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q3.pdf",
         "topics": [
-          "cn-transport"
+          "cn-routing",
+          "cn-link",
+          "cn-ip"
         ],
         "parts": [
           {
             "label": "a",
-            "text": "A user complains that their web application Times Out after successfully connecting to a remote host, yet, an investigation with ping indicates the remote host is alive. Propose a cause of this fault and outline a test-strategy that could be used automatically to detect such a fault.",
-            "marks": 4,
+            "text": "(i) Ethernet switches use a spanning tree. Explain briefly what the aims of the spanning tree protocol are, and how it works to achieve these aims. (ii) Do the switches learn the entire network topology? Explain your answer. (iii) Routers using link-state protocols communicate over the shortest path. Does each pair of switches communicate over the shortest path? (iv) Routers may use a link-state protocol or a distance vector protocol. Compare the message-size complexity, computational complexity, and the robustness of these two approaches.",
+            "marks": 16,
             "topics": [
-              "cn-transport"
+              "cn-link",
+              "cn-link",
+              "cn-link",
+              "cn-routing"
             ]
           },
           {
             "label": "b",
-            "text": "A user would like to infer the path between two hosts; they suggest using the utility ping. Make your argument for why traceroute is the more appropriate utility, comparing and contrasting their operation.",
+            "text": "The computer of another student on your college stairwell doesn't connect to the Internet. They go on to say \". . . it's weird \u2014 my computer can talk with the printer in my room and my computer can see your computer, but I can't upload this essay due tonight, I can't connect to Google, and I can't even send an email. . . \" You suspect their computer is using automatically-allocated link-local addresses for both IPv4 and IPv6. Speculate what has gone wrong to cause the computers to be using link-local addresses. You may want to consider: What address did the machine use? Why is the computer using link-local addresses? Why are some services are working but other services are not?",
             "marks": 4,
             "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Consider the test network below; Y and Z are two unix IPv4 hosts, while nodes A through E represent fully-conformant IPv4 routers providing the only connectivity between the two hosts. Per-packet load balancing by A and E means packets may be sent on any valid path. No firewalls or packet filtering is used anywhere in the network. (i) Using traceroute infers the following paths: (Y-A-B-C-E-Z), (Y-A-D-E-Z), (Y-A-B-D-E-Z), and (Y-A-B-E-E-Z) Explain (with diagrams as appropriate) why these results have occurred and identify the two true and two false results; (ii) A firmware upgrade for routers A and E means they now do per-flow and not per-packet load balancing. Despite the functions of the flow-based load balancing, traceroute results have not changed; two false paths are inferred along with two true paths. Explain this outcome and a strategy to identify only true paths.",
-            "marks": 12,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2021,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q6.pdf",
-        "topics": [
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "For IPv4 ISPs, each domestic installation typically gets a /32 network. You have a complicated configuration requiring NAT and multiple IPv4 subnets. (i) Why would an IPv6 based provider allocate four /64 networks for your premises when each /64 represents 2^64 addresses? (ii) A colleague has IPv6 with another provider; they only allow one /64 for each domestic installation. In the past your colleague has used a NAT and many IPv4 private address blocks, but keenly adopted IPv6 permitting them to upgrade their home network. They are now using blocks of the allocated /64 and a router in their home to interconnect the subnets. Not everything is working as they hoped; for example, sometimes IoT devices can't connect to the Internet to update and your colleague can not connect to their front-door camera when at work. Explain what sort of problems your colleague may face along with methods by which they could verify the root cause. (iii) Explain to your colleague why you might not be able to lend them one of your /64 allocations, even though the /64 blocks (provided to you by your ISP) are each globally routable addresses.",
-            "marks": 10,
-            "topics": [
-              "cn-ipv6"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A local area network may carry several different LANs simultaneously; such a network would be designated for known sets of HomePlug devices. Describe a physical line coding approach for the HomePlug devices that: allows two or more simultaneous virtual local area networks to fairly share the same physical channel, but does not permit trivial interception of network traffic. Outline your approach along with its benefits and drawbacks, comparing it with the simplest use of VLAN tags in Ethernet.",
-            "marks": 10,
-            "topics": [
-              "cn-link-layer"
+              "cn-ip"
             ]
           }
         ],
@@ -7501,205 +7445,44 @@
         "_text_extracted": true
       },
       {
-        "year": 2023,
+        "year": 2021,
         "paper": 5,
-        "question": 1,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q1.pdf",
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q4.pdf",
         "topics": [
           "cn-transport"
         ],
         "parts": [
           {
             "label": "a",
-            "text": "Provide a derivation of this equation utilising a figure. Include a description of each term of this equation and example values (including units).",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "What does this equation imply for networks of 10 Gbit/s throughput.",
-            "marks": 3,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "What important TCP congestion behaviour does this equation not capture?",
-            "marks": 3,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "di",
-            "text": "With the aid of a diagram showing window size over time, compare how CUBIC differs from classic AIMD TCP congestion control.",
-            "marks": 6,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "dii",
-            "text": "With reference to the diagram used in part (d)(i) discuss how the CUBIC approach improves performance for a flow on a link with very large bandwidth delay products.",
-            "marks": 2,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2023,
-        "paper": 5,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q2.pdf",
-        "topics": [
-          "cn-link",
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "What is the data rate successfully traversing the buffer and the fraction of packets for each flow dropped by the buffer?",
-            "marks": 3,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "What is the packet loss rate for each flow when using the upgraded gateway?",
-            "marks": 3,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Approximately how many packets does each flow have in its queue?",
-            "marks": 3,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "What is the packet loss rate for each flow when using this gateway with weighted fair-queueing?",
-            "marks": 3,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Approximately how many packets does each flow have in its queue?",
-            "marks": 3,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "f",
-            "text": "Throughout this question we have assumed packets are of equal length; this is not a valid assumption for the vast majority of Internet traffic. Presuming that over the long term we wish for the queue discipline to retain the desired weighted-fairness properties, discuss the issues variable length packets raise, and propose an approach to maintain the desired weighted-fairness outcome.",
+            "text": "Consider the layer-2 switch topology shown below.\n\nSwitch A Switch C Switch B\nHost X Host Y Host Z\nPort number Port number Port number 1 2 7 3 4 5 6\n\nAssuming all switches start with empty switch-forwarding tables; Host X (with physical address X) sends a packet destined for Host Z. Enumerate in the style below, all packets sent across the network until the message arrives at Host Z.\n\nYou may assume packet-processing, latency and transmission time are negligible. Additionally, indicate packets transmitted simultaneously.\n\nTime Sent Frame\nStep by Device on Link Source Destination\n0 X X-A1 X Z\n... ... ... ... ...\n? C C7-Z X Z",
             "marks": 5,
             "topics": [
-              "cn-link"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2023,
-        "paper": 5,
-        "question": 3,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p5q3.pdf",
-        "topics": [
-          "cn-routing",
-          "cn-link",
-          "cn-ip"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "(i) Ethernet switches use a spanning tree. Explain briefly what the aims of the spanning tree protocol are, and how it works to achieve these aims. (ii) Do the switches learn the entire network topology? Explain your answer. (iii) Routers using link-state protocols communicate over the shortest path. Does each pair of switches communicate over the shortest path? (iv) Routers may use a link-state protocol or a distance vector protocol. Compare the message-size complexity, computational complexity, and the robustness of these two approaches.",
-            "marks": 16,
-            "topics": [
-              "cn-link",
-              "cn-link",
-              "cn-link",
-              "cn-routing"
+              "cn-switching"
             ]
           },
           {
             "label": "b",
-            "text": "The computer of another student on your college stairwell doesn't connect to the Internet. They go on to say \". . . it's weird \u2014 my computer can talk with the printer in my room and my computer can see your computer, but I can't upload this essay due tonight, I can't connect to Google, and I can't even send an email. . . \" You suspect their computer is using automatically-allocated link-local addresses for both IPv4 and IPv6. Speculate what has gone wrong to cause the computers to be using link-local addresses. You may want to consider: What address did the machine use? Why is the computer using link-local addresses? Why are some services are working but other services are not?",
-            "marks": 4,
+            "text": "Enumerate in the style below, the forwarding table of Switch B at the end of Part (a).\n\nDestination Port\n... ...",
+            "marks": 2,
             "topics": [
-              "cn-ip"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2024,
-        "paper": 5,
-        "question": 1,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q1.pdf",
-        "topics": [
-          "cn-link",
-          "cn-ip",
-          "cn-transport",
-          "cn-application",
-          "cn-wireless"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "A 2.4 GHz physical layer.",
-            "marks": 4,
-            "topics": [
-              "cn-wireless"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A data-link layer.",
-            "marks": 4,
-            "topics": [
-              "cn-link"
+              "cn-switching"
             ]
           },
           {
             "label": "c",
-            "text": "An IPv4 network layer.",
-            "marks": 4,
+            "text": "Consider a layer-2 network consisting of S+1 switches, S directly attached to H hosts. Each host runs V virtual machines, each with a single address. S switches are connected using a star topology with a single switch C at the centre. Each host exchanges data with a selected and stable subset of other hosts.\n\nEstimate the worst case number of entries in the forwarding table for any typical switch S and the number of entries in the forwarding table for switch C.",
+            "marks": 3,
             "topics": [
-              "cn-ip"
+              "cn-switching"
             ]
           },
           {
             "label": "d",
-            "text": "A TCP transport layer.",
-            "marks": 4,
+            "text": "Users of this cluster of machines complain of occasional misbehaviour attributed to network timeouts and network slowdown.\n\nOutline two plausible chains of events causing the problem. Describe two appropriate, cost-effective, strategies for overcoming the issues faced by the users. You may assume the switches are state-of-the-art and buying more hosts is not the answer.",
+            "marks": 10,
             "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "A web server using HTTP v1.2.",
-            "marks": 4,
-            "topics": [
-              "cn-application"
+              "cn-switching"
             ]
           }
         ],
@@ -7707,88 +7490,442 @@
         "total_marks": 20
       },
       {
-        "year": 2024,
+        "year": 2021,
         "paper": 5,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q2.pdf",
-        "topics": [
-          "cn-link",
-          "cn-wireless"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Physical line coding, for fiber or copper, discusses the design of systems that transform digital communications into an analog channel; the analog channel is often referred to as the physical layer. (i) Compare and contrast the two physical line coding systems: a pure scrambling system, and a pure block codec. (ii) For each of scrambler and block code, outline the disadvantages in their sole use. Then indicate how a hybrid schema can solve such drawbacks.",
-            "marks": 10,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Wireless networking faces several challenges due to the physics of radio communications. Explain, with the use of illustration, two distinct collision-detection issues unique to wireless networks, and then describe a protocol-centered approach that will overcome each issue.",
-            "marks": 10,
-            "topics": [
-              "cn-wireless"
-            ]
-          }
-        ],
-        "_text_extracted": true,
-        "total_marks": 20
-      },
-      {
-        "year": 2024,
-        "paper": 5,
-        "question": 3,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p5q3.pdf",
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q5.pdf",
         "topics": [
           "cn-transport"
         ],
         "parts": [
           {
             "label": "a",
-            "text": "Define the terms latency and capacity as applied to communication channels",
-            "marks": 2,
+            "text": "A user complains that their web application Times Out after successfully connecting to a remote host, yet, an investigation with ping indicates the remote host is alive. Propose a cause of this fault and outline a test-strategy that could be used automatically to detect such a fault.",
+            "marks": 4,
             "topics": [
               "cn-transport"
             ]
           },
           {
             "label": "b",
-            "text": "Is there a strict relation between the two?",
+            "text": "A user would like to infer the path between two hosts; they suggest using the utility ping. Make your argument for why traceroute is the more appropriate utility, comparing and contrasting their operation.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Consider the test network below; Y and Z are two unix IPv4 hosts, while nodes A through E represent fully-conformant IPv4 routers providing the only connectivity between the two hosts. Per-packet load balancing by A and E means packets may be sent on any valid path. No firewalls or packet filtering is used anywhere in the network. (i) Using traceroute infers the following paths: (Y-A-B-C-E-Z), (Y-A-D-E-Z), (Y-A-B-D-E-Z), and (Y-A-B-E-E-Z) Explain (with diagrams as appropriate) why these results have occurred and identify the two true and two false results; (ii) A firmware upgrade for routers A and E means they now do per-flow and not per-packet load balancing. Despite the functions of the flow-based load balancing, traceroute results have not changed; two false paths are inferred along with two true paths. Explain this outcome and a strategy to identify only true paths.",
+            "marks": 12,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2021,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p5q6.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "For IPv4 ISPs, each domestic installation typically gets a /32 network. You have a complicated configuration requiring NAT and multiple IPv4 subnets. (i) Why would an IPv6 based provider allocate four /64 networks for your premises when each /64 represents 2^64 addresses? (ii) A colleague has IPv6 with another provider; they only allow one /64 for each domestic installation. In the past your colleague has used a NAT and many IPv4 private address blocks, but keenly adopted IPv6 permitting them to upgrade their home network. They are now using blocks of the allocated /64 and a router in their home to interconnect the subnets. Not everything is working as they hoped; for example, sometimes IoT devices can't connect to the Internet to update and your colleague can not connect to their front-door camera when at work. Explain what sort of problems your colleague may face along with methods by which they could verify the root cause. (iii) Explain to your colleague why you might not be able to lend them one of your /64 allocations, even though the /64 blocks (provided to you by your ISP) are each globally routable addresses.",
+            "marks": 10,
+            "topics": [
+              "cn-ipv6"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "A local area network may carry several different LANs simultaneously; such a network would be designated for known sets of HomePlug devices. Describe a physical line coding approach for the HomePlug devices that: allows two or more simultaneous virtual local area networks to fairly share the same physical channel, but does not permit trivial interception of network traffic. Outline your approach along with its benefits and drawbacks, comparing it with the simplest use of VLAN tags in Ethernet.",
+            "marks": 10,
+            "topics": [
+              "cn-link-layer"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2020,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q4.pdf",
+        "topics": [
+          "cn-transport",
+          "cn-intro"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Compute the steady state routing/forwarding table for Switch 3.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Noting which switches recompute a solution, enumerate the changed forwarding tables in switches of this network resulting from the complete failure and removal of link D.",
+            "marks": 9,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Following the removal of Link D, a new link H is added between Switch 1 and 4; however, this link fails frequently. Denied access to monitor the network-traffic, outline a diagnostic strategy to identify the faulty Link H, making clear how the network-operator might use interrogation of network switch forwarding tables.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Now suppose the switches do not permit interrogation of switch forwarding tables and that the link status information is untrustworthy. Outline other techniques that might be used to identify the failed link.",
+            "marks": 3,
+            "topics": [
+              "cn-transport",
+              "cn-intro"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2020,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q5.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Using a diagram, illustrate how long a packet of length L bytes will take to travel over an idle network from Host 4 to Host 1? The routers use a store-and-forward architecture.",
+            "marks": 5,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Computers in Calm building are often not getting allocated IP addresses and the performance is quite poor. The department router serves DHCP for the College network and is operating correctly. Residents in Blue report intermittent performance issues, but no one in Admin reports any problems. Network measurements reveal that the per-router packet loss for each switch under load can be as high as one packet in five thousand, but it is significantly worse for packets smaller than 1000 bytes, where as many as one packet in twenty are lost. With these insights, explain the cause of the problems experienced. Make clear any simplifying assumptions you have made.",
+            "marks": 5,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Some students in Calm have found using IPv6 will 'work' (i.e., connecting to the wider University services is possible, but not to Internet services); although still not performing as well as when they are in the Admin building. Describe the steps by which IPv6 addresses are allocated without DHCP and consider why this service may be working more reliably than IPv4?",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Two approaches to improve the network performance are available: one is to upgrade the performance of the physical links between the buildings to 10Gbit/s. The alternative approach is to significantly change the topology of the network by adding an additional high performance router, but leaving the performance of the physical links unchanged. Briefly give the advantages and disadvantages of each approach.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2020,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p5q6.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Arriving at your college room, you plug into the wired Ethernet jack for the first time. The network admin has a record of your MAC address and your machine can join the network without further action on your part. Assume: Your laptop's Ethernet address is 0a:0b:0c:0d:0e:0f, DHCP server address is 131.111.7.3, your IPv4 address will be 131.111.7.121, the gateway's IP address is 131.111.7.1, and Ethernet address is 00:01:02:03:04:05, the network netmask is 255.255.255.0. Write the series of protocol/packet exchanges that occur on the wired Ethernet link, up until you can send a single packet to 128.232.0.20. You do not need to describe packets after this packet has left the link. Include ARP and DHCP packets, stating the IP and Ethernet addresses of the packets where possible.",
+            "marks": 10,
+            "topics": []
+          },
+          {
+            "label": "b",
+            "text": "Consider two neighbours, Alice and Bob. Each have wireless IPv4 routers with integrated NAT. Each neighbour connects their laptop to their own wireless router, and each uses appropriate utilities to examine the IP address of each laptop. They realise the laptops have the same IP address. (i) How is that possible? (ii) Justify one reason that wide-spread deployment of IPv6 would remove the need for the NAT devices. (iii) Justify one reason that an IPv6 user might want to continue using their NAT. (iv) Further investigations show the two wireless routers are using the same wireless channel, although with different SSIDs. Detail what this situation means, why this situation is both possible and perfectly standards-compliant behaviour, and what implications there are for this situation \u2014 including how any negative effects can be made less severe.",
+            "marks": 10,
+            "topics": []
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2019,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q4.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Provide a definition of an ARQ.",
             "marks": 1,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "ci",
-            "text": "In this context, describe a basic system that provides reliable transmission of packet data. Include a description of the essential features of your approach.",
-            "marks": 8,
+            "label": "b",
+            "text": "Describe the design and operation of a simple ARQ for a lossy communication channel.",
+            "marks": 3,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "cii",
-            "text": "The network channel will impact the effective throughput of your reliable transport protocol. Outline an example of why this occurs.",
-            "marks": 2,
+            "label": "c",
+            "text": "When and why does a simple ARQ at the transport layer have a significant negative impact upon application performance?",
+            "marks": 3,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "ciii",
-            "text": "Describe a straightforward extension to your protocol that would improve the performance of your transport protocol without changing the channel provided by the underlying network.",
+            "label": "d",
+            "text": "Describe what additions are required to a simple ARQ to support windowing. When and why will an ARQ which supports windowing provide better application performance than a simple ARQ?",
+            "marks": 5,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "Describe two situations when the performance of a windowed ARQ is no better than a simple ARQ.",
             "marks": 4,
             "topics": [
               "cn-transport"
             ]
           },
           {
-            "label": "civ",
-            "text": "In what circumstances might these improvements have only limited benefit?",
-            "marks": 3,
+            "label": "f",
+            "text": "Would the QUIC protocol, when based upon UDP rather than TCP, overcome the two situations you outlined when answering Part (e)?",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2019,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q5.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "You need to urgently deliver 500 TByte of data from Zurich to London. (i) NoWayNet is offering a 10 Gbit/s reliable delivery service between Zurich and London (about 776km). Should you use either NoWayNet, or an overnight package delivery? Why? (ii) A new company, UnlikelyComms, is offering a 400 Gbit/s reliable delivery service between Zurich and London, but it takes a very indirect 2600 km path. Should you use UnlikelyComms? (iii) Following your successful urgent delivery of 500 TBytes of data, this has become an hourly task. Alongside the need to regularly deliver 500 TByte data between Zurich and London, you have an interactive virtual reality system; it requires six displays each needing 50 Gbit/s and an end-to-end latency of less than 5ms. Fortunately, a startup, FlyByNight, boasts an offering with an effective bandwidth of over 16 Tbit/s, using a special transport with no end-to-end latency at all. The downside is it can only transfer data in 500 TByte units, once every 4 minutes. Explain whether FlyByNight is, or is not, suited to your two workloads.",
+            "marks": 8,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Ethernet standards enable 1Gbit/s over 4 pairs of twisted cabling, yet the physical media has a bandwidth much less than 1GHz, e.g., 250MHz is common. (i) Explain how such high data rates are achieved, and (ii) explain how physical media errors are reduced or eliminated.",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Explain, with the aid of diagrams, how Code-Division Multiple Access permits two or more pairs of nodes to communicate over a common medium (e.g., wireless) simultaneously.",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2019,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p5q6.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Provide five examples of resource-multiplexing in computer networks. In each case state the layer of the network stack where this takes place, which resource is multiplexed and the multiplexing mechanism.",
+            "marks": 10,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "A relative has contacted you for help; they believe the Internet is broken. The fault turns out to be that a piece of network-protection software had installed a specific IP address entry for an (alternative) default DNS server. (i) What should have provided the correct DNS entry? (ii) By concentrating on how DNS is intended to work, describe why network applications may not work correctly. (iii) How would you diagnose this problem?",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "DNS substitution may also be used maliciously. (i) Outline how spyware might use an (alternative) DNS entry. (ii) Describe a network-centric method for overcoming such treachery.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2018,
+        "paper": 5,
+        "question": 4,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q4.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Describe two drawbacks of layering. Provide an example for each.",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "(i) Explain the single-bit parity error-detection code using a single byte of data. How many bit errors can this code detect? (ii) Based on the single-bit parity error-detection code devise a new code to detect and correct a single 1-bit error in 4 bytes of data. How many parity bits do you require? You may assume that parity bits are error-free.",
+            "marks": 8,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Consider a wireless network. For each of the following cases, state whether the packet transmission would be successful; assume no collision avoidance. Explain your answers. (i) Nodes A and B are in range of each other; no other node is within range. Node A sends a packet to B. (ii) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. Both A and C send a packet to B simultaneously. (iii) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. C is transmitting and A wants to send a packet to B. (iv) Nodes A and B are in range of each other; nodes B and C are in range of each other; A and C are not in range of each other. A is transmitting and B wants to send a packet to C.",
+            "marks": 8,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2018,
+        "paper": 5,
+        "question": 5,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q5.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Consider two clusters A and B each hosting multiple applications. All applications send bursty traffic between A and B over a link E. Under what conditions is circuit switching more efficient to use as opposed to packet switching?",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Compare the link state and distance-vector protocols in terms of message complexity, processing complexity and robustness.",
+            "marks": 6,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Cambridge University is about to open a new School with three new departments A, B and C. The IPv4 address prefix of the new School is 128.232.1.0/24 and it is expecting each department to have the following number of hosts: Department A: between 40 and 60 hosts, Department B: between 100 and 120 hosts, Department C: between 20 and 30 hosts. (i) The university wishes to allocate a subnet for each department. Give possible IPv4 subnet masks for each new department. (ii) Later, the School opens a fourth department D with 30 hosts. Provide possible IPv4 subnet masks to accommodate all four departments. (iii) Finally, the School opens a fifth department E of similar size to B. Provide possible IPv4 subnet masks to accommodate all five departments. (iv) Are there any practical problems with your answer to Part (c)(iii)? Briefly discuss an alternative solution to accommodate all five departments.",
+            "marks": 12,
+            "topics": [
+              "cn-transport"
+            ]
+          }
+        ],
+        "_text_extracted": true,
+        "total_marks": 20
+      },
+      {
+        "year": 2018,
+        "paper": 5,
+        "question": 6,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p5q6.pdf",
+        "topics": [
+          "cn-transport"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Briefly describe the main differences and similarities between routers and switches.",
+            "marks": 4,
+            "topics": [
+              "cn-network"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Consider the network shown in the figure below with four nodes. Cost links are shown in the diagram. Give the distance-vector routing tables for node C in the following two consecutive steps. (i) Step 0: C knows the distances to its immediate neighbours and (ii) Step 1: information from step 0 is exchanged as per the distance-vector algorithm.",
+            "marks": 4,
+            "topics": [
+              "cn-routing"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "(i) What is the problem that the Karn-Partridge algorithm aims to solve? (ii) Karn and Partridge proposed the use of exponential backoff in the TCP timeout value. Why is it that an exponential increase in the timeout value is more efficient than a linear increase for example?",
+            "marks": 4,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "What is the difference between congestion control and flow control in TCP?",
+            "marks": 2,
+            "topics": [
+              "cn-transport"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "Assume that three TCP flows f1, f2, f3, share a single link. The bandwidth of the link is 200 Mbps. The desired bandwidth of each flow is: f1 60 Mbps, f2 80 Mbps, and f3 100 Mbps. (i) What would be the max-min bandwidth allocation of the flows? (ii) Propose a way to \"cheat\" max-min fairness so that f3 increases its allocated bandwidth as computed in Part (e)(i).",
+            "marks": 6,
             "topics": [
               "cn-transport"
             ]

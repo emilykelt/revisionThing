@@ -165,6 +165,12 @@ def main():
             else:
                 p = paper_num
 
+            # Logic and Proof: Q9+Q10 up to 2022, then Q7+Q8 from 2023.
+            if course_id == 'logic-proof' and year <= 2022:
+                question_nums = [9, 10]
+            elif course_id == 'logic-proof':
+                question_nums = [7, 8]
+
             # Fetch an example question from the same course for style
             example_q = tagged[0] if tagged else None
             course_name_lookup = load_json(COURSES_FILE)
