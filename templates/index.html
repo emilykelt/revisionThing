@@ -262,6 +262,43 @@
         </div>
     </main>
 
+    <!-- Chatbot floating button + side panel -->
+    <button class="chat-fab" id="chat-fab" onclick="app.toggleChat()" aria-label="Open chat">
+        <span class="chat-fab-icon">💬</span>
+        <span class="chat-fab-label">Ask</span>
+    </button>
+
+    <aside class="chat-panel" id="chat-panel" aria-hidden="true">
+        <div class="chat-panel-header">
+            <div class="chat-panel-title">
+                <span class="chat-panel-icon">💬</span>
+                <span>Course Q&amp;A</span>
+            </div>
+            <button class="chat-panel-close" onclick="app.toggleChat()" aria-label="Close">×</button>
+        </div>
+        <div class="chat-panel-scope">
+            <label class="chat-scope-label">Scope</label>
+            <select id="chat-course-select" class="chat-course-select" onchange="app.onChatScopeChange()">
+                <option value="">All courses</option>
+            </select>
+            <button class="chat-clear-btn" onclick="app.clearChat()" title="Clear conversation">Clear</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-empty">
+                <p class="chat-empty-title">Ask about your courses</p>
+                <p class="chat-empty-desc">Examples:</p>
+                <button class="chat-suggestion" onclick="app.askChatSuggestion('Is the Boyer–Moore algorithm in any of my courses?')">Is the Boyer–Moore algorithm in any course?</button>
+                <button class="chat-suggestion" onclick="app.askChatSuggestion('Which course covers monitors and condition variables?')">Which course covers monitors?</button>
+                <button class="chat-suggestion" onclick="app.askChatSuggestion('Do I need to know lambda calculus for the exam?')">Do I need lambda calculus?</button>
+            </div>
+        </div>
+        <form class="chat-input-row" id="chat-input-row" onsubmit="app.sendChat(event)">
+            <textarea id="chat-input" class="chat-input" placeholder="Ask anything about the courses…" rows="1"></textarea>
+            <button type="submit" class="chat-send-btn" id="chat-send-btn" aria-label="Send">↑</button>
+        </form>
+    </aside>
+    <div class="chat-backdrop" id="chat-backdrop" onclick="app.toggleChat()"></div>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>

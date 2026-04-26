@@ -377,6 +377,9 @@ const app = {
             if (ta) ta.focus();
         }, 100);
 
+        // Reset per-question image storage
+        this._answerImages = {};
+
         // Ctrl+Enter to submit on any textarea; update progress dots on input
         container.querySelectorAll('.answer-textarea').forEach(ta => {
             ta.addEventListener('keydown', (e) => {
@@ -389,6 +392,7 @@ const app = {
                 });
             }
             this._attachMathPad(ta);
+            this._attachImagePaste(ta);
         });
     },
 
@@ -450,21 +454,30 @@ const app = {
             // Collect answers for each part
             const partAnswers = [];
             document.querySelectorAll('.part-answer').forEach(ta => {
+                const key = ta.id || ta.dataset.label;
                 partAnswers.push({
                     label: ta.dataset.label,
                     question: ta.dataset.question,
                     answer: ta.value,
                     marks: parseInt(ta.dataset.marks) || 8,
+                    images: (this._answerImages?.[key] || []).map(im => ({
+                        media_type: im.media_type, data: im.data,
+                    })),
                 });
             });
-            // Require at least one non-empty answer
-            if (!partAnswers.some(p => p.answer.trim())) return;
+            // Require at least one non-empty answer or attached image
+            if (!partAnswers.some(p => p.answer.trim() || (p.images && p.images.length))) return;
             body = { topic_id: q.topic_id, course_id: q.course_id, parts: partAnswers, all_topic_ids: q._all_topic_ids || [],
                      has_diagram: q.has_diagram || false, source: q.source || '' };
         } else {
-            const answer = document.getElementById('answer-input').value;
-            if (!answer.trim()) return;
-            body = { topic_id: q.topic_id, course_id: q.course_id, question: q.question, answer, all_topic_ids: q._all_topic_ids || [] };
+            const ta = document.getElementById('answer-input');
+            const answer = ta.value;
+            const images = (this._answerImages?.['answer-input'] || []).map(im => ({
+                media_type: im.media_type, data: im.data,
+            }));
+            if (!answer.trim() && images.length === 0) return;
+            body = { topic_id: q.topic_id, course_id: q.course_id, question: q.question, answer, images,
+                     all_topic_ids: q._all_topic_ids || [] };
         }
 
         const submitBtn = document.getElementById('submit-btn');
@@ -1535,6 +1548,7 @@ const app = {
         const selects = [
             document.getElementById('session-course-select'),
             document.getElementById('history-course-filter'),
+            document.getElementById('chat-course-select'),
         ];
 
         for (const select of selects) {
@@ -2493,6 +2507,322 @@ const app = {
             this._insertAtTextarea(textarea, '\n' + scaffold + '\n');
             close();
         };
+    },
+
+    // ---- Image paste in answer textareas ----
+    _answerImages: {},
+    MAX_IMAGES_PER_ANSWER: 4,
+    MAX_IMAGE_DIMENSION: 1280,  // Resize larger pastes; tripos diagrams rarely need more.
+
+    _imageStoreKey(textarea) {
+        return textarea.id || textarea.dataset.label || 'default';
+    },
+
+    _attachImagePaste(textarea) {
+        // Ensure a preview container right after the textarea (or after the part-btn-row).
+        let preview = textarea.parentElement.querySelector(':scope > .answer-image-preview');
+        if (!preview) {
+            preview = document.createElement('div');
+            preview.className = 'answer-image-preview';
+            // Insert directly after the textarea so it sits visually below the text input.
+            textarea.parentElement.insertBefore(preview, textarea.nextSibling);
+            // Caption hint (paste instruction)
+            const hint = document.createElement('div');
+            hint.className = 'answer-image-hint';
+            hint.textContent = '⌘/Ctrl + V to paste a diagram or screenshot';
+            preview.appendChild(hint);
+        }
+
+        textarea.addEventListener('paste', (e) => {
+            const items = (e.clipboardData || window.clipboardData)?.items;
+            if (!items) return;
+            const imageItems = Array.from(items).filter(it => it.kind === 'file' && it.type.startsWith('image/'));
+            if (imageItems.length === 0) return;
+            e.preventDefault();
+            for (const it of imageItems) {
+                const file = it.getAsFile();
+                if (file) this._addAnswerImage(textarea, file);
+            }
+        });
+    },
+
+    async _addAnswerImage(textarea, file) {
+        const key = this._imageStoreKey(textarea);
+        if (!this._answerImages) this._answerImages = {};
+        if (!this._answerImages[key]) this._answerImages[key] = [];
+        if (this._answerImages[key].length >= this.MAX_IMAGES_PER_ANSWER) {
+            this._showAnswerImageError(textarea, `Max ${this.MAX_IMAGES_PER_ANSWER} images per answer.`);
+            return;
+        }
+        try {
+            const { dataUrl, base64, mediaType } = await this._processPastedImage(file);
+            const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+            this._answerImages[key].push({ id, data: base64, media_type: mediaType, dataUrl });
+            this._renderAnswerImageThumbs(textarea);
+        } catch (err) {
+            this._showAnswerImageError(textarea, 'Could not read pasted image.');
+        }
+    },
+
+    _processPastedImage(file) {
+        // Returns { dataUrl, base64, mediaType }. Resizes if larger than MAX_IMAGE_DIMENSION.
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(reader.error);
+            reader.onload = () => {
+                const dataUrl = reader.result;
+                const img = new Image();
+                img.onload = () => {
+                    const max = this.MAX_IMAGE_DIMENSION;
+                    let { width, height } = img;
+                    if (width > max || height > max) {
+                        const scale = Math.min(max / width, max / height);
+                        width = Math.round(width * scale);
+                        height = Math.round(height * scale);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const resized = canvas.toDataURL('image/png');
+                        resolve(this._splitDataUrl(resized));
+                    } else {
+                        resolve(this._splitDataUrl(dataUrl));
+                    }
+                };
+                img.onerror = () => reject(new Error('image decode failed'));
+                img.src = dataUrl;
+            };
+            reader.readAsDataURL(file);
+        });
+    },
+
+    _splitDataUrl(dataUrl) {
+        const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+        if (!m) throw new Error('bad data url');
+        return { dataUrl, mediaType: m[1], base64: m[2] };
+    },
+
+    _renderAnswerImageThumbs(textarea) {
+        const key = this._imageStoreKey(textarea);
+        const imgs = this._answerImages?.[key] || [];
+        const preview = textarea.parentElement.querySelector(':scope > .answer-image-preview');
+        if (!preview) return;
+        // Clear thumbs but keep the hint
+        const hint = preview.querySelector('.answer-image-hint');
+        preview.innerHTML = '';
+        if (imgs.length === 0) {
+            if (hint) preview.appendChild(hint);
+            return;
+        }
+        const thumbsRow = document.createElement('div');
+        thumbsRow.className = 'answer-image-thumbs';
+        for (const im of imgs) {
+            const t = document.createElement('div');
+            t.className = 'answer-image-thumb';
+            t.innerHTML = `
+                <img src="${im.dataUrl}" alt="pasted image">
+                <button type="button" class="answer-image-remove" data-img-id="${im.id}" aria-label="Remove image">×</button>
+            `;
+            t.querySelector('.answer-image-remove').addEventListener('click', () => {
+                this._answerImages[key] = imgs.filter(x => x.id !== im.id);
+                this._renderAnswerImageThumbs(textarea);
+            });
+            thumbsRow.appendChild(t);
+        }
+        preview.appendChild(thumbsRow);
+        const hint2 = document.createElement('div');
+        hint2.className = 'answer-image-hint';
+        hint2.textContent = `${imgs.length} image${imgs.length > 1 ? 's' : ''} attached · paste more or click × to remove`;
+        preview.appendChild(hint2);
+    },
+
+    _showAnswerImageError(textarea, message) {
+        const preview = textarea.parentElement.querySelector(':scope > .answer-image-preview');
+        if (!preview) return;
+        const err = document.createElement('div');
+        err.className = 'answer-image-error';
+        err.textContent = message;
+        preview.appendChild(err);
+        setTimeout(() => err.remove(), 2500);
+    },
+
+    // ---- Chatbot ----
+    _chatHistory: [],
+    _chatBusy: false,
+
+    toggleChat() {
+        const panel = document.getElementById('chat-panel');
+        const backdrop = document.getElementById('chat-backdrop');
+        const fab = document.getElementById('chat-fab');
+        if (!panel) return;
+        const open = panel.classList.toggle('open');
+        if (backdrop) backdrop.classList.toggle('show', open);
+        panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+        if (fab) fab.classList.toggle('hidden', open);
+        if (open) {
+            // Auto-grow input + autofocus
+            const ta = document.getElementById('chat-input');
+            if (ta) {
+                ta.focus();
+                ta.oninput = () => {
+                    ta.style.height = 'auto';
+                    ta.style.height = Math.min(140, ta.scrollHeight) + 'px';
+                };
+                ta.onkeydown = (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendChat(e);
+                    }
+                };
+            }
+        }
+    },
+
+    onChatScopeChange() {
+        // No-op for now; scope is read at send time. Could prepend a system note if desired.
+    },
+
+    clearChat() {
+        this._chatHistory = [];
+        const wrap = document.getElementById('chat-messages');
+        if (wrap) {
+            wrap.innerHTML = `
+                <div class="chat-empty">
+                    <p class="chat-empty-title">Conversation cleared</p>
+                    <p class="chat-empty-desc">Ask anything about your courses below.</p>
+                </div>`;
+        }
+    },
+
+    askChatSuggestion(text) {
+        const ta = document.getElementById('chat-input');
+        if (ta) ta.value = text;
+        this.sendChat();
+    },
+
+    async sendChat(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        if (this._chatBusy) return;
+        const ta = document.getElementById('chat-input');
+        const message = (ta?.value || '').trim();
+        if (!message) return;
+
+        const courseSel = document.getElementById('chat-course-select');
+        const courseId = courseSel?.value || '';
+
+        this._appendChatMessage('user', message);
+        this._chatHistory.push({ role: 'user', content: message });
+        ta.value = '';
+        ta.style.height = 'auto';
+
+        const thinkingEl = this._appendChatMessage('assistant', '…', true);
+        this._chatBusy = true;
+        this._setChatSendDisabled(true);
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message,
+                    course_id: courseId || null,
+                    history: this._chatHistory.slice(0, -1),
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.reply) {
+                thinkingEl.querySelector('.chat-bubble').innerHTML =
+                    `<em class="chat-error">Sorry — ${this.escapeHtml(data.error || 'something went wrong')}.</em>`;
+            } else {
+                thinkingEl.querySelector('.chat-bubble').innerHTML = this._renderChatMarkdown(data.reply);
+                this._chatHistory.push({ role: 'assistant', content: data.reply });
+            }
+        } catch (err) {
+            thinkingEl.querySelector('.chat-bubble').innerHTML =
+                `<em class="chat-error">Network error. Try again.</em>`;
+        } finally {
+            this._chatBusy = false;
+            this._setChatSendDisabled(false);
+            const wrap = document.getElementById('chat-messages');
+            if (wrap) wrap.scrollTop = wrap.scrollHeight;
+            ta?.focus();
+        }
+    },
+
+    _setChatSendDisabled(disabled) {
+        const btn = document.getElementById('chat-send-btn');
+        if (btn) btn.disabled = disabled;
+    },
+
+    _appendChatMessage(role, text, isPending) {
+        const wrap = document.getElementById('chat-messages');
+        if (!wrap) return null;
+        // Remove empty-state on first message
+        const empty = wrap.querySelector('.chat-empty');
+        if (empty) empty.remove();
+
+        const row = document.createElement('div');
+        row.className = `chat-msg chat-msg--${role}`;
+        const bubbleHtml = isPending
+            ? '<span class="chat-thinking"><span></span><span></span><span></span></span>'
+            : (role === 'user' ? this.escapeHtml(text) : this._renderChatMarkdown(text));
+        row.innerHTML = `<div class="chat-bubble">${bubbleHtml}</div>`;
+        wrap.appendChild(row);
+        wrap.scrollTop = wrap.scrollHeight;
+        return row;
+    },
+
+    // Lightweight markdown for chat: paragraphs, bullet lists, **bold**, *italic*,
+    // `inline code`, and KaTeX math via existing renderContent pipeline.
+    _renderChatMarkdown(text) {
+        if (!text) return '';
+        // First protect math via the existing renderer's tokens by handling math afterwards.
+        // Split into lines for list handling.
+        const lines = text.split(/\n/);
+        const out = [];
+        let listOpen = false;
+        let para = [];
+        const flushPara = () => {
+            if (para.length) {
+                out.push('<p>' + para.join(' ') + '</p>');
+                para = [];
+            }
+        };
+        const closeList = () => {
+            if (listOpen) { out.push('</ul>'); listOpen = false; }
+        };
+        for (const raw of lines) {
+            const line = raw.trim();
+            if (!line) { flushPara(); closeList(); continue; }
+            const bullet = line.match(/^[-•*]\s+(.*)$/);
+            if (bullet) {
+                flushPara();
+                if (!listOpen) { out.push('<ul>'); listOpen = true; }
+                out.push('<li>' + bullet[1] + '</li>');
+            } else {
+                closeList();
+                para.push(line);
+            }
+        }
+        flushPara(); closeList();
+        let html = out.join('');
+        // Apply renderContent inline-style transforms (math + bold) on the fragment.
+        // renderContent escapes HTML, so we run it per text segment instead — simpler to
+        // run on raw text and re-wrap. For chat, run on each <p>/<li> inner text.
+        html = html.replace(/<(p|li)>([\s\S]*?)<\/\1>/g, (_, tag, inner) => {
+            return `<${tag}>${this._renderChatInline(inner)}</${tag}>`;
+        });
+        return html;
+    },
+
+    _renderChatInline(text) {
+        // Reuse renderContent for math+bold; then add italic + inline code on top.
+        let html = this.renderContent(text);
+        // Italic: *text* (not part of ** because renderContent already consumed those)
+        html = html.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+        // Inline code: `code`
+        html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+        return html;
     },
 };
 

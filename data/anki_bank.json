@@ -148,5 +148,25 @@
     "course_id": "computer-networking",
     "course_name": "Computer Networking",
     "created_at": "2026-04-20T10:49:09.763555"
+  },
+  {
+    "id": "lp-resolution-15",
+    "front": "Why is pure literal elimination unsound in resolution refutation?",
+    "back": "\u2022 Resolution proves unsatisfiability by deriving \u22a1\n\u2022 Needs both polarities of literals to resolve\n\u2022 Removing pure literals may block deriving \u22a1",
+    "topic_id": "lp-resolution",
+    "topic_name": "Resolution Theorem Proving",
+    "course_id": "logic-proof",
+    "course_name": "Logic and Proof",
+    "created_at": "2026-04-26T17:29:09.928614"
+  },
+  {
+    "id": "lp-resolution-16",
+    "front": "Why is pure literal elimination inapplicable to Prolog?",
+    "back": "\u2022 Prolog uses goal-directed SLD resolution\n\u2022 Does not systematically scan clause sets for pure literals\n\u2022 Procedural semantics \u2014 not purely logical clause satisfaction",
+    "topic_id": "lp-resolution",
+    "topic_name": "Resolution Theorem Proving",
+    "course_id": "logic-proof",
+    "course_name": "Logic and Proof",
+    "created_at": "2026-04-26T17:29:09.928668"
   }
 ]

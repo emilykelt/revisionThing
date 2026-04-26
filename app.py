@@ -9,7 +9,7 @@ from data import (
     get_dashboard_data, record_answer, record_mcq_answer, select_session_topics,
     save_knowledge, save_json, KNOWLEDGE_FILE,
 )
-from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards
+from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards, course_chat
 from config import DEFAULT_CONFIDENCE, DATA_DIR
 
 app = Flask(__name__)
@@ -254,10 +254,11 @@ def api_submit_answer():
             q_text = part.get('question', '')
             a_text = part.get('answer', '')
             marks = part.get('marks', 8)
+            part_images = part.get('images') or []
 
             ev = evaluate_answer(q_text, a_text, topic_name, course_name,
                                  part_label=label, marks_available=marks,
-                                 full_context=full_context)
+                                 full_context=full_context, images=part_images)
             part_results.append({
                 'label': label,
                 'question_text': q_text,
@@ -307,7 +308,8 @@ def api_submit_answer():
         # Single question
         question = data.get('question', '')
         answer = data.get('answer', '')
-        evaluation = evaluate_answer(question, answer, topic_name, course_name)
+        images = data.get('images') or []
+        evaluation = evaluate_answer(question, answer, topic_name, course_name, images=images)
 
         new_confidence = record_answer(
             topic_id, course_id, question, answer,
@@ -783,6 +785,20 @@ def api_reset():
 
     save_knowledge(knowledge)
     return jsonify({'ok': True})
+
+
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    data = request.get_json() or {}
+    message = (data.get('message') or '').strip()
+    course_id = data.get('course_id') or None
+    history = data.get('history') or []
+    if not message:
+        return jsonify({'error': 'Empty message'}), 400
+    result = course_chat(message, course_id=course_id, history=history)
+    if result.get('reply') is None:
+        return jsonify({'error': result.get('error', 'Chat failed')}), 500
+    return jsonify(result)
 
 
 if __name__ == '__main__':

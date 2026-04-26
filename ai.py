@@ -128,6 +128,40 @@ def call_claude(prompt, model, max_tokens=1024):
         return None
 
 
+SUPPORTED_IMAGE_MEDIA = {'image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'}
+
+
+def _call_claude_with_images(prompt, images, model, max_tokens=1024):
+    """images: list of {'media_type': str, 'data': str (base64, no prefix)}.
+    At most ~6 images per call to stay under context limits."""
+    try:
+        client = _get_client()
+        content = []
+        for img in (images or [])[:6]:
+            mt = img.get('media_type') or 'image/png'
+            if mt == 'image/jpg':
+                mt = 'image/jpeg'
+            if mt not in SUPPORTED_IMAGE_MEDIA:
+                continue
+            data = img.get('data') or ''
+            if not data:
+                continue
+            content.append({
+                'type': 'image',
+                'source': {'type': 'base64', 'media_type': mt, 'data': data},
+            })
+        content.append({'type': 'text', 'text': prompt})
+        msg = client.messages.create(
+            model=model,
+            max_tokens=max_tokens,
+            messages=[{'role': 'user', 'content': content}],
+        )
+        return msg.content[0].text
+    except Exception as e:
+        print(f'[claude] call_claude_with_images error: {e}')
+        return None
+
+
 def extract_json_array_from_response(text):
     if text is None:
         return None
@@ -280,8 +314,10 @@ def generate_hint(question, topic_name, course_name, topic_id=None):
     return response or ''
 
 
-def evaluate_answer(question, answer, topic_name, course_name, part_label=None, marks_available=None, full_context=None):
-    if not answer or not answer.strip():
+def evaluate_answer(question, answer, topic_name, course_name, part_label=None, marks_available=None, full_context=None, images=None):
+    images = images or []
+    has_text = bool(answer and answer.strip())
+    if not has_text and not images:
         return {
             'score': 0.0,
             'marks_awarded': 0,
@@ -296,12 +332,18 @@ def evaluate_answer(question, answer, topic_name, course_name, part_label=None, 
     context_block = ''
     if full_context:
         context_block = f'Full question context (for reference):\n{full_context}\n\n'
+    image_note = (
+        f'\n\nThe student attached {len(images)} image(s) below — these may be diagrams, '
+        f'handwritten working, or pasted figures. Treat them as part of the answer.'
+        if images else ''
+    )
     prompt = (
         f'Cambridge CS supervisor marking a tripos answer.\n'
         f'Course: {course_name} | Topic: {topic_name}{part_context}{marks_context}\n'
         f'{context_block}'
         f'Question being marked: {question}\n'
-        f'Student answer: {answer}\n\n'
+        f'Student answer (text): {answer or "(see attached image(s))"}'
+        f'{image_note}\n\n'
         f'Use LaTeX for any maths ($...$ inline, $$...$$ display).\n'
         f'Respond ONLY with this JSON:\n'
         + (
@@ -313,7 +355,8 @@ def evaluate_answer(question, answer, topic_name, course_name, part_label=None, 
         )
     )
 
-    response = call_claude(prompt, model=EVAL_MODEL)
+    response = _call_claude_with_images(prompt, images, model=EVAL_MODEL) if images \
+        else call_claude(prompt, model=EVAL_MODEL)
     result = extract_json_from_response(response)
 
     if result:
@@ -493,3 +536,109 @@ def generate_flashcards(question, model_solution, topic_name, course_name, topic
             if isinstance(c, dict) and 'front' in c and 'back' in c
         ]
     return []
+
+
+CHAT_MODEL = 'claude-sonnet-4-6'
+
+CAMBRIDGE_COURSE_URLS = {
+    'unix-tools':              'https://www.cl.cam.ac.uk/teaching/2425/UnixTools/',
+    'data-science':            'https://www.cl.cam.ac.uk/teaching/2425/DataSci/',
+    'econ-law-ethics':         'https://www.cl.cam.ac.uk/teaching/2425/EconLawEth/',
+    'further-graphics':        'https://www.cl.cam.ac.uk/teaching/2425/FGraphics/',
+    'further-hci':             'https://www.cl.cam.ac.uk/teaching/2425/FHCI/',
+    'concurrent-distributed':  'https://www.cl.cam.ac.uk/teaching/2425/ConcDisSys/',
+    'compiler-construction':   'https://www.cl.cam.ac.uk/teaching/2425/CompConstr/',
+    'computation-theory':      'https://www.cl.cam.ac.uk/teaching/2425/CompTheory/',
+    'computer-networking':     'https://www.cl.cam.ac.uk/teaching/2425/CompNet/',
+    'logic-proof':             'https://www.cl.cam.ac.uk/teaching/2425/LogicProof/',
+    'prolog':                  'https://www.cl.cam.ac.uk/teaching/2425/Prolog/',
+    'semantics':               'https://www.cl.cam.ac.uk/teaching/2425/Semantics/',
+    'artificial-intelligence': 'https://www.cl.cam.ac.uk/teaching/2425/ArtInt/',
+    'complexity-theory':       'https://www.cl.cam.ac.uk/teaching/2425/Complexity/',
+    'cybersecurity':           'https://www.cl.cam.ac.uk/teaching/2425/CyberSec/',
+    'formal-models-language':  'https://www.cl.cam.ac.uk/teaching/2425/FormModLang/',
+    'intro-comp-arch':         'https://www.cl.cam.ac.uk/teaching/2425/CompArch/',
+    'prog-c-cpp':              'https://www.cl.cam.ac.uk/teaching/2425/ProgC/',
+}
+
+
+def _build_course_summary(course_id: str = None) -> str:
+    """Build a compact summary of course topics + key facts for chat context."""
+    courses_path = os.path.join(os.path.dirname(__file__), 'data', 'courses.json')
+    with open(courses_path) as f:
+        courses = json.load(f)
+    notes = _load_notes_index()
+
+    lines = []
+    for term_id, term in courses['terms'].items():
+        for cid, course in term['courses'].items():
+            if course_id and cid != course_id:
+                continue
+            url = CAMBRIDGE_COURSE_URLS.get(cid, '')
+            url_str = f' <{url}>' if url else ''
+            lines.append(f"\n## {course['name']} ({cid}){url_str}")
+            for topic in course['topics']:
+                tid = topic['id']
+                lines.append(f"- {topic['name']} [{tid}]")
+                entry = notes.get(tid)
+                if entry:
+                    facts = entry.get('key_facts', [])[:3]
+                    terms_d = entry.get('terms', {})
+                    for fact in facts:
+                        lines.append(f"    • {fact}")
+                    if terms_d:
+                        names = ', '.join(list(terms_d.keys())[:8])
+                        lines.append(f"    • Terms covered: {names}")
+    return '\n'.join(lines)
+
+
+def course_chat(message: str, course_id: 'str | None' = None, history: list = None) -> dict:
+    """Answer a question about course content. Returns {'reply': str}."""
+    history = history or []
+    summary = _build_course_summary(course_id)
+
+    scope_note = (
+        f"The user is asking specifically about the '{course_id}' course."
+        if course_id else
+        "The user has not specified a course — search across all 18 Part IB courses."
+    )
+
+    system = (
+        "You are a study assistant for a Cambridge Part IB Computer Science student. "
+        "Your job is to answer whether topics, concepts, or techniques are part of the courses, "
+        "and to give brief explanations of where they fit. " + scope_note + "\n\n"
+        "Use the course catalogue below as the authoritative source. Each topic is listed with its "
+        "course, a topic id in [brackets], and a few key facts pulled from the student's lecture notes. "
+        "If something is in the catalogue or notes, say so confidently and cite the course + topic. "
+        "If it is NOT in the catalogue, say it does not appear to be in the Part IB courses, but mention "
+        "if it is a prerequisite (Part IA) or extension topic. Be honest about uncertainty.\n\n"
+        "Keep answers concise (1-4 sentences usually). Use markdown sparingly. For maths, use $...$ or $$...$$ "
+        "for KaTeX. The Cambridge course pages (URLs in <angle brackets>) are the canonical syllabi if the "
+        "student wants to verify.\n\n"
+        "Be precise: do not conflate similarly-named concepts (e.g. 'Hoare logic' vs 'Hoare-style monitor "
+        "semantics'). When the catalogue mentions a name in passing, say so but don't claim full coverage. "
+        "If the catalogue does not contain a topic, do not invent that another Part IB course covers it — "
+        "say 'not in the IB catalogue I have' and suggest the student check the official page if unsure.\n\n"
+        "=== COURSE CATALOGUE ===\n" + summary
+    )
+
+    messages = []
+    for turn in history[-10:]:
+        role = turn.get('role')
+        content = turn.get('content', '').strip()
+        if role in ('user', 'assistant') and content:
+            messages.append({'role': role, 'content': content})
+    messages.append({'role': 'user', 'content': message})
+
+    try:
+        client = _get_client()
+        msg = client.messages.create(
+            model=CHAT_MODEL,
+            max_tokens=800,
+            system=system,
+            messages=messages,
+        )
+        return {'reply': msg.content[0].text}
+    except Exception as e:
+        print(f'[claude] course_chat error: {e}')
+        return {'reply': None, 'error': str(e)}
