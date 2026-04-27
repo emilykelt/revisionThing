@@ -162,24 +162,52 @@ def _call_claude_with_images(prompt, images, model, max_tokens=1024):
         return None
 
 
+_JSON_VALID_ESC = set('"\\/bfnrtu')
+
+
+def _repair_latex_backslashes(s: str) -> str:
+    """AI sometimes emits LaTeX like "$\\frac{x}{y}$" but writes it as "$\frac{x}{y}$"
+    in JSON, which makes json.loads choke (\f is form feed, \r is CR, etc.).
+    This doubles any backslash that isn't already a valid JSON escape so the
+    LaTeX command survives parsing intact."""
+    out = []
+    i = 0
+    while i < len(s):
+        c = s[i]
+        if c == '\\' and i + 1 < len(s) and s[i + 1] not in _JSON_VALID_ESC:
+            out.append('\\\\')
+        else:
+            out.append(c)
+        i += 1
+    return ''.join(out)
+
+
+def _loads_relaxed(s: str):
+    try:
+        return json.loads(s)
+    except json.JSONDecodeError:
+        try:
+            return json.loads(_repair_latex_backslashes(s))
+        except json.JSONDecodeError:
+            return None
+
+
 def extract_json_array_from_response(text):
     if text is None:
         return None
     # Try JSON code fence
     match = re.search(r'```(?:json)?\s*\n?(\[.*?\])\s*\n?```', text, re.DOTALL)
     if match:
-        try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+        result = _loads_relaxed(match.group(1))
+        if result is not None:
+            return result
     # Find first [ and last ]
     start = text.find('[')
     end = text.rfind(']')
     if start != -1 and end != -1 and end > start:
-        try:
-            return json.loads(text[start:end + 1])
-        except json.JSONDecodeError:
-            pass
+        result = _loads_relaxed(text[start:end + 1])
+        if result is not None:
+            return result
     return None
 
 
@@ -189,18 +217,16 @@ def extract_json_from_response(text):
     # Try JSON code fence
     match = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', text, re.DOTALL)
     if match:
-        try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+        result = _loads_relaxed(match.group(1))
+        if result is not None:
+            return result
     # Find first { and last } and parse everything between
     start = text.find('{')
     end = text.rfind('}')
     if start != -1 and end != -1:
-        try:
-            return json.loads(text[start:end + 1])
-        except json.JSONDecodeError:
-            pass
+        result = _loads_relaxed(text[start:end + 1])
+        if result is not None:
+            return result
     return None
 
 

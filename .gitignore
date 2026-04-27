@@ -19,6 +19,8 @@ env/
 # ---- Personal revision data (private!) ----
 data/knowledge.json
 data/history.json
+data/pp_progress.json
+data/anki_bank.json
 
 # ---- macOS ----
 .DS_Store
