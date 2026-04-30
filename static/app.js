@@ -1932,43 +1932,46 @@ const app = {
     },
 
     _renderPlanner() {
+        // Cambridge Part IB CS 2026 paper structure (Papers 4–7).
+        // Each course entry lists its question NUMBERS in that paper, so the
+        // user can pick any subset (not all-or-nothing per course).
         const PAPERS = [
             {
-                num: 1, total: 10, choose: 5,
+                num: 4, total: 8, choose: 5,
                 courses: [
-                    { id: 'compiler-construction', name: 'Compilers', qs: 2 },
-                    { id: 'prog-c-cpp',             name: 'C/C++',    qs: 2 },
-                    { id: 'prolog',                 name: 'Prolog',   qs: 2 },
-                    { id: 'cybersecurity',          name: 'Cybersecurity', qs: 2 },
-                    { id: null,                     name: 'Concepts in Programming Languages', qs: 2 },
+                    { id: 'compiler-construction', name: 'Compiler Construction',           qs: [1, 2] },
+                    { id: 'semantics',             name: 'Semantics of Programming Languages', qs: [3] },
+                    { id: 'prolog',                name: 'Prolog',                          qs: [4] },
+                    { id: 'prog-c-cpp',            name: 'Programming in C and C++',        qs: [5, 6] },
+                    { id: 'cybersecurity',         name: 'Cybersecurity',                   qs: [7, 8] },
                 ],
             },
             {
-                num: 2, total: 8, choose: 5,
+                num: 5, total: 8, choose: 5,
                 courses: [
-                    { id: 'computer-networking',   name: 'Networking',                      qs: 3 },
-                    { id: 'concurrent-distributed', name: 'Concurrent & Distributed Systems', qs: 2 },
-                    { id: 'intro-comp-arch',        name: 'Intro to Computer Architecture',  qs: 3 },
+                    { id: 'computer-networking',    name: 'Computer Networking',                qs: [1, 2, 3] },
+                    { id: 'concurrent-distributed', name: 'Concurrent and Distributed Systems', qs: [4, 5] },
+                    { id: 'intro-comp-arch',        name: 'Introduction to Computer Architecture', qs: [6, 7, 8] },
                 ],
             },
             {
-                num: 3, total: 10, choose: 5,
+                num: 6, total: 9, choose: 5,
                 courses: [
-                    { id: 'complexity-theory',  name: 'Complexity Theory',  qs: 2 },
-                    { id: 'computation-theory', name: 'Computation Theory', qs: 2 },
-                    { id: 'data-science',       name: 'Data Science',       qs: 2 },
-                    { id: 'logic-proof',        name: 'Logic & Proof',      qs: 2 },
-                    { id: 'semantics',          name: 'Semantics',          qs: 2 },
+                    { id: 'complexity-theory',  name: 'Complexity Theory',                  qs: [1, 2] },
+                    { id: 'computation-theory', name: 'Computation Theory',                 qs: [3, 4] },
+                    { id: 'data-science',       name: 'Data Science',                       qs: [5, 6] },
+                    { id: 'logic-proof',        name: 'Logic and Proof',                    qs: [7, 8] },
+                    { id: 'semantics',          name: 'Semantics of Programming Languages', qs: [9] },
                 ],
             },
             {
-                num: 4, total: 10, choose: 5,
+                num: 7, total: 10, choose: 5,
                 courses: [
-                    { id: 'artificial-intelligence', name: 'Artificial Intelligence',    qs: 2 },
-                    { id: 'econ-law-ethics',         name: 'Economics, Law & Ethics',    qs: 2 },
-                    { id: 'formal-models-language',  name: 'Formal Models of Language',  qs: 2 },
-                    { id: 'further-graphics',        name: 'Further Graphics',           qs: 2 },
-                    { id: 'further-hci',             name: 'Further HCI',                qs: 2 },
+                    { id: 'artificial-intelligence', name: 'Artificial Intelligence',          qs: [1, 2] },
+                    { id: 'econ-law-ethics',         name: 'Economics, Law and Ethics',         qs: [3, 4] },
+                    { id: 'formal-models-language',  name: 'Formal Models of Language',         qs: [5, 6] },
+                    { id: 'further-graphics',        name: 'Further Graphics',                  qs: [7, 8] },
+                    { id: 'further-hci',             name: 'Further Human-Computer Interaction', qs: [9, 10] },
                 ],
             },
         ];
@@ -1983,8 +1986,28 @@ const app = {
             }
         }
 
-        // Load saved selections from localStorage
-        const saved = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
+        // Load saved selections.
+        // Schema v2: { p4: { "1": true, "2": false, ... } } keyed by question number.
+        // If we see legacy shape (course-name booleans) drop it.
+        const rawSaved = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
+        const isLegacy = Object.values(rawSaved).some(p =>
+            p && Object.keys(p).some(k => isNaN(parseInt(k))));
+        const saved = isLegacy ? {} : rawSaved;
+        if (isLegacy) localStorage.setItem('plannerSelections', '{}');
+
+        const countSelected = (paper) => {
+            const sel = saved[`p${paper.num}`] || {};
+            return paper.courses.reduce(
+                (acc, c) => acc + c.qs.filter(qn => sel[qn]).length, 0);
+        };
+
+        const updateCountUI = (paper) => {
+            const n = countSelected(paper);
+            const el = document.getElementById(`planner-count-${paper.num}`);
+            const cls = n > paper.choose ? 'over' : n === paper.choose ? 'exact' : 'under';
+            el.textContent = `${n} / ${paper.choose} selected`;
+            el.className = `planner-count ${cls}`;
+        };
 
         const container = document.getElementById('planner-papers');
         container.innerHTML = '';
@@ -1992,45 +2015,45 @@ const app = {
         PAPERS.forEach(paper => {
             const paperEl = document.createElement('div');
             paperEl.className = 'planner-paper';
-
-            // Count selected Qs
-            const selKey = `p${paper.num}`;
-            const sel = saved[selKey] || {};
-
-            const selectedQs = paper.courses.reduce((s, c) => s + (sel[c.name] ? c.qs : 0), 0);
-            const overClass = selectedQs > paper.choose ? 'over' : selectedQs === paper.choose ? 'exact' : 'under';
+            const selectedNow = countSelected(paper);
+            const overClass = selectedNow > paper.choose ? 'over'
+                : selectedNow === paper.choose ? 'exact' : 'under';
 
             paperEl.innerHTML = `
                 <div class="planner-paper-header">
                     <div>
                         <span class="planner-paper-title">Paper ${paper.num}</span>
-                        <span class="planner-paper-meta">${paper.total} questions, answer 5</span>
+                        <span class="planner-paper-meta">${paper.total} questions, answer ${paper.choose}</span>
                     </div>
                     <div class="planner-count ${overClass}" id="planner-count-${paper.num}">
-                        ${selectedQs} / ${paper.choose} selected
+                        ${selectedNow} / ${paper.choose} selected
                     </div>
                 </div>
                 <div class="planner-courses" id="planner-courses-${paper.num}"></div>
             `;
             container.appendChild(paperEl);
 
-            const coursesEl = document.getElementById(`planner-courses-${paper.num}`);
+            const coursesEl = paperEl.querySelector(`#planner-courses-${paper.num}`);
             paper.courses.forEach(course => {
                 const conf = course.id ? (confMap[course.id] ?? null) : null;
-                const checked = sel[course.name] || false;
                 const confPct = conf !== null ? Math.round(conf * 100) : null;
                 const confColor = conf === null ? '#888'
                     : conf >= 0.7 ? '#5a8a5a'
                     : conf >= 0.4 ? '#a07a30'
                     : '#8a4a4a';
 
-                const row = document.createElement('label');
-                row.className = 'planner-course-row' + (checked ? ' checked' : '');
+                const sel = saved[`p${paper.num}`] || {};
+                const pillsHtml = course.qs.map(qn => {
+                    const on = !!sel[qn];
+                    return `<button type="button" class="planner-q-pill${on ? ' selected' : ''}"
+                        data-paper="${paper.num}" data-qn="${qn}">Q${qn}</button>`;
+                }).join('');
+
+                const row = document.createElement('div');
+                row.className = 'planner-course-row';
                 row.innerHTML = `
-                    <input type="checkbox" class="planner-cb" ${checked ? 'checked' : ''}
-                        data-paper="${paper.num}" data-course="${this.escapeAttr(course.name)}" data-qs="${course.qs}">
                     <span class="planner-course-name">${this.escapeHtml(course.name)}</span>
-                    <span class="planner-course-qs">${course.qs}Q</span>
+                    <span class="planner-q-pills">${pillsHtml}</span>
                     ${confPct !== null ? `
                         <span class="planner-conf-bar">
                             <span class="planner-conf-fill" style="width:${confPct}%;background:${confColor}"></span>
@@ -2040,24 +2063,21 @@ const app = {
                 `;
                 coursesEl.appendChild(row);
 
-                row.querySelector('.planner-cb').addEventListener('change', e => {
-                    const paperNum = +e.target.dataset.paper;
-                    const courseName = e.target.dataset.course;
-                    const qs = +e.target.dataset.qs;
-                    const allSaved = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
-                    const pKey = `p${paperNum}`;
-                    if (!allSaved[pKey]) allSaved[pKey] = {};
-                    allSaved[pKey][courseName] = e.target.checked;
-                    localStorage.setItem('plannerSelections', JSON.stringify(allSaved));
-                    row.classList.toggle('checked', e.target.checked);
-                    // Update count
-                    const thisPaper = PAPERS.find(p => p.num === paperNum);
-                    const newSel = allSaved[pKey];
-                    const newQs = thisPaper.courses.reduce((s, c) => s + (newSel[c.name] ? c.qs : 0), 0);
-                    const countEl = document.getElementById(`planner-count-${paperNum}`);
-                    const cls = newQs > thisPaper.choose ? 'over' : newQs === thisPaper.choose ? 'exact' : 'under';
-                    countEl.textContent = `${newQs} / ${thisPaper.choose} selected`;
-                    countEl.className = `planner-count ${cls}`;
+                row.querySelectorAll('.planner-q-pill').forEach(pill => {
+                    pill.addEventListener('click', () => {
+                        const paperNum = +pill.dataset.paper;
+                        const qn = +pill.dataset.qn;
+                        const all = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
+                        const pKey = `p${paperNum}`;
+                        if (!all[pKey]) all[pKey] = {};
+                        const next = !all[pKey][qn];
+                        all[pKey][qn] = next;
+                        localStorage.setItem('plannerSelections', JSON.stringify(all));
+                        // mirror into in-memory `saved` so re-renders read fresh
+                        saved[pKey] = all[pKey];
+                        pill.classList.toggle('selected', next);
+                        updateCountUI(PAPERS.find(p => p.num === paperNum));
+                    });
                 });
             });
         });
