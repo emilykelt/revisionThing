@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 from flask import Flask, render_template, jsonify, request
@@ -9,7 +10,7 @@ from data import (
     get_dashboard_data, record_answer, record_mcq_answer, select_session_topics,
     save_knowledge, save_json, KNOWLEDGE_FILE,
 )
-from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards, course_chat
+from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards, course_chat, weekly_retrospective
 from config import DEFAULT_CONFIDENCE, DATA_DIR
 
 app = Flask(__name__)
@@ -477,11 +478,15 @@ def api_pastpapers_all():
     pp_file = os.path.join(DATA_DIR, 'pastpapers.json')
     courses_data = load_courses()
 
-    # Build course_id → name lookup
+    # Build course_id → name lookup, plus topic_id → name within each course
     course_names = {}
+    course_topic_names = {}
     for term_id, term in courses_data['terms'].items():
         for course_id, course in term['courses'].items():
             course_names[course_id] = course['name']
+            course_topic_names[course_id] = {
+                t['id']: t['name'] for t in course.get('topics', [])
+            }
 
     try:
         with open(pp_file) as f:
@@ -523,11 +528,16 @@ def api_pastpapers_all():
                 'best_score': prog.get('best_score', 0),
                 'best_marks': prog.get('best_marks'),
                 'difficult_parts': prog.get('difficult_parts', []),
+                'completed_elsewhere': prog.get('completed_elsewhere', False),
+                'completed_elsewhere_date': prog.get('completed_elsewhere_date'),
+                'completed_confidence': prog.get('completed_confidence'),
             })
         questions.sort(key=lambda q: (-q['year'], q['paper'], q['question']))
         result.append({
             'course_id': course_id,
             'course_name': course_names.get(course_id, course_id),
+            'topic_frequencies': data.get('topic_frequencies', {}),
+            'topic_names': course_topic_names.get(course_id, {}),
             'questions': questions,
         })
     result.sort(key=lambda c: c['course_name'])
@@ -602,6 +612,23 @@ def api_pp_progress_update():
         else:
             parts.append(part_label)
         entry['difficult_parts'] = parts
+
+    if 'toggle_completed_elsewhere' in data:
+        # Mark a question as done outside the app (e.g. on paper). Stored with
+        # an ISO date so the dashboard heatmap can place it on a calendar cell.
+        if entry.get('completed_elsewhere'):
+            entry.pop('completed_elsewhere', None)
+            entry.pop('completed_elsewhere_date', None)
+        else:
+            entry['completed_elsewhere'] = True
+            entry['completed_elsewhere_date'] = datetime.now().date().isoformat()
+            # Optional confidence (0-1) for the heatmap colour.
+            conf = data.get('completed_confidence')
+            if conf is not None:
+                try:
+                    entry['completed_confidence'] = max(0.0, min(1.0, float(conf)))
+                except (TypeError, ValueError):
+                    pass
 
     progress[ref] = entry
     _save_pp_progress(progress)
@@ -799,6 +826,79 @@ def api_chat():
     if result.get('reply') is None:
         return jsonify({'error': result.get('error', 'Chat failed')}), 500
     return jsonify(result)
+
+
+RETRO_FILE = os.path.join(DATA_DIR, 'retrospective.json')
+
+
+def _load_retro_cache():
+    try:
+        with open(RETRO_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_retro_cache(data):
+    with open(RETRO_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
+@app.route('/api/retrospective', methods=['GET'])
+def api_retrospective_get():
+    """Cached weekly retrospective. Returns the latest cached summary if it's
+    less than 24h old, with a flag the frontend can use to show a refresh button."""
+    cache = _load_retro_cache()
+    summary = cache.get('summary')
+    generated_at = cache.get('generated_at')
+    age_hours = None
+    if generated_at:
+        try:
+            age = datetime.now() - datetime.fromisoformat(generated_at)
+            age_hours = age.total_seconds() / 3600
+        except Exception:
+            pass
+    return jsonify({
+        'summary': summary,
+        'generated_at': generated_at,
+        'age_hours': age_hours,
+        'covered_until': cache.get('covered_until'),
+    })
+
+
+@app.route('/api/retrospective', methods=['POST'])
+def api_retrospective_generate():
+    """Force-generate a new retrospective from the last 7 days of history."""
+    days = int((request.get_json() or {}).get('days', 7))
+    history = load_history()
+    cutoff = datetime.now() - timedelta(days=days)
+    recent = []
+    for h in history:
+        ts = h.get('timestamp')
+        if not ts:
+            continue
+        try:
+            t = datetime.fromisoformat(ts)
+        except Exception:
+            continue
+        if t >= cutoff:
+            recent.append(h)
+    if not recent:
+        return jsonify({'summary': None, 'error': 'No attempts in the last week.'}), 200
+
+    result = weekly_retrospective(recent, days=days)
+    if result.get('summary') is None:
+        return jsonify({'error': result.get('error', 'Retrospective failed')}), 500
+
+    cache = {
+        'summary': result['summary'],
+        'generated_at': datetime.now().isoformat(),
+        'covered_until': datetime.now().date().isoformat(),
+        'days': days,
+        'entry_count': len(recent),
+    }
+    _save_retro_cache(cache)
+    return jsonify(cache)
 
 
 if __name__ == '__main__':

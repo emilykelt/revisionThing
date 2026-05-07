@@ -234,8 +234,11 @@ h1, h2, h3, .display {
     gap: 1.25rem;
     margin-bottom: 1.5rem;
 }
+.dash-bento-row2 {
+    grid-template-columns: minmax(280px, 1fr) 1fr;
+}
 @media (max-width: 720px) {
-    .dash-bento { grid-template-columns: 1fr; }
+    .dash-bento, .dash-bento-row2 { grid-template-columns: 1fr; }
 }
 .dash-bento-card {
     background: var(--bg-card);
@@ -3457,4 +3460,168 @@ h1, h2, h3, .display {
     border-radius: var(--radius-pill);
     padding: 0.3rem 0.8rem;
     align-self: flex-start;
+}
+
+/* ---- Heatmap (GitHub-style) ---- */
+.dash-heatmap, .dash-retro {
+    min-height: 140px;
+}
+.dash-mini-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.dash-mini-sub {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-muted);
+    opacity: 0.75;
+}
+.dash-mini-btn {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+}
+.dash-mini-btn:hover {
+    background: var(--bg-cream, #faf6f0);
+}
+.dash-loading, .dash-empty {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 0.5rem 0;
+}
+.hm-grid {
+    display: flex;
+    gap: 3px;
+    overflow-x: auto;
+    padding: 0.2rem 0;
+}
+.hm-week {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.hm-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: rgba(139, 105, 20, 0.10);
+    flex-shrink: 0;
+}
+.hm-cell.hm-empty { background: transparent; }
+.hm-cell.hm-0 { background: rgba(139, 105, 20, 0.10); }
+.hm-cell.hm-1 { background: #f3c04a; }
+.hm-cell.hm-2 { background: #d99a2b; }
+.hm-cell.hm-3 { background: #a06b1c; }
+.hm-cell.hm-4 { background: #5b3d10; }
+.hm-cell.hm-marked {
+    background: rgba(139, 105, 20, 0.10);
+    border: 1.5px solid #d99a2b;
+    width: 9px;
+    height: 9px;
+}
+.hm-legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+.hm-legend .hm-cell { width: 10px; height: 10px; }
+
+/* ---- Retrospective card ---- */
+.dash-retro-body {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--text-primary);
+}
+.dash-retro-body.stale { opacity: 0.7; }
+.dash-retro-body p { margin: 0.4rem 0; }
+.dash-retro-body ul { margin: 0.3rem 0 0.4rem 1.1rem; padding: 0; }
+.dash-retro-body li { margin: 0.15rem 0; }
+.dash-retro-meta {
+    margin-top: 0.6rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+/* ---- Topic-frequency heatmap on past-papers page ---- */
+.pp-freq {
+    margin: 0 0 0.9rem 0;
+    padding: 0.7rem 0.9rem;
+    background: rgba(139, 105, 20, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 10px);
+}
+.pp-freq-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+.pp-freq-cells {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.pp-freq-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    border: 1px solid rgba(139, 105, 20, 0.18);
+}
+.pp-freq-cell.hm-0 { background: rgba(139, 105, 20, 0.06); }
+.pp-freq-cell.hm-1 { background: rgba(243, 192, 74, 0.35); }
+.pp-freq-cell.hm-2 { background: rgba(217, 154, 43, 0.45); }
+.pp-freq-cell.hm-3 { background: rgba(160, 107, 28, 0.55); color: #fff; }
+.pp-freq-cell.hm-4 { background: rgba(91, 61, 16, 0.85); color: #fff; }
+.pp-freq-count {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+/* ---- Completed-elsewhere toggle ---- */
+.pp-elsewhere-btn {
+    font-size: 0.74rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 0.18rem 0.55rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    margin-left: 0.4rem;
+}
+.pp-elsewhere-btn:hover { color: var(--text-primary); }
+.pp-elsewhere-btn.active {
+    background: rgba(217, 154, 43, 0.18);
+    border-color: rgba(217, 154, 43, 0.6);
+    color: #5b3d10;
+}
+.pp-row--elsewhere {
+    background: rgba(217, 154, 43, 0.06);
 }

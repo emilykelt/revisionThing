@@ -84,6 +84,19 @@ const app = {
         return `https://www.cl.cam.ac.uk/teaching/exams/solutions/${y}/${y}-p${pp}-q${qq}-solutions.pdf`;
     },
 
+    _reportUrl(yearOrPdfUrl) {
+        // Examiners' reports are per-year (covering all papers). Accept either
+        // a year or a pdf_url we can extract one from.
+        let y = yearOrPdfUrl;
+        if (typeof y === 'string') {
+            const m = y.match(/y?(\d{4})/);
+            if (!m) return null;
+            y = m[1];
+        }
+        if (!y) return null;
+        return `https://www.cl.cam.ac.uk/teaching/exams/reports/${y}.pdf`;
+    },
+
     _renderExamCountdown() {
         const el = document.getElementById('dash-countdown');
         if (!el) return;
@@ -348,6 +361,176 @@ const app = {
         });
     },
 
+    // ---- Past-paper completion heatmap (GitHub-style) ----
+    async _renderPpHeatmap() {
+        const el = document.getElementById('dash-heatmap');
+        if (!el) return;
+        if (!this._allPapers) {
+            el.innerHTML = '<div class="dash-mini-label">Past-paper activity</div>'
+                + '<div class="dash-loading">Loading…</div>';
+            try {
+                const res = await fetch('/api/pastpapers/all');
+                const d = await res.json();
+                this._allPapers = d.courses || [];
+            } catch {
+                el.innerHTML = '<div class="dash-mini-label">Past-paper activity</div>'
+                    + '<div class="dash-empty">Failed to load.</div>';
+                return;
+            }
+        }
+
+        // Pull every history entry for the heatmap (in-app attempts on past-paper questions).
+        // Plus completed-elsewhere entries by their stored date.
+        // Combine: { iso_date → [{ ref, score|null, marked }] }
+        const buckets = {};
+        const todayIso = this._isoToday();
+        // Build a 91-day window ending today.
+        const days = [];
+        const todayDate = new Date(todayIso + 'T00:00:00');
+        for (let i = 90; i >= 0; i--) {
+            const d = new Date(todayDate.getTime() - i * 86400000);
+            const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            days.push(iso);
+            buckets[iso] = [];
+        }
+
+        // Walk pp data — completed-elsewhere uses its own date.
+        for (const c of this._allPapers) {
+            for (const q of (c.questions || [])) {
+                if (q.completed_elsewhere && q.completed_elsewhere_date && buckets[q.completed_elsewhere_date]) {
+                    buckets[q.completed_elsewhere_date].push({
+                        ref: q.ref,
+                        score: q.completed_confidence ?? null,
+                        marked: true,
+                    });
+                }
+            }
+        }
+
+        // Walk in-app history for past-paper attempts.
+        try {
+            const histRes = await fetch('/api/history?limit=400');
+            const hist = await histRes.json();
+            for (const h of (hist.items || [])) {
+                const ts = h.timestamp || '';
+                const iso = ts.slice(0, 10);
+                if (!buckets[iso]) continue;
+                // Only count attempts on actual past-paper questions (skip warm-up/practice).
+                if (!h.question || !/Paper \d+ Q\d+/i.test(h.question)) continue;
+                buckets[iso].push({ ref: h.topic_id, score: h.score ?? null, marked: false });
+            }
+        } catch {
+            // History fetch is best-effort; heatmap still renders with elsewhere-only data.
+        }
+
+        // Score per day: best score that day, or null if only "completed elsewhere" without confidence.
+        const cellClass = (entries) => {
+            if (!entries.length) return 'hm-0';
+            const scored = entries.map(e => e.score).filter(s => typeof s === 'number');
+            if (!scored.length) return 'hm-marked';   // attempted but unscored
+            const best = Math.max(...scored);
+            if (best >= 0.75) return 'hm-4';
+            if (best >= 0.55) return 'hm-3';
+            if (best >= 0.35) return 'hm-2';
+            return 'hm-1';
+        };
+
+        // Compute weekday offset: align grid so columns are weeks, rows Mon→Sun.
+        // Grid: 13 weeks × 7 rows.
+        const grid = [];
+        const firstDow = new Date(days[0] + 'T00:00:00').getDay(); // 0=Sun
+        // Pad start with empty cells so day-of-week aligns vertically.
+        const offset = (firstDow + 6) % 7; // shift so Mon=0
+        for (let i = 0; i < offset; i++) grid.push(null);
+        days.forEach(d => grid.push(d));
+        // Pad end so total is multiple of 7
+        while (grid.length % 7 !== 0) grid.push(null);
+
+        const weeks = [];
+        for (let i = 0; i < grid.length; i += 7) weeks.push(grid.slice(i, i + 7));
+
+        const totalCount = days.reduce((n, d) => n + buckets[d].length, 0);
+
+        const cellsHtml = weeks.map(week =>
+            `<div class="hm-week">` +
+            week.map(d => {
+                if (!d) return `<div class="hm-cell hm-empty"></div>`;
+                const entries = buckets[d];
+                const cls = cellClass(entries);
+                const tip = entries.length
+                    ? `${d} — ${entries.length} attempt${entries.length !== 1 ? 's' : ''}`
+                    : `${d} — none`;
+                return `<div class="hm-cell ${cls}" title="${tip}"></div>`;
+            }).join('') +
+            `</div>`
+        ).join('');
+
+        el.innerHTML = `
+            <div class="dash-mini-label">Past-paper activity <span class="dash-mini-sub">last 90 days · ${totalCount} attempt${totalCount !== 1 ? 's' : ''}</span></div>
+            <div class="hm-grid">${cellsHtml}</div>
+            <div class="hm-legend">
+                <span>less</span>
+                <span class="hm-cell hm-0"></span>
+                <span class="hm-cell hm-1"></span>
+                <span class="hm-cell hm-2"></span>
+                <span class="hm-cell hm-3"></span>
+                <span class="hm-cell hm-4"></span>
+                <span>more</span>
+            </div>
+        `;
+    },
+
+    // ---- Weekly retrospective ----
+    async _renderRetro() {
+        const el = document.getElementById('dash-retro');
+        if (!el) return;
+        try {
+            const res = await fetch('/api/retrospective');
+            const d = await res.json();
+            const stale = !d.summary || (d.age_hours != null && d.age_hours > 24 * 7);
+            const title = `<div class="dash-mini-label">Weekly retrospective
+                <button class="dash-mini-btn" onclick="app._refreshRetro()">${d.summary ? 'Refresh' : 'Generate'}</button>
+            </div>`;
+            if (!d.summary) {
+                el.innerHTML = title + '<div class="dash-empty">No retrospective yet. Click Generate to summarise the past week.</div>';
+                return;
+            }
+            const ageStr = d.age_hours != null
+                ? (d.age_hours < 1 ? 'just now' : d.age_hours < 24 ? `${Math.round(d.age_hours)}h ago` : `${Math.round(d.age_hours / 24)}d ago`)
+                : '';
+            el.innerHTML = title
+                + `<div class="dash-retro-body${stale ? ' stale' : ''}">${this._renderChatMarkdown(d.summary)}</div>`
+                + `<div class="dash-retro-meta">Generated ${ageStr}</div>`;
+        } catch {
+            el.innerHTML = '<div class="dash-mini-label">Weekly retrospective</div>'
+                + '<div class="dash-empty">Failed to load.</div>';
+        }
+    },
+
+    async _refreshRetro() {
+        const el = document.getElementById('dash-retro');
+        if (el) el.innerHTML = '<div class="dash-mini-label">Weekly retrospective</div>'
+            + '<div class="dash-loading">Analysing the last 7 days…</div>';
+        try {
+            const res = await fetch('/api/retrospective', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ days: 7 }),
+            });
+            const d = await res.json();
+            if (d.error) {
+                if (el) el.innerHTML = '<div class="dash-mini-label">Weekly retrospective</div>'
+                    + `<div class="dash-empty">${this.escapeHtml(d.error)}</div>`
+                    + `<button class="dash-mini-btn" onclick="app._refreshRetro()">Retry</button>`;
+                return;
+            }
+            this._renderRetro();
+        } catch (e) {
+            if (el) el.innerHTML = '<div class="dash-mini-label">Weekly retrospective</div>'
+                + '<div class="dash-empty">Network error.</div>';
+        }
+    },
+
     // ---- Past paper 30-minute timer ----
     PP_TIMER_DURATION_S: 30 * 60,
     _ppTimerHandle: null,
@@ -421,6 +604,8 @@ const app = {
 
         this._renderExamCountdown();
         this._renderTodoToday();
+        this._renderPpHeatmap();
+        this._renderRetro();
 
         // Overall progress
         const pct = Math.round(data.overall_confidence * 100);
@@ -621,9 +806,13 @@ const app = {
             const solLink = solUrl
                 ? ` <a href="${solUrl}" target="_blank" rel="noopener" class="pp-pdf-link pp-sol-link">Solutions ↗</a>`
                 : '';
+            const repUrl = this._reportUrl(q.pdf_url);
+            const repLink = repUrl
+                ? ` <a href="${repUrl}" target="_blank" rel="noopener" class="pp-pdf-link pp-rep-link">Report ↗</a>`
+                : '';
             sourceHtml = `
                 <div class="question-source-row">
-                    <div class="question-source-badge pp-badge">📄 Past Paper &mdash; ${this.escapeHtml(q.source)}${pdfLink}${solLink}</div>
+                    <div class="question-source-badge pp-badge">📄 Past Paper &mdash; ${this.escapeHtml(q.source)}${pdfLink}${solLink}${repLink}</div>
                     <div class="pp-timer" id="pp-timer">
                         <span class="pp-timer-display" id="pp-timer-display">30:00</span>
                         <button class="pp-timer-btn" id="pp-timer-btn"
@@ -2028,7 +2217,12 @@ const app = {
                 const hardHtml = hardParts.length > 0
                     ? `<span class="pp-hard-badge" title="Parts flagged difficult: ${hardParts.join(', ')}">⚑ ${hardParts.join('')}</span>`
                     : '';
-                return `<div class="pp-row${attempted ? ' pp-row--attempted' : ''}">
+                const elsewhereCls = q.completed_elsewhere ? ' pp-row--elsewhere' : '';
+                const elsewhereTitle = q.completed_elsewhere
+                    ? `Marked done elsewhere${q.completed_elsewhere_date ? ' on ' + q.completed_elsewhere_date : ''}`
+                    : 'Mark as completed elsewhere (e.g. on paper)';
+                const elsewhereLabel = q.completed_elsewhere ? '✓ Done elsewhere' : '⌂ Done elsewhere';
+                return `<div class="pp-row${attempted ? ' pp-row--attempted' : ''}${elsewhereCls}">
                     <div class="pp-row-ref">${this.escapeHtml(q.ref)} ${completionHtml}</div>
                     <div class="pp-row-meta">
                         <span class="pp-marks">${q.total_marks} marks</span>
@@ -2036,6 +2230,10 @@ const app = {
                         ${diagHtml}${hardHtml}
                         ${q.pdf_url ? `<a class="pp-pdf-link" href="${q.pdf_url}" target="_blank" rel="noopener">PDF ↗</a>` : ''}
                         ${this._solutionsUrl(q.pdf_url) ? `<a class="pp-pdf-link pp-sol-link" href="${this._solutionsUrl(q.pdf_url)}" target="_blank" rel="noopener">Solutions ↗</a>` : ''}
+                        ${this._reportUrl(q.year) ? `<a class="pp-pdf-link pp-rep-link" href="${this._reportUrl(q.year)}" target="_blank" rel="noopener">Report ↗</a>` : ''}
+                        <button class="pp-elsewhere-btn${q.completed_elsewhere ? ' active' : ''}"
+                            title="${this.escapeAttr(elsewhereTitle)}"
+                            onclick="app.toggleCompletedElsewhere('${this.escapeAttr(q.ref)}')">${elsewhereLabel}</button>
                     </div>
                     <button class="btn btn-primary pp-practice-btn"
                         onclick="app.practicePastPaper('${this.escapeAttr(course.course_id)}', ${q.year}, ${q.paper}, ${q.question})">
@@ -2043,15 +2241,79 @@ const app = {
                     </button>
                 </div>`;
             }).join('');
+            const freqHtml = this._renderTopicFrequency(course);
             return `<div class="pp-course-section">
                 <div class="pp-course-header">
                     <span class="pp-course-name">${this.escapeHtml(course.course_name)}</span>
                     <span class="pp-course-count">${qs.length} question${qs.length !== 1 ? 's' : ''}</span>
                 </div>
+                ${freqHtml}
                 <div class="pp-course-rows">${rows}</div>
             </div>`;
         }).join('');
         container.innerHTML = html || '<div class="empty-state">No past papers found.</div>';
+    },
+
+    _renderTopicFrequency(course) {
+        // Show how often each topic has appeared in past papers (across all years
+        // we have data for). Cells are sized by frequency so high-frequency topics
+        // visually dominate. Topics absent from this course's frequency map are
+        // skipped — the frequency map is the source of truth.
+        const freqs = course.topic_frequencies || {};
+        const names = course.topic_names || {};
+        const entries = Object.entries(freqs);
+        if (!entries.length) return '';
+        entries.sort((a, b) => b[1] - a[1]);
+        const max = entries[0][1] || 1;
+        const cells = entries.map(([tid, n]) => {
+            const intensity = Math.min(1, n / max);
+            // Map intensity → 5 buckets matching the dashboard heatmap palette.
+            const bucket = intensity >= 0.85 ? 4
+                : intensity >= 0.6 ? 3
+                : intensity >= 0.35 ? 2
+                : intensity >= 0.15 ? 1 : 0;
+            const label = names[tid] || tid;
+            return `<span class="pp-freq-cell hm-${bucket}" title="${this.escapeAttr(label)}: ${n} appearance${n !== 1 ? 's' : ''} since 2018">
+                <span class="pp-freq-name">${this.escapeHtml(label)}</span>
+                <span class="pp-freq-count">${n}</span>
+            </span>`;
+        }).join('');
+        return `<div class="pp-freq">
+            <div class="pp-freq-label">Topic frequency in past papers</div>
+            <div class="pp-freq-cells">${cells}</div>
+        </div>`;
+    },
+
+    async toggleCompletedElsewhere(ref) {
+        try {
+            const res = await fetch('/api/pp/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ref, toggle_completed_elsewhere: true }),
+            });
+            const updated = await res.json();
+            // Update local cache so re-render reflects the change without refetch.
+            for (const c of (this._ppData?.courses || [])) {
+                for (const q of (c.questions || [])) {
+                    if (q.ref === ref) {
+                        q.completed_elsewhere = !!updated.completed_elsewhere;
+                        q.completed_elsewhere_date = updated.completed_elsewhere_date || null;
+                    }
+                }
+            }
+            // Mirror onto _allPapers (used by dashboard heatmap & todo).
+            for (const c of (this._allPapers || [])) {
+                for (const q of (c.questions || [])) {
+                    if (q.ref === ref) {
+                        q.completed_elsewhere = !!updated.completed_elsewhere;
+                        q.completed_elsewhere_date = updated.completed_elsewhere_date || null;
+                    }
+                }
+            }
+            this.renderPastPapers();
+        } catch (e) {
+            console.error('toggleCompletedElsewhere failed', e);
+        }
     },
 
     async startWarmupFromPastPaper() {
@@ -2210,6 +2472,7 @@ const app = {
                 <div class="pp-row-right">
                     ${m.pdfUrl ? `<a class="pp-pdf-link" href="${m.pdfUrl}" target="_blank" rel="noopener">PDF ↗</a>` : ''}
                     ${this._solutionsUrl(m.pdfUrl) ? `<a class="pp-pdf-link pp-sol-link" href="${this._solutionsUrl(m.pdfUrl)}" target="_blank" rel="noopener">Solutions ↗</a>` : ''}
+                    ${this._reportUrl(m.year) ? `<a class="pp-pdf-link pp-rep-link" href="${this._reportUrl(m.year)}" target="_blank" rel="noopener">Report ↗</a>` : ''}
                     <button class="btn btn-primary pp-practice-btn"
                         onclick="app.practicePastPaper('${this.escapeAttr(m.courseId)}', ${m.year}, ${m.paper}, ${m.qnum})">
                         Practice →

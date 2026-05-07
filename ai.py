@@ -675,3 +675,50 @@ def course_chat(message: str, course_id: 'str | None' = None, history: list = No
     except Exception as e:
         print(f'[claude] course_chat error: {e}')
         return {'reply': None, 'error': str(e)}
+
+
+def weekly_retrospective(history_entries: list, days: int = 7) -> dict:
+    """Look across the last `days` of answered questions and write a one-paragraph
+    diagnosis of the through-line in mistakes. Returns {'summary': str}."""
+    if not history_entries:
+        return {'summary': None, 'error': 'no recent history'}
+
+    # Compact each entry: keep what matters for diagnosis, drop the verbose fields.
+    lines = []
+    for h in history_entries:
+        ts = h.get('timestamp', '')[:10]
+        score = h.get('score')
+        score_str = f"{int(score * 100)}%" if isinstance(score, (int, float)) else 'n/a'
+        course = h.get('course_id', '?')
+        topic = h.get('topic_id', '?')
+        q = (h.get('question') or '').replace('\n', ' ')[:280]
+        ans = (h.get('answer') or '').replace('\n', ' ')[:240]
+        fb = (h.get('feedback') or '').replace('\n', ' ')[:280]
+        lines.append(
+            f"[{ts}] {course}/{topic} score={score_str}\n  Q: {q}\n  A: {ans}\n  Feedback: {fb}"
+        )
+    body = '\n\n'.join(lines)
+
+    system = (
+        "You are a Cambridge Part IB CS exam tutor reviewing a student's last week of answer history. "
+        "Look ACROSS the entries for the conceptual through-line — recurring misconceptions, "
+        "weak technique patterns (rushed, vague, missing definitions), or specific topics that keep "
+        "tripping them up. Avoid generic advice. Output:\n"
+        "1. A 2-3 sentence diagnosis (what's the pattern?)\n"
+        "2. 2-4 concrete bullet points of what to drill THIS week.\n"
+        "Use markdown. Reference courses by name, not id. Keep it under 180 words. "
+        "Do not list every entry — synthesise."
+    )
+
+    try:
+        client = _get_client()
+        msg = client.messages.create(
+            model=CHAT_MODEL,
+            max_tokens=600,
+            system=system,
+            messages=[{'role': 'user', 'content': f"Past {days} days of attempts:\n\n{body}"}],
+        )
+        return {'summary': msg.content[0].text}
+    except Exception as e:
+        print(f'[claude] weekly_retrospective error: {e}')
+        return {'summary': None, 'error': str(e)}

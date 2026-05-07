@@ -21,6 +21,7 @@ data/knowledge.json
 data/history.json
 data/pp_progress.json
 data/anki_bank.json
+data/retrospective.json
 
 # ---- macOS ----
 .DS_Store
