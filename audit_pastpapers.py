@@ -34,7 +34,6 @@ COURSE_SLUG = {
     'further-graphics':         'FurtherGraphics',
     'intro-comp-arch':          'IntroductiontoComputerArchitecture',
     'prog-c-cpp':               'ProgramminginCandC++',
-    'unix-tools':               'IntroductiontoUnix',
     'compiler-construction':    'CompilerConstruction',
     'computation-theory':       'ComputationTheory',
     'computer-networking':      'ComputerNetworking',

@@ -2982,5 +2982,311 @@
       "Serializability proofs require showing every interleaved execution matches some serial order; find a witness serial ordering explicitly.",
       "A common exam task is exhibiting an interleaving that produces a result no serial execution could, demonstrating why mutexes are necessary."
     ]
+  },
+  "fml-chomsky": {
+    "key_facts": [
+      "The Chomsky Hierarchy has 4 types: Type 3 (regular), Type 2 (context-free), Type 1 (context-sensitive), Type 0 (recursively enumerable), each strictly more powerful than the one above.",
+      "Every regular language is also context-free, every context-free is context-sensitive, etc., because each rule form is a more specific version of the type below.",
+      "Complexity of recognition: regular O(n), context-free O(n^c), context-sensitive O(c^n), recursively enumerable undecidable.",
+      "All Chomsky language classes are closed under union; all are closed under intersection with a regular language.",
+      "Pumping lemma for regular languages: any w in L with |w| >= l can be split as w = u1vu2 where |v| >= 1, |u1v| <= l, and u1v^n u2 in L for all n >= 0.",
+      "Pumping lemma for CFLs: any w in L with |w| >= k can be split as w = u1yu2zu3 where |yz| >= 1, |yu2z| <= k, and u1y^n u2z^n u3 in L for all n >= 0."
+    ],
+    "terms": {
+      "Chomsky Hierarchy": "Classification of phrase structure grammars into 4 types (0-3) based on the form of their production rules.",
+      "regular grammar": "Type 3 grammar with rules of the form A -> aB or A -> a (right-linear) or A -> Aa or A -> a (left-linear).",
+      "context-free grammar (CFG)": "Type 2 grammar with rules of the form A -> alpha where A is a non-terminal and alpha is any string of terminals/non-terminals.",
+      "context-sensitive grammar": "Type 1 grammar with rules of the form alphaAbeta -> alphagammabeta where gamma is non-empty.",
+      "recursively enumerable": "Type 0 grammar with rules alpha -> beta where alpha is non-empty; recognised by Turing machines.",
+      "pumping lemma": "A property used to prove a language does NOT belong to a certain class by showing it cannot be 'pumped'.",
+      "Chomsky Normal Form (CNF)": "CFG form where every rule is either A -> BC or A -> a; every CFG has a weakly equivalent CNF.",
+      "closure property": "A language class is closed under an operation if applying that operation to members always yields a member of the same class.",
+      "DFA": "Deterministic Finite Automaton; recognises exactly the regular languages.",
+      "PDA": "Push Down Automaton; a DFA augmented with a stack, recognises exactly the context-free languages.",
+      "Linear Bounded Automaton (LBA)": "A tape-based automaton with finite tape length that recognises exactly the context-sensitive languages.",
+      "power/expressivity": "The number of subsets of Sigma* a grammar type can generate; Type 0 is most powerful, Type 3 least."
+    },
+    "exam_tips": [
+      "To prove a language is NOT regular, use the pumping lemma: assume it is regular, choose w of length >= l, show no valid split u1vu2 keeps all pumped strings in L (e.g., a^n b^n is not regular).",
+      "To prove a language is NOT context-free, use the CFL pumping lemma with a 5-way split u1yu2zu3 and show simultaneous pumping of y and z breaks membership.",
+      "Remember the hierarchy is strict: every regular language is CFL but not vice versa; examiners test whether you can place a language in the correct class.",
+      "Closure properties are tested: union preserves class, intersection with a regular language preserves class, but intersection of two CFLs is NOT necessarily a CFL."
+    ]
+  },
+  "fml-parsing": {
+    "key_facts": [
+      "Parsing has two meanings: recognition (does a string belong to a language?) and structural derivation (what is the phrase structure of a known string?).",
+      "The Earley parser is a top-down, chart-based dynamic programming parser for CFGs that runs in O(n^3) time and handles ambiguous grammars by recovering multiple derivations.",
+      "Earley algorithm uses dotted rules (progress rules) of the form A -> alpha * beta to track parsing progress, with edges recording [start, end] spans and history.",
+      "Three steps in the Earley main loop: Predict (expand unexplored non-terminals), Scan (match terminal against input), Complete (propagate fully explored nodes).",
+      "LR(k) shift-reduce parsers work for deterministic unambiguous languages but are ill-suited to natural language due to inherent ambiguity.",
+      "Dependency grammars derive dependency trees where nodes are words and edges represent syntactic relations; trees can be projective (no crossing edges) or non-projective."
+    ],
+    "terms": {
+      "Earley parser": "A top-down chart parser using dynamic programming that handles all CFGs including ambiguous ones in O(n^3).",
+      "dotted rule (progress rule)": "A grammar rule with a dot indicating parsing progress, e.g. A -> alpha * beta, showing what has and hasn't been derived.",
+      "chart (dynamic programming table)": "A table of edges recording partial derivations used by the Earley parser to avoid redundant computation.",
+      "edge": "An entry in the Earley chart recording a dotted rule, its span [i,j], and history of contributing edges.",
+      "span": "The portion [i,j] of the input string consistent with a partial derivation in the chart.",
+      "shift-reduce parser": "LR parsing strategy that shifts input symbols onto a stack and reduces them using grammar rules; deterministic, no backtracking.",
+      "ambiguity packing": "Storing multiple analyses of the same type covering the same input span as a single chart entity.",
+      "dependency tree": "A directed graph where nodes are words and edges represent syntactic relationships between words.",
+      "dependency grammar": "A grammar formalism that derives dependency trees rather than constituency trees.",
+      "projective tree": "A dependency tree that can be drawn without any crossing edges.",
+      "grammatical relation": "A label on a dependency edge indicating the syntactic function (e.g., nsubj, dobj, nmod).",
+      "recognition problem": "The task of deciding whether a string belongs to a given language."
+    },
+    "exam_tips": [
+      "Be able to trace through the Earley algorithm step by step (Predict, Scan, Complete) and fill in the chart; know what triggers each step.",
+      "Know why LR(k) parsers are unsuitable for natural language: natural language is inherently ambiguous and LR parsers are deterministic with no backtracking.",
+      "Understand the difference between the two meanings of parsing (recognition vs. structural derivation) as examiners may ask you to distinguish them.",
+      "For dependency grammars, know the distinction between projective and non-projective trees and that non-projective trees are harder to parse."
+    ]
+  },
+  "fml-induction": {
+    "key_facts": [
+      "Gold's theorem states that no class of languages that includes all finite languages and at least one infinite language is identifiable in the limit from positive examples alone.",
+      "Language acquisition research motivates grammar induction: how do children learn language from exposure without explicit negative evidence?",
+      "Categorial grammars assign syntactic categories to words as functions that combine with argument categories to yield result categories.",
+      "Learnable classes are those for which an algorithm exists that converges to the correct grammar in the limit given sufficient data."
+    ],
+    "terms": {
+      "grammar induction": "The task of automatically learning a grammar from example strings of a language.",
+      "Gold's theorem": "Theorem proving no superfinite language class is identifiable in the limit from positive examples only.",
+      "identification in the limit": "A learning criterion where an algorithm eventually produces the correct hypothesis and never changes it, given an infinite sequence of examples.",
+      "positive examples": "Training examples that are strings belonging to the target language (no negative/incorrect examples provided).",
+      "categorial grammar": "A grammar formalism where words have functional types specifying what arguments they take and what they return.",
+      "learnable class": "A class of languages for which an induction algorithm exists that converges to the correct grammar given sufficient data.",
+      "language acquisition": "The process by which humans (especially children) learn their native language, motivating study of what is learnable."
+    },
+    "exam_tips": [
+      "Gold's theorem is a key examinable result: know the conditions (superfinite class, positive examples only) and the conclusion (not learnable in the limit).",
+      "Understand what 'identification in the limit' means precisely: the learner must eventually stabilise on the correct hypothesis, not just get close.",
+      "Categorial grammars may be tested in terms of how types combine (function-argument application) rather than just their definition."
+    ]
+  },
+  "fml-information": {
+    "key_facts": [
+      "Entropy measures the average information content (uncertainty) of a random variable and is used to characterise language typology.",
+      "The Uniform Information Density (UID) hypothesis proposes that speakers tend to spread information evenly across an utterance to optimise communication.",
+      "The noisy channel model treats communication as encoding a message through a noisy channel, and decoding involves finding the most probable original message given the received signal.",
+      "Spelling error correction can be modelled as a noisy channel problem: find the intended word that maximises P(intended | observed) using Bayes' theorem."
+    ],
+    "terms": {
+      "entropy": "A measure of uncertainty or average information content of a probability distribution; H(X) = -sum p(x) log p(x).",
+      "uniform information density (UID)": "The hypothesis that speakers structure utterances to maintain a roughly constant rate of information transmission.",
+      "noisy channel model": "A model treating language processing as recovering a signal transmitted through a noisy channel using probabilistic decoding.",
+      "spelling error correction": "Application of noisy channel models to recover the intended word from a misspelled observation.",
+      "language typology": "The cross-linguistic study of structural properties of languages, which entropy measures can characterise."
+    },
+    "exam_tips": [
+      "Be able to apply Bayes' theorem in the context of the noisy channel model: P(intended|observed) proportional to P(observed|intended) * P(intended).",
+      "Understand the UID hypothesis and how it relates to syntactic choices speakers make (e.g., optional word inclusion) to smooth information rate."
+    ]
+  },
+  "fml-vectors": {
+    "key_facts": [
+      "Vector space models represent words as vectors in a high-dimensional space where geometric proximity corresponds to semantic similarity.",
+      "Word2Vec learns dense word embeddings using either the Continuous Bag of Words (CBOW) or Skip-gram architecture trained on large corpora.",
+      "In Word2Vec, the skip-gram model predicts context words given a target word, while CBOW predicts the target word from context words.",
+      "Word embeddings capture semantic regularities such that vector arithmetic can reflect analogical relations (e.g., king - man + woman \u2248 queen)."
+    ],
+    "terms": {
+      "word embedding": "A dense, low-dimensional real-valued vector representation of a word learned from large corpora.",
+      "Word2Vec": "A neural model for learning word embeddings using either skip-gram or CBOW objectives on large text corpora.",
+      "skip-gram": "A Word2Vec architecture that predicts surrounding context words given a central target word.",
+      "CBOW (Continuous Bag of Words)": "A Word2Vec architecture that predicts a target word from the average of its surrounding context words.",
+      "vector space model": "A representation of linguistic items as vectors in a geometric space where similarity is measured by distance or angle.",
+      "semantic processing": "Using vector representations to compute meaning relationships such as similarity, analogy, and categorisation."
+    },
+    "exam_tips": [
+      "Know the difference between skip-gram and CBOW in Word2Vec and which direction the prediction goes in each.",
+      "Be able to explain how vector arithmetic with embeddings captures semantic analogies and why this is useful for NLP tasks."
+    ]
+  },
+  "ai-search-uninformed": {
+    "key_facts": [
+      "A search problem is defined by: initial state s0, set of actions A, transition function action(a,s)->s', goal test goal(s)->{true,false}, and path cost function cost(a,s)->R.",
+      "Path cost of a sequence is the sum of individual action costs: p(s_{n+1}) = sum_{i=0}^{n} cost(a_i, s_i).",
+      "Tree search allows a state to appear in multiple nodes; graph search ensures each state appears in only one node but may be reached via multiple paths.",
+      "Graph search requires a closed list (implementable as a hash table) to prevent revisiting states; both time and space become proportional to the size of the state space.",
+      "Breadth-first search is complete (if b < infinity) and optimal when path cost is non-decreasing with depth, but has exponential time AND memory complexity.",
+      "Depth-first tree search is not complete due to loops, not optimal, requires O(bd) memory for tree search, but graph search version is complete if state space is finite."
+    ],
+    "terms": {
+      "fringe": "The set of states that have been generated but not yet expanded, implemented as a priority queue.",
+      "expand(s)": "Function returning the set of states reachable from s by applying all applicable actions.",
+      "branching factor (b)": "The number of successors of any given node; layer at depth d has up to b^d states.",
+      "closed list": "A data structure (hash table) storing all already-expanded states, used in graph search to avoid revisiting.",
+      "completeness": "Property of a search algorithm guaranteeing it will find a solution if one exists.",
+      "optimality": "Property of a search algorithm guaranteeing the solution found has minimum path cost.",
+      "uniform-cost search": "Graph search that prioritises nodes by path cost p(s), expanding the lowest-cost unexpanded node first.",
+      "path cost p(s)": "The cumulative cost of actions taken to reach state s from the initial state."
+    },
+    "exam_tips": [
+      "Know the precise conditions under which BFS is complete and optimal, and why memory (not time) is the practical bottleneck.",
+      "Understand the difference between tree search and graph search, specifically why graph search needs a closed list and what problems arise with optimality when discarding repeated states.",
+      "Be able to write out the tree-search and graph-search algorithms and explain the role of the priority queue in setting search strategy.",
+      "Remember that depth-first tree search is incomplete due to infinite loops, while depth-first graph search is complete only for finite state spaces."
+    ]
+  },
+  "ai-search-heuristic": {
+    "key_facts": [
+      "A heuristic function h(s) estimates the cost of the cheapest path from state s to a goal; h(goal) = 0 by definition.",
+      "Uniform-cost search uses only path cost p(s) as the evaluation function; it is not directed toward the goal.",
+      "A* uses evaluation function f(s) = p(s) + h(s), combining known path cost with estimated remaining cost.",
+      "A heuristic is admissible if it never overestimates the true cost to the goal; this guarantees A* is optimal on trees.",
+      "A heuristic is consistent (monotone) if h(s) <= cost(a,s) + h(s') for every successor s'; consistency implies admissibility and guarantees A* optimality on graphs.",
+      "IDA* applies iterative deepening using f(s) = p(s) + h(s) as the cutoff threshold, achieving linear memory usage while retaining A* optimality."
+    ],
+    "terms": {
+      "heuristic function h(s)": "A problem-specific estimate of the cost from state s to the nearest goal; h(goal)=0.",
+      "evaluation function f(s)": "Function used to prioritise nodes in A*: f(s) = p(s) + h(s).",
+      "admissibility": "Property of a heuristic that never overestimates the true cost to reach any goal.",
+      "consistency (monotonicity)": "Property where h(s) <= cost(a,s) + h(s') for all successors s'; stronger than admissibility.",
+      "A* search": "Best-first search using f(s)=p(s)+h(s) as priority; optimal and complete given an admissible/consistent heuristic.",
+      "IDA*": "Iterative-deepening A* that uses f-value thresholds instead of depth limits, giving linear space complexity.",
+      "recursive best-first search (RBFS)": "Recursive algorithm that tracks the best alternative path f-value to decide when to abandon current path, using linear space.",
+      "local search": "Search that operates on a single current state and moves to neighbouring states, used when the path itself is irrelevant.",
+      "straight-line distance heuristic": "For route-finding, h(s) = Euclidean distance to goal; an example of an admissible heuristic."
+    },
+    "exam_tips": [
+      "Be ready to prove or disprove admissibility/consistency of a given heuristic, and explain why consistency implies admissibility but not vice versa.",
+      "Know why A* with a consistent heuristic is optimal for graph search, and what can go wrong with only admissibility in graph search.",
+      "Understand the memory trade-off: A* stores all generated nodes (exponential), IDA* uses linear memory but may re-expand nodes.",
+      "Examiners often ask why h(s)=0 (uniform-cost) is trivially admissible but inefficient, and how a better heuristic improves practical performance."
+    ]
+  },
+  "ai-games": {
+    "key_facts": [
+      "Adversarial search models two-player, zero-sum games where one agent's gain is the other's loss.",
+      "The minimax algorithm computes the optimal move by assuming the opponent always plays to minimise the agent's utility (MAX node picks max, MIN node picks min).",
+      "Minimax explores the full game tree to terminal states and backs up utility values; time complexity is O(b^m) and space is O(bm) for depth m.",
+      "Alpha-beta pruning eliminates branches that cannot influence the final minimax decision, reducing the effective branching factor without changing the result.",
+      "With optimal move ordering, alpha-beta pruning reduces the number of nodes evaluated from O(b^m) to O(b^{m/2}), effectively doubling the search depth.",
+      "Alpha (\u03b1) is the best value MAX can guarantee so far; beta (\u03b2) is the best value MIN can guarantee so far; a branch is pruned when \u03b1 >= \u03b2."
+    ],
+    "terms": {
+      "minimax value": "The optimal utility value achievable from a state assuming both players play optimally.",
+      "MAX node": "A node where the current player maximises utility over children's values.",
+      "MIN node": "A node where the opponent minimises utility over children's values.",
+      "alpha-beta pruning": "Technique that prunes game tree branches provably unable to affect the minimax decision.",
+      "alpha (\u03b1)": "The best (highest) value that the MAX player can guarantee along the current path.",
+      "beta (\u03b2)": "The best (lowest) value that the MIN player can guarantee along the current path.",
+      "terminal state": "A game state where play ends and a utility value is assigned.",
+      "evaluation function": "A heuristic estimate of the utility of a non-terminal game state, used when full tree search is infeasible."
+    },
+    "exam_tips": [
+      "Be able to trace minimax and alpha-beta pruning on a given game tree, showing which nodes are pruned and why.",
+      "Remember that alpha-beta gives the same result as minimax\u2014it is an optimisation, not an approximation.",
+      "Examiners may test the conditions for pruning: a MIN node is pruned when its value <= \u03b1; a MAX node when its value >= \u03b2.",
+      "Know the complexity improvement from alpha-beta with perfect ordering: O(b^m) becomes O(b^{m/2})."
+    ]
+  },
+  "ai-csp": {
+    "key_facts": [
+      "A CSP is defined by a set of variables, each with a domain of possible values, and a set of constraints that specify allowable combinations of values.",
+      "Backtracking search assigns values to variables one at a time and backtracks when a partial assignment violates a constraint.",
+      "Forward checking propagates constraints after each assignment by removing inconsistent values from unassigned variables' domains, detecting failure early.",
+      "Arc consistency (AC-3) ensures that for every arc (X_i, X_j), every value in the domain of X_i has at least one consistent value in the domain of X_j.",
+      "Constraint propagation (e.g., arc consistency) reduces domains before and during search, often dramatically cutting the search space.",
+      "Variable and value ordering heuristics (e.g., minimum remaining values, least constraining value) can greatly improve backtracking efficiency."
+    ],
+    "terms": {
+      "CSP (Constraint Satisfaction Problem)": "Problem defined by variables, domains, and constraints; solution is a complete consistent assignment.",
+      "constraint": "A restriction on allowable combinations of values for a subset of variables.",
+      "backtracking search": "Depth-first search that assigns values one variable at a time and backtracks on constraint violation.",
+      "forward checking": "After assigning a variable, removes values inconsistent with the assignment from neighbours' domains.",
+      "arc consistency": "A variable X_i is arc-consistent w.r.t. X_j if every value in D_i has a supporting value in D_j.",
+      "AC-3": "Algorithm that enforces arc consistency by iteratively removing inconsistent values from domains.",
+      "constraint propagation": "Using constraints to reduce domains of variables, potentially triggering further reductions.",
+      "minimum remaining values (MRV)": "Heuristic that selects the variable with the fewest remaining legal values next."
+    },
+    "exam_tips": [
+      "Be able to run AC-3 on a small CSP by hand, showing which arcs are added to the queue and which values are removed.",
+      "Understand the difference between forward checking and full arc consistency\u2014forward checking only checks arcs to unassigned neighbours, AC-3 propagates further.",
+      "Know that arc consistency does not guarantee a solution; backtracking may still be needed after propagation.",
+      "Examiners often ask about the complexity of AC-3: O(ed^3) where e is the number of arcs and d is the maximum domain size."
+    ]
+  },
+  "ai-knowledge": {
+    "key_facts": [
+      "Semantic networks represent knowledge as a graph of nodes (concepts/objects) linked by labelled arcs (relationships).",
+      "Frames organise knowledge into structured records with slots and fillers; rules (production rules) encode IF-THEN knowledge.",
+      "Inheritance allows properties defined at a general class node to be assumed by more specific subclass or instance nodes unless overridden.",
+      "Forward chaining applies rules whose conditions are satisfied to derive new facts until a goal is reached (data-driven).",
+      "Backward chaining starts from the goal and works backward through rules to find supporting facts (goal-driven); used in Prolog.",
+      "First-order logic provides a formal language with quantifiers (\u2200, \u2203), predicates, functions, and constants, enabling precise representation and sound inference."
+    ],
+    "terms": {
+      "semantic network": "A graph-based knowledge representation where nodes are concepts and edges are labelled relationships.",
+      "frame": "A structured representation of a stereotyped situation with slots for attributes and their values.",
+      "production rule": "An IF (condition) THEN (action/conclusion) knowledge representation used in expert systems.",
+      "inheritance": "Mechanism by which subclasses/instances automatically acquire properties from their parent classes.",
+      "forward chaining": "Inference strategy that applies rules to known facts to derive new facts until a goal is reached.",
+      "backward chaining": "Inference strategy that starts from a goal and works backwards to find facts that support it.",
+      "first-order logic (FOL)": "A formal language with predicates, functions, constants, variables, and quantifiers supporting deductive inference.",
+      "knowledge base": "A collection of sentences in a formal language representing facts and rules about a domain."
+    },
+    "exam_tips": [
+      "Be able to compare forward and backward chaining in terms of when each is appropriate and how they traverse the rule network.",
+      "Understand the limitations of semantic networks and frames (e.g., difficulty handling exceptions to inheritance, lack of formal semantics).",
+      "Know how first-order logic overcomes the expressiveness limitations of propositional logic, and the computational cost implications.",
+      "Examiners may ask you to translate natural-language statements into FOL or to trace a short forward/backward chaining inference."
+    ]
+  },
+  "ai-planning": {
+    "key_facts": [
+      "STRIPS represents states as sets of positive ground literals, actions by precondition lists, add lists, and delete lists.",
+      "A STRIPS action is applicable in a state if all its preconditions are true; the resulting state removes delete-list literals and adds add-list literals.",
+      "Partial-order planning builds a plan as a set of actions with ordering constraints and causal links, only imposing order where necessary (least commitment).",
+      "A planning graph is a layered graph alternating literal and action levels, used to compute admissible heuristics and in the GRAPHPLAN algorithm.",
+      "GRAPHPLAN extracts a plan from the planning graph using backward search; mutually exclusive (mutex) actions/literals prune the search space.",
+      "Propositional approaches encode planning problems as satisfiability (SAT) problems or as bounded model checking, leveraging efficient SAT solvers."
+    ],
+    "terms": {
+      "STRIPS": "Planning language representing states as literal sets and actions via precondition, add, and delete lists.",
+      "precondition list": "Set of literals that must all be true in the current state for an action to be applicable.",
+      "add list": "Set of literals made true by executing a STRIPS action.",
+      "delete list": "Set of literals made false by executing a STRIPS action.",
+      "partial-order planning": "Planning approach that builds plans with ordering constraints only where necessary, deferring commitment.",
+      "causal link": "A link in a partial-order plan recording that action A achieves precondition p for action B.",
+      "planning graph": "Layered structure of literal and action levels used for heuristic computation and in GRAPHPLAN.",
+      "mutex (mutual exclusion)": "Condition indicating two actions or literals cannot both occur/hold at the same plan level.",
+      "GRAPHPLAN": "Algorithm that builds a planning graph and extracts solutions via backward search through it."
+    },
+    "exam_tips": [
+      "Be able to apply a sequence of STRIPS actions by hand, updating the state set with add and delete lists.",
+      "Understand why partial-order planning is preferable to total-order planning in terms of flexibility and the least-commitment principle.",
+      "Know how mutex relations are defined in a planning graph and how they are used to prune the search in GRAPHPLAN.",
+      "Examiners may ask you to construct a small planning graph and identify mutex actions/literals at each level."
+    ]
+  },
+  "ai-neural": {
+    "key_facts": [
+      "Supervised learning trains a model on input-output pairs (training data) to generalise to new inputs; the goal is to minimise a loss function.",
+      "Curve fitting / regression is a form of supervised learning where the output is continuous; the model fits a function through training data.",
+      "A perceptron computes a weighted sum of inputs, applies a threshold/activation function, and outputs a binary classification; it can only represent linearly separable functions.",
+      "Gradient descent updates weights by moving in the direction of the negative gradient of the loss function: w <- w - \u03b7 * \u2202L/\u2202w, where \u03b7 is the learning rate.",
+      "A multilayer perceptron (MLP) adds one or more hidden layers of units with nonlinear activation functions, enabling representation of non-linearly separable functions.",
+      "Backpropagation computes gradients of the loss w.r.t. all weights in an MLP by applying the chain rule layer by layer, enabling gradient descent training."
+    ],
+    "terms": {
+      "supervised learning": "Learning paradigm where a model is trained on labelled input-output pairs to predict outputs for new inputs.",
+      "perceptron": "Single-layer neural unit computing a thresholded weighted sum of inputs; limited to linearly separable problems.",
+      "activation function": "Non-linear function applied to a neuron's weighted input sum (e.g., sigmoid, ReLU) enabling non-linear representations.",
+      "gradient descent": "Optimisation algorithm that iteratively adjusts weights in the direction of steepest loss decrease.",
+      "learning rate (\u03b7)": "Scalar controlling the step size in gradient descent weight updates.",
+      "multilayer perceptron (MLP)": "Neural network with one or more hidden layers of non-linear units; a universal function approximator.",
+      "backpropagation": "Algorithm for computing gradients in an MLP by applying the chain rule backward through the network.",
+      "loss function": "A measure of discrepancy between the network's output and the desired target, minimised during training.",
+      "overfitting": "When a model learns the training data too closely and fails to generalise to unseen data."
+    },
+    "exam_tips": [
+      "You must be comfortable with partial differentiation and the chain rule\u2014backpropagation derivations are commonly examined and require these skills explicitly.",
+      "Know the limitations of the single-layer perceptron (cannot solve XOR) and how adding hidden layers with nonlinearities overcomes this.",
+      "Be able to derive or trace the gradient descent update rule for a simple network, including the application of the chain rule for hidden layer weights.",
+      "Understand the difference between the perceptron learning rule and gradient descent on a differentiable loss\u2014examiners may ask why the perceptron rule doesn't apply to MLPs directly."
+    ]
   }
 }

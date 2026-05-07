@@ -63,9 +63,364 @@ const app = {
         this.renderDashboard();
     },
 
+    // First exam date — Cambridge Part IB CS Paper 1, June 8 2026.
+    // Add more entries as dates are confirmed; the countdown shows the next one.
+    EXAM_SCHEDULE: [
+        { name: 'Paper 1', date: '2026-06-08' },
+    ],
+
+    _isoToday() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    },
+
+    _solutionsUrl(pdfUrl) {
+        if (!pdfUrl) return null;
+        const m = pdfUrl.match(/y(\d{4})p(\d+)q(\d+)\.pdf/);
+        if (!m) return null;
+        const [, y, p, q] = m;
+        const pp = p.padStart(2, '0');
+        const qq = q.padStart(2, '0');
+        return `https://www.cl.cam.ac.uk/teaching/exams/solutions/${y}/${y}-p${pp}-q${qq}-solutions.pdf`;
+    },
+
+    _renderExamCountdown() {
+        const el = document.getElementById('dash-countdown');
+        if (!el) return;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = this.EXAM_SCHEDULE
+            .map(e => ({ ...e, ts: new Date(e.date + 'T00:00:00').getTime() }))
+            .filter(e => e.ts >= today.getTime())
+            .sort((a, b) => a.ts - b.ts);
+        if (!upcoming.length) {
+            el.innerHTML = `<div class="dash-card-label">Exams</div><div class="dash-countdown-num">done</div>`;
+            return;
+        }
+        const next = upcoming[0];
+        const days = Math.round((next.ts - today.getTime()) / 86400000);
+        const dateStr = new Date(next.date + 'T00:00:00')
+            .toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        el.innerHTML = `
+            <div class="dash-card-label">Next exam</div>
+            <div class="dash-countdown-num">${days}<span class="dash-countdown-unit">days</span></div>
+            <div class="dash-countdown-meta">${this.escapeHtml(next.name)} · ${dateStr}</div>
+        `;
+    },
+
+    _takingCourseIds() {
+        // Course IDs the user has selected at least one question for in the
+        // exam planner. Returns null if nothing is selected (so callers fall
+        // back to all courses).
+        const sel = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
+        const PAPER_COURSES = {
+            p4: { 1: 'compiler-construction', 2: 'compiler-construction', 3: 'semantics',
+                  4: 'prolog', 5: 'prog-c-cpp', 6: 'prog-c-cpp', 7: 'cybersecurity', 8: 'cybersecurity' },
+            p5: { 1: 'computer-networking', 2: 'computer-networking', 3: 'computer-networking',
+                  4: 'concurrent-distributed', 5: 'concurrent-distributed',
+                  6: 'intro-comp-arch', 7: 'intro-comp-arch', 8: 'intro-comp-arch' },
+            p6: { 1: 'complexity-theory', 2: 'complexity-theory', 3: 'computation-theory',
+                  4: 'computation-theory', 5: 'data-science', 6: 'data-science',
+                  7: 'logic-proof', 8: 'logic-proof', 9: 'semantics' },
+            p7: { 1: 'artificial-intelligence', 2: 'artificial-intelligence',
+                  3: 'econ-law-ethics', 4: 'econ-law-ethics',
+                  5: 'formal-models-language', 6: 'formal-models-language',
+                  7: 'further-graphics', 8: 'further-graphics',
+                  9: 'further-hci', 10: 'further-hci' },
+        };
+        const taking = new Set();
+        for (const [pKey, qs] of Object.entries(sel)) {
+            for (const [qn, on] of Object.entries(qs || {})) {
+                if (on && PAPER_COURSES[pKey]?.[qn]) taking.add(PAPER_COURSES[pKey][qn]);
+            }
+        }
+        return taking.size ? taking : null;
+    },
+
+    _pastPaperBudget(daysTillExam) {
+        if (daysTillExam == null) return 1;
+        if (daysTillExam <= 7)  return 4;
+        if (daysTillExam <= 14) return 3;
+        if (daysTillExam <= 29) return 2;
+        return 1;
+    },
+
+    _daysTillNextExam() {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const upcoming = this.EXAM_SCHEDULE
+            .map(e => new Date(e.date + 'T00:00:00').getTime())
+            .filter(ts => ts >= today.getTime())
+            .sort();
+        return upcoming.length ? Math.round((upcoming[0] - today.getTime()) / 86400000) : null;
+    },
+
+    _todoForToday() {
+        // Flatten topics and score by urgency.
+        const taking = this._takingCourseIds();
+        const topics = [];
+        for (const [termId, term] of Object.entries(this.dashboardData.terms || {})) {
+            for (const [courseId, course] of Object.entries(term.courses)) {
+                if (taking && !taking.has(courseId)) continue;
+                const courseTopics = course.topics || [];
+                courseTopics.forEach((t, idx) => {
+                    topics.push({
+                        ...t,
+                        course_id: courseId,
+                        course_name: course.name,
+                        term_id: termId,
+                        topic_index: idx,
+                        course_topic_count: courseTopics.length,
+                    });
+                });
+            }
+        }
+        const now = Date.now();
+        const todayIso = this._isoToday();
+        // Cheap deterministic hash → [0,1). Same id+date always returns the same
+        // value, so reloads within a day are stable but tomorrow rotates.
+        const dayJitter = (id) => {
+            const s = id + '|' + todayIso;
+            let h = 2166136261;
+            for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+            return (h >>> 0) / 4294967296;
+        };
+        const daysTillForScore = this._daysTillNextExam();
+        const dayOf = (iso) => iso ? Math.min(28, Math.floor((now - new Date(iso).getTime()) / 86400000)) : null;
+        // Easter content is still being lectured, so deprioritise it relative
+        // to Michaelmas/Lent. Ramps back to parity as exams approach.
+        const termFactor = (termId) => {
+            if (termId !== 'easter') return 1.0;
+            if (daysTillForScore == null || daysTillForScore <= 14) return 1.0;
+            if (daysTillForScore <= 21) return 0.7;
+            return 0.4;
+        };
+        const score = (t) => {
+            const conf = t.confidence ?? 0.5;
+            let s = (1 - conf) * 1.0;
+            const d = dayOf(t.last_tested);
+            if (d === null) s += 0.4;          // never tested → moderate boost
+            else s += Math.min(d / 14, 1) * 0.6;
+            if (t.difficult) s += 0.35;
+            const tf = termFactor(t.term_id);
+            s *= tf;
+            // Within deprioritised Easter content, surface earlier-in-course
+            // topics first — those reflect what has already been lectured.
+            if (t.term_id === 'easter' && tf < 1.0) {
+                const denom = Math.max(1, (t.course_topic_count ?? 1) - 1);
+                const pos = (t.topic_index ?? 0) / denom;
+                s += (1 - pos) * 0.2;
+            }
+            // Small daily rotation so similarly-urgent topics swap in and out.
+            s += dayJitter(t.id) * 0.25;
+            return s;
+        };
+        topics.sort((a, b) => score(b) - score(a));
+
+        // Daily budget: past papers ramp up; topics fill the rest.
+        const daysTill = this._daysTillNextExam();
+        const ppBudget = this._pastPaperBudget(daysTill);
+        const TOTAL = 4;                      // items per day, incl. Anki
+        const topicSlots = Math.max(0, TOTAL - 1 - ppBudget);
+        const focus = topics.slice(0, topicSlots);
+
+        // Past paper picks: prefer taking-courses, weak-or-unattempted first.
+        const allPapers = this._allPapers || [];
+        const ppCandidates = [];
+        for (const c of allPapers) {
+            if (taking && !taking.has(c.course_id)) continue;
+            for (const q of (c.questions || [])) {
+                ppCandidates.push({ ...q, course_id: c.course_id, course_name: c.course_name });
+            }
+        }
+        const ppKey = (q) => `${q.course_id}-${q.year}-${q.paper}-${q.question}`;
+        ppCandidates.sort((a, b) => {
+            // never attempted first
+            if (!a.attempts && b.attempts) return -1;
+            if (a.attempts && !b.attempts) return 1;
+            // then lowest best_score, with daily jitter to break ties
+            const sa = (a.best_score ?? 0) + dayJitter(ppKey(a)) * 0.05;
+            const sb = (b.best_score ?? 0) + dayJitter(ppKey(b)) * 0.05;
+            return sa - sb;
+        });
+        // Avoid dumping multiple from the same course.
+        const seenCourses = new Set();
+        const pastPapers = [];
+        for (const q of ppCandidates) {
+            if (pastPapers.length >= ppBudget) break;
+            if (seenCourses.has(q.course_id)) continue;
+            seenCourses.add(q.course_id);
+            pastPapers.push(q);
+        }
+
+        // Daily Anki rotation: deterministic by date so the same course
+        // appears all day but cycles tomorrow. Restrict to taking courses.
+        const courseList = [];
+        for (const term of Object.values(this.dashboardData.terms || {})) {
+            for (const [cid, c] of Object.entries(term.courses)) {
+                if (taking && !taking.has(cid)) continue;
+                courseList.push({ id: cid, name: c.name });
+            }
+        }
+        const seed = todayIso.split('-').reduce((a, p) => a + parseInt(p), 0);
+        const ankiCourse = courseList.length ? courseList[seed % courseList.length] : null;
+
+        return { focus, pastPapers, ankiCourse, dayKey: todayIso, daysTill, ppBudget };
+    },
+
+    _renderTodoToday() {
+        const el = document.getElementById('dash-todo');
+        if (!el || !this.dashboardData) return;
+
+        // Lazy-load past paper data once per session.
+        if (!this._allPapers && !this._allPapersLoading) {
+            this._allPapersLoading = true;
+            fetch('/api/pastpapers/all')
+                .then(r => r.json())
+                .then(d => { this._allPapers = d.courses || []; this._renderTodoToday(); })
+                .catch(() => { this._allPapers = []; })
+                .finally(() => { this._allPapersLoading = false; });
+        }
+
+        const { focus, pastPapers, ankiCourse, dayKey } = this._todoForToday();
+        const checkKey = `todoChecks-${dayKey}`;
+        const checks = JSON.parse(localStorage.getItem(checkKey) || '{}');
+
+        const items = [];
+        for (const t of focus) {
+            const id = `topic:${t.id}`;
+            items.push({
+                id,
+                kind: 'practice',
+                label: `Practice <strong>${this.escapeHtml(t.name)}</strong>`,
+                meta: `${this.escapeHtml(t.course_name)} · ${Math.round((t.confidence ?? 0) * 100)}%`,
+                action: `app.practiceTopicDirect('${this.escapeAttr(t.id)}','${this.escapeAttr(t.course_id)}')`,
+            });
+        }
+        for (const q of pastPapers) {
+            const id = `pp:${q.course_id}:${q.year}p${q.paper}q${q.question}`;
+            items.push({
+                id,
+                kind: 'pp',
+                label: `Past paper — <strong>${this.escapeHtml(q.ref)}</strong>`,
+                meta: `${this.escapeHtml(q.course_name)} · ${q.total_marks} marks`,
+                action: `app.practicePastPaper('${this.escapeAttr(q.course_id)}',${q.year},${q.paper},${q.question})`,
+            });
+        }
+        if (ankiCourse) {
+            items.push({
+                id: `anki:${ankiCourse.id}`,
+                kind: 'anki',
+                label: `Review Anki — <strong>${this.escapeHtml(ankiCourse.name)}</strong>`,
+                meta: 'Today\u2019s spaced-repetition rotation',
+                action: null,
+            });
+        }
+
+        const done = items.filter(i => checks[i.id]).length;
+
+        el.innerHTML = `
+            <div class="dash-todo-header">
+                <div class="dash-card-label">To do today</div>
+                <span class="dash-todo-count">${done} / ${items.length}</span>
+            </div>
+            <ul class="dash-todo-list">
+                ${items.map(i => `
+                    <li class="dash-todo-item${checks[i.id] ? ' checked' : ''}" data-todo-id="${this.escapeAttr(i.id)}">
+                        <button class="dash-todo-check" aria-label="Toggle done"></button>
+                        <div class="dash-todo-body">
+                            <div class="dash-todo-label">${i.label}</div>
+                            <div class="dash-todo-meta">${i.meta}</div>
+                        </div>
+                        ${i.action ? `<button class="dash-todo-go" onclick="${i.action}" aria-label="Open">→</button>` : ''}
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+
+        el.querySelectorAll('.dash-todo-item').forEach(li => {
+            li.querySelector('.dash-todo-check').addEventListener('click', () => {
+                const id = li.dataset.todoId;
+                const all = JSON.parse(localStorage.getItem(checkKey) || '{}');
+                all[id] = !all[id];
+                localStorage.setItem(checkKey, JSON.stringify(all));
+                this._renderTodoToday();
+            });
+        });
+    },
+
+    // ---- Past paper 30-minute timer ----
+    PP_TIMER_DURATION_S: 30 * 60,
+    _ppTimerHandle: null,
+    _ppTimerEndsAt: null,    // ms epoch when paused: remaining-ms; running: end timestamp
+    _ppTimerRunning: false,
+    _ppTimerRemaining: null, // seconds left when paused
+
+    togglePpTimer() {
+        const display = document.getElementById('pp-timer-display');
+        const btn = document.getElementById('pp-timer-btn');
+        if (!display || !btn) return;
+
+        if (this._ppTimerRunning) {
+            // pause: capture remaining
+            const left = Math.max(0, Math.round((this._ppTimerEndsAt - Date.now()) / 1000));
+            this._ppTimerRemaining = left;
+            this._ppTimerRunning = false;
+            clearInterval(this._ppTimerHandle);
+            this._ppTimerHandle = null;
+            btn.textContent = left > 0 ? 'Resume' : 'Restart';
+            return;
+        }
+
+        // start or resume
+        const startSecs = this._ppTimerRemaining ?? this.PP_TIMER_DURATION_S;
+        if (startSecs <= 0) {
+            // Restart from full
+            this._ppTimerRemaining = null;
+            this._ppTimerEndsAt = Date.now() + this.PP_TIMER_DURATION_S * 1000;
+            display.classList.remove('expired');
+        } else {
+            this._ppTimerEndsAt = Date.now() + startSecs * 1000;
+        }
+        this._ppTimerRunning = true;
+        btn.textContent = 'Pause';
+        this._tickPpTimer();
+        this._ppTimerHandle = setInterval(() => this._tickPpTimer(), 250);
+    },
+
+    _tickPpTimer() {
+        const display = document.getElementById('pp-timer-display');
+        if (!display) { this._stopPpTimer(); return; }
+        let remaining = Math.max(0, Math.round((this._ppTimerEndsAt - Date.now()) / 1000));
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        display.textContent = `${m}:${String(s).padStart(2, '0')}`;
+        display.classList.toggle('low', remaining > 0 && remaining <= 60);
+
+        if (remaining <= 0) {
+            clearInterval(this._ppTimerHandle);
+            this._ppTimerHandle = null;
+            this._ppTimerRunning = false;
+            this._ppTimerRemaining = 0;
+            display.classList.add('expired');
+            const btn = document.getElementById('pp-timer-btn');
+            if (btn) btn.textContent = 'Restart';
+        }
+    },
+
+    _stopPpTimer() {
+        if (this._ppTimerHandle) clearInterval(this._ppTimerHandle);
+        this._ppTimerHandle = null;
+        this._ppTimerRunning = false;
+        this._ppTimerEndsAt = null;
+        this._ppTimerRemaining = null;
+    },
+
     renderDashboard() {
         const data = this.dashboardData;
         if (!data) return;
+
+        this._renderExamCountdown();
+        this._renderTodoToday();
 
         // Overall progress
         const pct = Math.round(data.overall_confidence * 100);
@@ -255,13 +610,26 @@ const app = {
 
     renderQuestion(q) {
         const container = document.getElementById('question-container');
+        this._stopPpTimer();   // wipe any prior timer state
 
         let sourceHtml;
         if (q.is_actual_past_paper && q.source) {
             const pdfLink = q.pdf_url
                 ? ` <a href="${q.pdf_url}" target="_blank" rel="noopener" class="pp-pdf-link">View PDF ↗</a>`
                 : '';
-            sourceHtml = `<div class="question-source-badge pp-badge">📄 Past Paper &mdash; ${this.escapeHtml(q.source)}${pdfLink}</div>`;
+            const solUrl = this._solutionsUrl(q.pdf_url);
+            const solLink = solUrl
+                ? ` <a href="${solUrl}" target="_blank" rel="noopener" class="pp-pdf-link pp-sol-link">Solutions ↗</a>`
+                : '';
+            sourceHtml = `
+                <div class="question-source-row">
+                    <div class="question-source-badge pp-badge">📄 Past Paper &mdash; ${this.escapeHtml(q.source)}${pdfLink}${solLink}</div>
+                    <div class="pp-timer" id="pp-timer">
+                        <span class="pp-timer-display" id="pp-timer-display">30:00</span>
+                        <button class="pp-timer-btn" id="pp-timer-btn"
+                            onclick="app.togglePpTimer()">Start timer</button>
+                    </div>
+                </div>`;
         } else if (q.source) {
             sourceHtml = `<div class="question-source-badge pp-style-badge">Based on ${this.escapeHtml(q.source)}</div>`;
         } else {
@@ -837,7 +1205,6 @@ const app = {
             'further-graphics': 'Further Graphics',
             'intro-comp-arch': 'Computer Architecture',
             'prog-c-cpp': 'Programming C/C++',
-            'unix-tools': 'Unix Tools',
             'compiler-construction': 'Compiler Construction',
             'computation-theory': 'Computation Theory',
             'computer-networking': 'Computer Networking',
@@ -1668,6 +2035,7 @@ const app = {
                         <span class="pp-parts">${q.parts.length} parts</span>
                         ${diagHtml}${hardHtml}
                         ${q.pdf_url ? `<a class="pp-pdf-link" href="${q.pdf_url}" target="_blank" rel="noopener">PDF ↗</a>` : ''}
+                        ${this._solutionsUrl(q.pdf_url) ? `<a class="pp-pdf-link pp-sol-link" href="${this._solutionsUrl(q.pdf_url)}" target="_blank" rel="noopener">Solutions ↗</a>` : ''}
                     </div>
                     <button class="btn btn-primary pp-practice-btn"
                         onclick="app.practicePastPaper('${this.escapeAttr(course.course_id)}', ${q.year}, ${q.paper}, ${q.question})">
@@ -1841,6 +2209,7 @@ const app = {
                 </div>
                 <div class="pp-row-right">
                     ${m.pdfUrl ? `<a class="pp-pdf-link" href="${m.pdfUrl}" target="_blank" rel="noopener">PDF ↗</a>` : ''}
+                    ${this._solutionsUrl(m.pdfUrl) ? `<a class="pp-pdf-link pp-sol-link" href="${this._solutionsUrl(m.pdfUrl)}" target="_blank" rel="noopener">Solutions ↗</a>` : ''}
                     <button class="btn btn-primary pp-practice-btn"
                         onclick="app.practicePastPaper('${this.escapeAttr(m.courseId)}', ${m.year}, ${m.paper}, ${m.qnum})">
                         Practice →
@@ -2792,16 +3161,15 @@ const app = {
         return row;
     },
 
-    // Lightweight markdown for chat: paragraphs, bullet lists, **bold**, *italic*,
-    // `inline code`, and KaTeX math via existing renderContent pipeline.
+    // Lightweight markdown for chat: headings, paragraphs, bullet lists, tables,
+    // **bold**, *italic*, `inline code`, and KaTeX math via renderContent.
     _renderChatMarkdown(text) {
         if (!text) return '';
-        // First protect math via the existing renderer's tokens by handling math afterwards.
-        // Split into lines for list handling.
         const lines = text.split(/\n/);
         const out = [];
         let listOpen = false;
         let para = [];
+        let tableBuf = [];
         const flushPara = () => {
             if (para.length) {
                 out.push('<p>' + para.join(' ') + '</p>');
@@ -2811,9 +3179,44 @@ const app = {
         const closeList = () => {
             if (listOpen) { out.push('</ul>'); listOpen = false; }
         };
+        const isTableRow = (l) => l.startsWith('|') && l.endsWith('|') && l.length > 2;
+        const isTableSep = (l) => /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?$/.test(l);
+        const splitRow = (l) => l.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+        const flushTable = () => {
+            if (!tableBuf.length) return;
+            // Table needs at least header + separator + 1 data row
+            const sepIdx = tableBuf.findIndex(isTableSep);
+            if (sepIdx < 1 || sepIdx >= tableBuf.length) {
+                // Not a real table — fall back to paragraph
+                tableBuf.forEach(l => para.push(l));
+                tableBuf = [];
+                return;
+            }
+            const headers = splitRow(tableBuf[0]);
+            const bodyRows = tableBuf.slice(sepIdx + 1).map(splitRow);
+            const th = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            const tb = bodyRows.map(r => '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>').join('');
+            out.push(`<table class="chat-table"><thead>${th}</thead><tbody>${tb}</tbody></table>`);
+            tableBuf = [];
+        };
         for (const raw of lines) {
             const line = raw.trim();
+            // Tables: collect consecutive |...| rows
+            if (isTableRow(line) || (tableBuf.length && isTableSep(line))) {
+                flushPara(); closeList();
+                tableBuf.push(line);
+                continue;
+            } else if (tableBuf.length) {
+                flushTable();
+            }
             if (!line) { flushPara(); closeList(); continue; }
+            const heading = line.match(/^(#{1,4})\s+(.*)$/);
+            if (heading) {
+                flushPara(); closeList();
+                const level = Math.min(6, heading[1].length + 2);  // ## → h4, ### → h5
+                out.push(`<h${level}>${heading[2]}</h${level}>`);
+                continue;
+            }
             const bullet = line.match(/^[-•*]\s+(.*)$/);
             if (bullet) {
                 flushPara();
@@ -2824,12 +3227,10 @@ const app = {
                 para.push(line);
             }
         }
-        flushPara(); closeList();
+        flushTable(); flushPara(); closeList();
         let html = out.join('');
-        // Apply renderContent inline-style transforms (math + bold) on the fragment.
-        // renderContent escapes HTML, so we run it per text segment instead — simpler to
-        // run on raw text and re-wrap. For chat, run on each <p>/<li> inner text.
-        html = html.replace(/<(p|li)>([\s\S]*?)<\/\1>/g, (_, tag, inner) => {
+        // Run inline transforms (math + bold + italic + code) on text-bearing tags.
+        html = html.replace(/<(p|li|h[1-6]|th|td)>([\s\S]*?)<\/\1>/g, (_, tag, inner) => {
             return `<${tag}>${this._renderChatInline(inner)}</${tag}>`;
         });
         return html;

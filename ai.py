@@ -567,7 +567,6 @@ def generate_flashcards(question, model_solution, topic_name, course_name, topic
 CHAT_MODEL = 'claude-sonnet-4-6'
 
 CAMBRIDGE_COURSE_URLS = {
-    'unix-tools':              'https://www.cl.cam.ac.uk/teaching/2425/UnixTools/',
     'data-science':            'https://www.cl.cam.ac.uk/teaching/2425/DataSci/',
     'econ-law-ethics':         'https://www.cl.cam.ac.uk/teaching/2425/EconLawEth/',
     'further-graphics':        'https://www.cl.cam.ac.uk/teaching/2425/FGraphics/',
@@ -606,6 +605,9 @@ def _build_course_summary(course_id: str = None) -> str:
             for topic in course['topics']:
                 tid = topic['id']
                 lines.append(f"- {topic['name']} [{tid}]")
+                subs = topic.get('subtopics', [])
+                if subs:
+                    lines.append(f"    · Subtopics: {', '.join(subs)}")
                 entry = notes.get(tid)
                 if entry:
                     facts = entry.get('key_facts', [])[:3]
@@ -626,7 +628,7 @@ def course_chat(message: str, course_id: 'str | None' = None, history: list = No
     scope_note = (
         f"The user is asking specifically about the '{course_id}' course."
         if course_id else
-        "The user has not specified a course — search across all 18 Part IB courses."
+        "The user has not specified a course — search across all 17 Part IB courses."
     )
 
     system = (
@@ -634,13 +636,18 @@ def course_chat(message: str, course_id: 'str | None' = None, history: list = No
         "Your job is to answer whether topics, concepts, or techniques are part of the courses, "
         "and to give brief explanations of where they fit. " + scope_note + "\n\n"
         "Use the course catalogue below as the authoritative source. Each topic is listed with its "
-        "course, a topic id in [brackets], and a few key facts pulled from the student's lecture notes. "
-        "If something is in the catalogue or notes, say so confidently and cite the course + topic. "
+        "course, a topic id in [brackets], its subtopics (after `· Subtopics:`), and — when notes exist — "
+        "key facts from the student's lecture notes (after `•`). A concept counts as covered if it matches "
+        "either the topic name OR any subtopic; do not say 'no notes on X' just because X only appears as a "
+        "subtopic. If something is in the catalogue, say so confidently and cite the course + topic. "
         "If it is NOT in the catalogue, say it does not appear to be in the Part IB courses, but mention "
         "if it is a prerequisite (Part IA) or extension topic. Be honest about uncertainty.\n\n"
-        "Keep answers concise (1-4 sentences usually). Use markdown sparingly. For maths, use $...$ or $$...$$ "
-        "for KaTeX. The Cambridge course pages (URLs in <angle brackets>) are the canonical syllabi if the "
-        "student wants to verify.\n\n"
+        "Keep answers concise (1-4 sentences usually). Use markdown sparingly. For maths, use $...$ for inline "
+        "and $$...$$ for display. Inside table cells and inline contexts, keep math on a single line — never use "
+        "\\\\ line breaks, \\begin{matrix}, \\begin{array}, or \\begin{cases} inside $...$ (they render as ugly "
+        "stacked fragments mid-paragraph). If you need a stacked layout, use a separate $$...$$ block instead. "
+        "The Cambridge course pages (URLs in <angle brackets>) are the canonical syllabi if the student wants to "
+        "verify.\n\n"
         "Be precise: do not conflate similarly-named concepts (e.g. 'Hoare logic' vs 'Hoare-style monitor "
         "semantics'). When the catalogue mentions a name in passing, say so but don't claim full coverage. "
         "If the catalogue does not contain a topic, do not invent that another Part IB course covers it — "

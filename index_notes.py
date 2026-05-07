@@ -49,7 +49,6 @@ COURSE_PDFS = {
     ],
     'intro-comp-arch': ['intro-comp-arch-slides.pdf'],
     'prog-c-cpp': ['prog-c-cpp-notes.pdf'],
-    'unix-tools': ['unix-tools-notes.pdf'],
     'compiler-construction': [
         'compiler-construction-lec1.pdf',
         'compiler-construction-lec2.pdf',
@@ -75,14 +74,20 @@ COURSE_PDFS = {
     'prolog': ['prolog-intro.pdf', 'prolog-slides.pdf'],
     'semantics': ['semantics-notes.pdf'],
     'complexity-theory': ['complexity-theory-notes.pdf'],
-    # No notes yet for: artificial-intelligence, cybersecurity, formal-models-language
+    'artificial-intelligence': ['artificial-intelligence-notes.pdf'],
+    'formal-models-language': [
+        'formal-models-grammars.pdf',
+        'formal-models-language-as-info.pdf',
+        'formal-models-formal-vs-natural.pdf',
+    ],
+    # No notes yet for: cybersecurity
 }
 
 # For large multi-PDF courses, cap how many PDFs to include to stay within token limits
 # (each PDF is read fully; big ones like further-graphics are ~5-15MB each)
 MAX_PDFS_PER_COURSE = 4
 # Skip any individual PDF larger than this (bytes) to avoid token overflows
-MAX_PDF_BYTES = 5 * 1024 * 1024  # 5 MB
+MAX_PDF_BYTES = 15 * 1024 * 1024  # 15 MB (text-extraction only, not uploaded)
 
 
 def load_pdf_b64(path: str) -> str:

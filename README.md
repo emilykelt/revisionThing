@@ -1,6 +1,6 @@
 # Cambridge Part IB CS Revision App
 
-A personal revision web app for the Cambridge Computer Science Part IB course (2025–26), covering all 18 examinable courses across Michaelmas, Lent, and Easter terms.
+A personal revision web app for the Cambridge Computer Science Part IB course (2025–26), covering all 17 examinable courses across Michaelmas, Lent, and Easter terms.
 
 ## Features
 
@@ -94,6 +94,6 @@ Typical refresh flow after Cambridge publishes a new exam year:
 
 | Term | Courses |
 |------|---------|
-| Michaelmas | Concurrent & Distributed Systems, Data Science, Economics Law & Ethics, Further Graphics, Introduction to Computer Architecture, Programming in C and C++, Unix Tools |
+| Michaelmas | Concurrent & Distributed Systems, Data Science, Economics Law & Ethics, Further Graphics, Introduction to Computer Architecture, Programming in C and C++ |
 | Lent | Compiler Construction, Computation Theory, Computer Networking, Further Human-Computer Interaction, Logic & Proof, Prolog, Semantics of Programming Languages |
 | Easter | Artificial Intelligence, Complexity Theory, Cybersecurity, Formal Models of Language |

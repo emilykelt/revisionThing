@@ -284,48 +284,6 @@
               "subtopics": ["Operator overloading", "Virtual functions", "Casts", "Multiple inheritance", "Virtual base classes", "Templates", "Meta-programming"]
             }
           ]
-        },
-        "unix-tools": {
-          "name": "Unix Tools",
-          "lecturer": "Dr Markus Kuhn",
-          "hours": 8,
-          "topics": [
-            {
-              "id": "ut-concepts",
-              "name": "Unix Concepts",
-              "subtopics": ["Unix history and philosophy", "Terminals", "IPC", "Shell fundamentals", "Environment variables", "File descriptors"]
-            },
-            {
-              "id": "ut-shell",
-              "name": "Shell Usage",
-              "subtopics": ["Redirection and pipes", "Filesystem navigation", "Argument expansion", "Quoting", "Job control", "Signals", "Process groups"]
-            },
-            {
-              "id": "ut-scripting",
-              "name": "Scripting",
-              "subtopics": ["Plain-text formats", "Shebang", "Shell control structures", "Shell functions", "Startup scripts"]
-            },
-            {
-              "id": "ut-text-tools",
-              "name": "Text, File and Networking Tools",
-              "subtopics": ["sed", "grep", "chmod", "find", "ssh", "rsync", "tar", "zip"]
-            },
-            {
-              "id": "ut-vcs",
-              "name": "Version Control",
-              "subtopics": ["diff and patch", "Git fundamentals", "Branching and merging"]
-            },
-            {
-              "id": "ut-dev-tools",
-              "name": "Software Development Tools",
-              "subtopics": ["C compiler", "Linker", "Debugger", "Make"]
-            },
-            {
-              "id": "ut-perl",
-              "name": "Perl",
-              "subtopics": ["Perl syntax", "Text manipulation", "Regular expressions in Perl"]
-            }
-          ]
         }
       }
     },
