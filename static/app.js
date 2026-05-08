@@ -3425,7 +3425,7 @@ const app = {
     },
 
     // Lightweight markdown for chat: headings, paragraphs, bullet lists, tables,
-    // **bold**, *italic*, `inline code`, and KaTeX math via renderContent.
+    // fenced code blocks, **bold**, *italic*, `inline code`, KaTeX math.
     _renderChatMarkdown(text) {
         if (!text) return '';
         const lines = text.split(/\n/);
@@ -3433,6 +3433,9 @@ const app = {
         let listOpen = false;
         let para = [];
         let tableBuf = [];
+        let codeOpen = false;
+        let codeBuf = [];
+        let codeLang = '';
         const flushPara = () => {
             if (para.length) {
                 out.push('<p>' + para.join(' ') + '</p>');
@@ -3442,15 +3445,20 @@ const app = {
         const closeList = () => {
             if (listOpen) { out.push('</ul>'); listOpen = false; }
         };
+        const escapeForCode = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const flushCode = () => {
+            const cls = codeLang ? ` class="language-${codeLang.replace(/[^a-zA-Z0-9_-]/g, '')}"` : '';
+            const body = codeBuf.map(escapeForCode).join('\n');
+            out.push(`<pre class="chat-pre"><code${cls}>${body}</code></pre>`);
+            codeBuf = []; codeLang = ''; codeOpen = false;
+        };
         const isTableRow = (l) => l.startsWith('|') && l.endsWith('|') && l.length > 2;
         const isTableSep = (l) => /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?$/.test(l);
         const splitRow = (l) => l.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
         const flushTable = () => {
             if (!tableBuf.length) return;
-            // Table needs at least header + separator + 1 data row
             const sepIdx = tableBuf.findIndex(isTableSep);
             if (sepIdx < 1 || sepIdx >= tableBuf.length) {
-                // Not a real table — fall back to paragraph
                 tableBuf.forEach(l => para.push(l));
                 tableBuf = [];
                 return;
@@ -3463,8 +3471,22 @@ const app = {
             tableBuf = [];
         };
         for (const raw of lines) {
+            // Fenced code block: ```lang ... ```
+            const fenceMatch = raw.match(/^\s*```\s*([a-zA-Z0-9_+-]*)\s*$/);
+            if (fenceMatch) {
+                if (codeOpen) {
+                    flushCode();
+                } else {
+                    flushPara(); closeList(); flushTable();
+                    codeOpen = true; codeLang = fenceMatch[1] || '';
+                }
+                continue;
+            }
+            if (codeOpen) {
+                codeBuf.push(raw);
+                continue;
+            }
             const line = raw.trim();
-            // Tables: collect consecutive |...| rows
             if (isTableRow(line) || (tableBuf.length && isTableSep(line))) {
                 flushPara(); closeList();
                 tableBuf.push(line);
@@ -3476,7 +3498,7 @@ const app = {
             const heading = line.match(/^(#{1,4})\s+(.*)$/);
             if (heading) {
                 flushPara(); closeList();
-                const level = Math.min(6, heading[1].length + 2);  // ## → h4, ### → h5
+                const level = Math.min(6, heading[1].length + 2);
                 out.push(`<h${level}>${heading[2]}</h${level}>`);
                 continue;
             }
@@ -3490,9 +3512,10 @@ const app = {
                 para.push(line);
             }
         }
+        if (codeOpen) flushCode();
         flushTable(); flushPara(); closeList();
         let html = out.join('');
-        // Run inline transforms (math + bold + italic + code) on text-bearing tags.
+        // Inline transforms only on text-bearing tags — never on <pre>/<code>.
         html = html.replace(/<(p|li|h[1-6]|th|td)>([\s\S]*?)<\/\1>/g, (_, tag, inner) => {
             return `<${tag}>${this._renderChatInline(inner)}</${tag}>`;
         });
