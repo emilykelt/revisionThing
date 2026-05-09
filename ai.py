@@ -230,6 +230,61 @@ def extract_json_from_response(text):
     return None
 
 
+_STACK_ENV_RE = re.compile(
+    r'\\begin\{(matrix|pmatrix|bmatrix|vmatrix|Vmatrix|aligned|align|cases|array|gathered)\*?\}'
+    r'(?:\{[^}]*\})?'
+    r'(.*?)'
+    r'\\end\{\1\*?\}',
+    re.DOTALL,
+)
+
+
+def _flatten_inline_math(text: str) -> str:
+    """Defensive sanitiser: when the AI puts a matrix/aligned/cases inside an
+    inline $...$ span, KaTeX renders each row stacked vertically, which
+    visually shatters the surrounding sentence. Inside inline math only,
+    unwrap those environments and replace `\\\\` row breaks with a single
+    space so the expression collapses onto one line. Display math ($$...$$)
+    is left alone — stacked layouts are fine there."""
+    if not text or '$' not in text:
+        return text
+
+    def fix_inline(match):
+        body = match.group(1)
+        # Unwrap stack environments, keeping their contents
+        body = _STACK_ENV_RE.sub(lambda m: m.group(2), body)
+        # Collapse explicit row breaks to spaces
+        body = re.sub(r'\\\\\s*', ' ', body)
+        # Squeeze whitespace
+        body = re.sub(r'\s+', ' ', body).strip()
+        return f'${body}$'
+
+    # First protect display math by tokenising
+    placeholders = []
+    def protect(m):
+        placeholders.append(m.group(0))
+        return f'\x00DISP{len(placeholders) - 1}\x00'
+
+    protected = re.sub(r'\$\$[\s\S]+?\$\$', protect, text)
+    fixed = re.sub(r'\$([^$\n]+?)\$', fix_inline, protected)
+    for i, raw in enumerate(placeholders):
+        fixed = fixed.replace(f'\x00DISP{i}\x00', raw)
+    return fixed
+
+
+def _flatten_question_math(q):
+    """Apply _flatten_inline_math across a generated question dict."""
+    if not isinstance(q, dict):
+        return q
+    if isinstance(q.get('question'), str):
+        q['question'] = _flatten_inline_math(q['question'])
+    if isinstance(q.get('parts'), list):
+        for p in q['parts']:
+            if isinstance(p, dict) and isinstance(p.get('text'), str):
+                p['text'] = _flatten_inline_math(p['text'])
+    return q
+
+
 def generate_question(topic_name, subtopics, course_name, confidence,
                       course_id=None, topic_id=None, attempt=0, ai_only=False):
 
@@ -272,6 +327,17 @@ def generate_question(topic_name, subtopics, course_name, confidence,
     ]
     style = style_hints[attempt % len(style_hints)]
 
+    math_rule = (
+        'Use LaTeX for any maths: inline with $...$ and display with $$...$$. '
+        'CRITICAL: keep inline math on one line — never use \\\\ row breaks, '
+        '\\begin{matrix}, \\begin{pmatrix}, \\begin{aligned}, \\begin{cases}, '
+        '\\begin{array}, or \\begin{gathered} inside $...$ (KaTeX stacks them '
+        'vertically and shatters the sentence). For expressions like sums, '
+        'products, or set definitions in prose, write $T_1 + T_2$ or '
+        '$\\{x : P(x)\\}$ inline. Only use $$...$$ blocks for genuinely '
+        'multi-line content (proof trees, derivations, multi-step equations).'
+    )
+
     if confidence < 0.3:
         difficulty = 'low'
         prompt = (
@@ -280,7 +346,7 @@ def generate_question(topic_name, subtopics, course_name, confidence,
             f'Focus subtopics: {", ".join(rotated[:4])}'
             f'{notes_snippet}\n\n'
             f'Marks must be 1–10 (simple recall = 2–3, explanation = 4–6, analysis = 7–10).\n'
-            f'Use LaTeX for any maths: inline with $...$ and display with $$...$$.\n'
+            f'{math_rule}\n'
             f'Respond ONLY with this JSON (no other text):\n'
             f'{{"question": "full question text", "difficulty": "low", "marks": 4}}'
         )
@@ -294,7 +360,7 @@ def generate_question(topic_name, subtopics, course_name, confidence,
             f'Focus subtopics: {", ".join(rotated[:6])}'
             f'{notes_snippet}\n\n'
             f'Each part must be answerable independently. Marks per part: 1–10. Total marks up to 20.\n'
-            f'Use LaTeX for any maths: inline with $...$ and display with $$...$$.\n'
+            f'{math_rule}\n'
             f'Respond ONLY with this JSON (no other text):\n'
             f'{{"parts": [{{"label": "a", "text": "question text for part a", "marks": 4}}, '
             f'{{"label": "b", "text": "question text for part b", "marks": 8}}], '
@@ -307,7 +373,7 @@ def generate_question(topic_name, subtopics, course_name, confidence,
     if result:
         if 'parts' in result:
             result['total_marks'] = sum(p.get('marks', 0) for p in result['parts'])
-        return result
+        return _flatten_question_math(result)
 
     # Fallback: single question
     return {
