@@ -182,14 +182,50 @@ def _repair_latex_backslashes(s: str) -> str:
     return ''.join(out)
 
 
+def _repair_unescaped_control_chars(s: str) -> str:
+    """Escape raw newlines, tabs, and CRs that appear inside JSON string values.
+    LLMs frequently emit `"feedback": "line one<NL>line two"` with a real newline
+    instead of `\\n`, which breaks json.loads (control chars are illegal in JSON
+    string literals)."""
+    out = []
+    in_string = False
+    escaped = False
+    for c in s:
+        if escaped:
+            out.append(c)
+            escaped = False
+            continue
+        if c == '\\':
+            out.append(c)
+            escaped = True
+            continue
+        if c == '"':
+            in_string = not in_string
+            out.append(c)
+            continue
+        if in_string and c == '\n':
+            out.append('\\n')
+        elif in_string and c == '\r':
+            out.append('\\r')
+        elif in_string and c == '\t':
+            out.append('\\t')
+        else:
+            out.append(c)
+    return ''.join(out)
+
+
 def _loads_relaxed(s: str):
-    try:
-        return json.loads(s)
-    except json.JSONDecodeError:
+    for repair in (
+        lambda x: x,
+        _repair_latex_backslashes,
+        _repair_unescaped_control_chars,
+        lambda x: _repair_unescaped_control_chars(_repair_latex_backslashes(x)),
+    ):
         try:
-            return json.loads(_repair_latex_backslashes(s))
+            return json.loads(repair(s))
         except json.JSONDecodeError:
-            return None
+            continue
+    return None
 
 
 def extract_json_array_from_response(text):
@@ -209,6 +245,21 @@ def extract_json_array_from_response(text):
         if result is not None:
             return result
     return None
+
+
+def _salvage_feedback(text):
+    """Last-resort extractor for when JSON parsing of an eval response fails.
+    Returns the value of the `feedback` field if we can find it textually, or
+    the response with the ```json fence stripped, so the UI never shows a raw
+    code-fenced JSON blob to the student."""
+    if not text:
+        return ''
+    fence = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', text, re.DOTALL)
+    body = fence.group(1) if fence else text
+    fb = re.search(r'"feedback"\s*:\s*"((?:[^"\\]|\\.)*)"', body, re.DOTALL)
+    if fb:
+        return fb.group(1).encode('utf-8').decode('unicode_escape', errors='replace')
+    return body.strip()
 
 
 def extract_json_from_response(text):
@@ -466,11 +517,14 @@ def evaluate_answer(question, answer, topic_name, course_name, part_label=None, 
                 result['marks_available'] = marks_available
             return result
 
+    # Parsing failed entirely. Try to salvage a readable feedback string from
+    # the raw response rather than dumping the broken JSON blob into the UI.
+    salvaged = _salvage_feedback(response)
     return {
         'score': 0.5,
         'marks_awarded': int(round(0.5 * marks_available)) if marks_available else None,
         'marks_available': marks_available,
-        'feedback': response or 'Unable to evaluate.',
+        'feedback': salvaged or 'Unable to evaluate.',
         'model_solution': '',
         'key_gaps': [],
     }
