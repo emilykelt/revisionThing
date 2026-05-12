@@ -638,10 +638,11 @@ const app = {
             container.appendChild(section);
 
             const grid = section.querySelector('.course-grid');
+            const taking = this._takingCourseIds();
             for (const [courseId, course] of Object.entries(term.courses)) {
                 const coursePct = Math.round(course.confidence * 100);
                 const card = document.createElement('div');
-                card.className = 'course-card';
+                card.className = 'course-card' + (taking && taking.has(courseId) ? ' course-card--taking' : '');
                 card.onclick = () => this.showCourse(courseId);
                 card.innerHTML = `
                     <div class="course-card-name">${course.name}</div>
@@ -2557,6 +2558,542 @@ const app = {
     },
 
 
+    // ---- Supervision Work ----
+    async showSupervisions() {
+        // Flush any pending autosave BEFORE wiping _currentSupo, otherwise the
+        // debounced timer fires after _currentSupo is null and silently drops
+        // the user's last keystrokes.
+        await this._flushSupoSave();
+        this.showView('supervision');
+        document.getElementById('supo-list-page').style.display = '';
+        document.getElementById('supo-editor-page').style.display = 'none';
+        this._currentSupo = null;
+        this._wireSupoUpload();
+        await this._loadSupoList();
+    },
+
+    async _flushSupoSave() {
+        if (!this._currentSupo) return;
+        clearTimeout(this._supoSaveTimer);
+        this._supoSaveTimer = null;
+        await this._saveSupo();
+    },
+
+    _wireSupoUpload() {
+        const input = document.getElementById('supo-pdf-input');
+        if (!input || input.dataset.wired === '1') return;
+        input.dataset.wired = '1';
+        input.addEventListener('change', async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            input.value = '';  // allow re-uploading same file later
+            await this._uploadSupervisionPdf(file);
+        });
+    },
+
+    async _loadSupoList() {
+        const listEl = document.getElementById('supo-list');
+        listEl.innerHTML = '<div class="loading"><span class="spinner"></span>Loading…</div>';
+        const res = await fetch('/api/supervision/sessions');
+        const data = await res.json();
+        const sessions = data.sessions || [];
+        if (!sessions.length) {
+            listEl.innerHTML = '<div class="empty-state">No supervisions yet. Upload a PDF to get started.</div>';
+            return;
+        }
+        listEl.innerHTML = sessions.map(s => `
+            <div class="supo-list-item" onclick="app.openSupervision('${this.escapeAttr(s.id)}')">
+                <div class="supo-list-item-main">
+                    <div class="supo-list-item-title">${this.escapeHtml(s.title)}</div>
+                    <div class="supo-list-item-meta">
+                        ${s.course_name ? this.escapeHtml(s.course_name) + ' · ' : ''}
+                        ${s.selected_count}/${s.question_count} selected
+                        · updated ${this.timeAgo(s.updated_at)}
+                    </div>
+                </div>
+                <button class="supo-list-delete" onclick="event.stopPropagation(); app.deleteSupervision('${this.escapeAttr(s.id)}')" title="Delete">×</button>
+            </div>
+        `).join('');
+    },
+
+    async _uploadSupervisionPdf(file) {
+        const overlay = document.getElementById('supo-parsing-overlay');
+        overlay.style.display = '';
+        try {
+            const fd = new FormData();
+            fd.append('pdf', file);
+            const res = await fetch('/api/supervision/parse', { method: 'POST', body: fd });
+            const parsed = await res.json();
+            if (!res.ok || !parsed.questions) {
+                alert(parsed.error || 'Failed to parse PDF');
+                return;
+            }
+            if (!parsed.questions.length) {
+                const msg = parsed._parse_error || 'No questions were extracted from this PDF.';
+                if (!confirm(`${msg}\n\nCreate an empty supervision anyway so you can paste questions in?`)) return;
+            }
+            // Build session record
+            const questions = (parsed.questions || []).map((q, i) => ({
+                id: `q${i}-${Date.now()}`,
+                label: q.label || String(i + 1),
+                text: q.text || '',
+                parts: (q.parts || []).map((p, j) => ({
+                    id: `p${i}-${j}`,
+                    label: p.label || '',
+                    text: p.text || '',
+                    answer: '',
+                })),
+                selected: false,
+                answer: '',
+                flags: null,
+            }));
+            const created = await fetch('/api/supervision/sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: parsed.title || file.name.replace(/\.pdf$/i, ''),
+                    course_name: parsed.course_hint || '',
+                    questions,
+                }),
+            });
+            const session = await created.json();
+            await this.openSupervision(session.id);
+        } finally {
+            overlay.style.display = 'none';
+        }
+    },
+
+    async openSupervision(supoId) {
+        const res = await fetch(`/api/supervision/sessions/${supoId}`);
+        if (!res.ok) {
+            alert('Failed to load supervision.');
+            return;
+        }
+        const session = await res.json();
+        this._currentSupo = session;
+        document.getElementById('supo-list-page').style.display = 'none';
+        document.getElementById('supo-editor-page').style.display = '';
+        document.getElementById('supo-title').value = session.title || '';
+        document.getElementById('supo-course').value = session.course_name || '';
+        this._wireSupoMetaInputs();
+        this._renderSupoQuestions();
+        this._wireSupoUnloadGuard();
+    },
+
+    _wireSupoUnloadGuard() {
+        if (this._supoUnloadWired) return;
+        this._supoUnloadWired = true;
+
+        // Tab close / reload: sendBeacon survives the unload, unlike fetch().
+        window.addEventListener('beforeunload', () => {
+            if (!this._currentSupo) return;
+            clearTimeout(this._supoSaveTimer);
+            this._syncSupoImagesFromStore();
+            try {
+                const blob = new Blob([JSON.stringify(this._currentSupo)], { type: 'application/json' });
+                navigator.sendBeacon('/api/supervision/sessions', blob);
+            } catch (_) {}
+        });
+
+        // Tab switched away / app backgrounded on iOS: flush immediately.
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && this._currentSupo) {
+                this._flushSupoSave();
+            }
+        });
+    },
+
+    async deleteSupervision(supoId) {
+        if (!confirm('Delete this supervision draft? This cannot be undone.')) return;
+        await fetch(`/api/supervision/sessions/${supoId}`, { method: 'DELETE' });
+        await this._loadSupoList();
+    },
+
+    _wireSupoMetaInputs() {
+        const title = document.getElementById('supo-title');
+        const course = document.getElementById('supo-course');
+        const onChange = () => {
+            if (!this._currentSupo) return;
+            this._currentSupo.title = title.value;
+            this._currentSupo.course_name = course.value;
+            this._scheduleSupoSave();
+        };
+        title.oninput = onChange;
+        course.oninput = onChange;
+    },
+
+    _renderSupoQuestions() {
+        const supo = this._currentSupo;
+        if (!supo) return;
+
+        const pickBar = document.getElementById('supo-pick-bar');
+        const selectedCount = supo.questions.filter(q => q.selected).length;
+        pickBar.innerHTML = `
+            <div class="supo-pick-summary">
+                <strong>${selectedCount}</strong> of ${supo.questions.length} questions selected
+            </div>
+            <div class="supo-pick-actions">
+                <button class="btn btn-ghost" onclick="app.supoSelectAll(true)">Select all</button>
+                <button class="btn btn-ghost" onclick="app.supoSelectAll(false)">Clear</button>
+            </div>
+        `;
+
+        // Set up a synthetic currentQuestion so the math pad can pick relevant symbols
+        // from the supervision course/title context.
+        this.currentQuestion = {
+            course_name: supo.course_name || '',
+            course_id: '',
+            topic_name: supo.title || '',
+            question: supo.questions.map(q => q.text).join(' ').slice(0, 4000),
+            parts: [],
+        };
+
+        const container = document.getElementById('supo-questions');
+        container.innerHTML = supo.questions.map((q, idx) => this._renderSupoQuestion(q, idx)).join('');
+        // Render math in the question text
+        container.querySelectorAll('[data-supo-math]').forEach(el => {
+            el.innerHTML = this.renderContent(el.dataset.supoMath || '');
+        });
+        // Wire textareas — same affordances as past-paper answers
+        if (!this._answerImages) this._answerImages = {};
+        container.querySelectorAll('textarea[data-supo-answer]').forEach(ta => {
+            const qIdx = +ta.dataset.qidx;
+            const pIdx = ta.dataset.pidx;
+            const isPart = pIdx !== undefined && pIdx !== '';
+            const target = isPart ? supo.questions[qIdx].parts[+pIdx] : supo.questions[qIdx];
+
+            // Pre-populate image store from saved draft so thumbs reappear after reload
+            const storeKey = this._imageStoreKey(ta);
+            if (target.images && target.images.length) {
+                this._answerImages[storeKey] = target.images.map(im => ({
+                    id: im.id || ('img_' + Math.random().toString(36).slice(2, 9)),
+                    data: im.data,
+                    media_type: im.media_type,
+                    dataUrl: `data:${im.media_type};base64,${im.data}`,
+                }));
+            }
+
+            ta.addEventListener('input', (e) => {
+                target.answer = e.target.value;
+                this._scheduleSupoSave();
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+            });
+            // Clicking away from a textarea immediately flushes, so brief
+            // pauses + navigation actions never leave keystrokes unsaved.
+            ta.addEventListener('blur', () => this._flushSupoSave());
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+
+            // Attach the math pad + image paste from the past-paper answer flow
+            this._attachMathPad(ta);
+            this._attachImagePaste(ta);
+
+            // Render any existing thumbnails + schedule a save after a paste so
+            // newly-attached images get persisted to the draft.
+            this._renderAnswerImageThumbs(ta);
+            ta.addEventListener('paste', () => {
+                setTimeout(() => this._scheduleSupoSave(), 400);
+            });
+            // Removing a thumb triggers a click on the .answer-image-remove inside
+            // the preview; catch that to re-sync too.
+            const preview = ta.parentElement.querySelector(':scope > .answer-image-preview');
+            if (preview && !preview.dataset.supoWired) {
+                preview.dataset.supoWired = '1';
+                preview.addEventListener('click', (e) => {
+                    if (e.target.closest('.answer-image-remove')) {
+                        setTimeout(() => this._scheduleSupoSave(), 50);
+                    }
+                });
+            }
+        });
+        // Wire selection checkboxes
+        container.querySelectorAll('input[data-supo-select]').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                const qIdx = +e.target.dataset.qidx;
+                supo.questions[qIdx].selected = e.target.checked;
+                this._renderSupoQuestions();
+                this._scheduleSupoSave();
+            });
+        });
+    },
+
+    _syncSupoImagesFromStore() {
+        // Walk every supo answer textarea and copy this._answerImages[key] back
+        // onto the corresponding answer/part record so it saves with the draft.
+        const supo = this._currentSupo;
+        if (!supo) return;
+        document.querySelectorAll('textarea[data-supo-answer]').forEach(ta => {
+            const qIdx = +ta.dataset.qidx;
+            const pIdx = ta.dataset.pidx;
+            const target = (pIdx === undefined || pIdx === '')
+                ? supo.questions[qIdx]
+                : supo.questions[qIdx].parts[+pIdx];
+            const key = this._imageStoreKey(ta);
+            const imgs = (this._answerImages && this._answerImages[key]) || [];
+            target.images = imgs.map(im => ({
+                id: im.id, data: im.data, media_type: im.media_type,
+            }));
+        });
+    },
+
+    _renderSupoQuestion(q, idx) {
+        const partsHtml = (q.parts || []).map((p, pIdx) => `
+            <div class="supo-part">
+                <div class="supo-part-label">(${this.escapeHtml(p.label)})</div>
+                <div class="supo-part-text" data-supo-math="${this.escapeAttr(p.text)}"></div>
+                ${q.selected ? `
+                    <div class="answer-area">
+                        <label>Answer to (${this.escapeHtml(p.label)})</label>
+                        <textarea class="answer-textarea supo-answer-textarea"
+                            data-supo-answer data-qidx="${idx}" data-pidx="${pIdx}"
+                            placeholder="Type your answer to (${this.escapeAttr(p.label)})…"
+                            autocomplete="off" spellcheck="true">${this.escapeHtml(p.answer || '')}</textarea>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+
+        const mainAnswer = (q.parts && q.parts.length) ? '' : `
+            ${q.selected ? `
+                <div class="answer-area">
+                    <label>Your answer</label>
+                    <textarea class="answer-textarea supo-answer-textarea"
+                        data-supo-answer data-qidx="${idx}" data-pidx=""
+                        placeholder="Type your answer…"
+                        autocomplete="off" spellcheck="true">${this.escapeHtml(q.answer || '')}</textarea>
+                </div>
+            ` : ''}
+        `;
+
+        const flagsHtml = (q.flags && q.flags.flags && q.flags.flags.length)
+            ? `<div class="supo-flags supo-flags-${this.escapeAttr(q.flags.overall || 'minor')}">
+                 <div class="supo-flags-title">⚐ Provisional check (${this.escapeHtml(q.flags.overall || '')})</div>
+                 <ul>${q.flags.flags.map(f => `<li>${this.escapeHtml(f)}</li>`).join('')}</ul>
+               </div>`
+            : (q.flags && q.flags.overall === 'ok'
+                ? `<div class="supo-flags supo-flags-ok">✓ Provisional check found no glaring issues.</div>`
+                : '');
+
+        return `
+            <div class="supo-question ${q.selected ? 'supo-question--selected' : ''}">
+                <div class="supo-question-header">
+                    <label class="supo-question-pick">
+                        <input type="checkbox" data-supo-select data-qidx="${idx}" ${q.selected ? 'checked' : ''}>
+                        <span>Q${this.escapeHtml(q.label)}</span>
+                    </label>
+                    ${q.selected ? `<button class="btn btn-ghost supo-check-btn" onclick="app.supoCheckOne(${idx})">⚐ Check</button>` : ''}
+                </div>
+                <div class="supo-question-text" data-supo-math="${this.escapeAttr(q.text)}"></div>
+                ${partsHtml}
+                ${mainAnswer}
+                ${flagsHtml}
+            </div>
+        `;
+    },
+
+    supoSelectAll(state) {
+        if (!this._currentSupo) return;
+        this._currentSupo.questions.forEach(q => { q.selected = !!state; });
+        this._renderSupoQuestions();
+        this._scheduleSupoSave();
+    },
+
+    _scheduleSupoSave() {
+        clearTimeout(this._supoSaveTimer);
+        const status = document.getElementById('supo-save-status');
+        if (status) status.textContent = 'Saving…';
+        this._supoSaveTimer = setTimeout(() => this._saveSupo(), 800);
+    },
+
+    async _saveSupo() {
+        if (!this._currentSupo) {
+            // Reset the status indicator so it doesn't stay stuck on "Saving…"
+            // when the user navigates away mid-debounce.
+            const status = document.getElementById('supo-save-status');
+            if (status) status.textContent = '';
+            return;
+        }
+        this._syncSupoImagesFromStore();
+        const status = document.getElementById('supo-save-status');
+        try {
+            const res = await fetch('/api/supervision/sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this._currentSupo),
+            });
+            const saved = await res.json();
+            this._currentSupo.id = saved.id;
+            this._currentSupo.updated_at = saved.updated_at;
+            if (status) status.textContent = 'All changes saved';
+        } catch (e) {
+            if (status) status.textContent = 'Save failed — retrying…';
+            setTimeout(() => this._saveSupo(), 3000);
+        }
+    },
+
+    async supoCheckOne(qIdx) {
+        const supo = this._currentSupo;
+        if (!supo) return;
+        const q = supo.questions[qIdx];
+        const parts = q.parts || [];
+        // Combine parts + answers for the check
+        let qText = q.text;
+        let aText = q.answer || '';
+        if (parts.length) {
+            qText = q.text + '\n\n' + parts.map(p => `(${p.label}) ${p.text}`).join('\n\n');
+            aText = parts.map(p => `(${p.label}) ${p.answer || '(blank)'}`).join('\n\n');
+        }
+        q.flags = { overall: 'checking', flags: ['Checking…'] };
+        this._renderSupoQuestions();
+        try {
+            const res = await fetch('/api/supervision/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question_text: qText,
+                    answer_text: aText,
+                    course_name: supo.course_name,
+                    sheet_title: supo.title,
+                }),
+            });
+            q.flags = await res.json();
+        } catch (e) {
+            q.flags = { overall: 'minor', flags: ['Check failed: ' + e.message] };
+        }
+        this._renderSupoQuestions();
+        this._scheduleSupoSave();
+    },
+
+    async supoCheckAll() {
+        const supo = this._currentSupo;
+        if (!supo) return;
+        const selected = supo.questions.map((q, i) => ({ q, i })).filter(x => x.q.selected);
+        if (!selected.length) { alert('Select at least one question to check.'); return; }
+        for (const { i } of selected) {
+            await this.supoCheckOne(i);
+        }
+    },
+
+    supoGeneratePdf() {
+        const supo = this._currentSupo;
+        if (!supo) return;
+        const selected = supo.questions.filter(q => q.selected);
+        if (!selected.length) { alert('Select at least one question first.'); return; }
+
+        const today = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+        const studentName = supo.student_name || 'Emily Kelt';
+        const college = supo.college || 'Pembroke College';
+        const course = supo.course_name || '';
+        const title = supo.title || 'Supervision';
+
+        // Make sure the latest paste/thumb-removal is reflected before we serialise
+        this._syncSupoImagesFromStore();
+
+        const renderAnswer = (text, images) => {
+            const hasText = text && text.trim();
+            const hasImages = images && images.length;
+            if (!hasText && !hasImages) return '<em class="supo-print-blank">(no answer)</em>';
+            const paras = hasText
+                ? text.split(/\n\n+/).map(p =>
+                    `<p>${this.renderContent(p.replace(/\n/g, '  \n'))}</p>`).join('')
+                : '';
+            const imgHtml = hasImages
+                ? '<div class="supo-print-images">' + images.map(im =>
+                    `<img src="data:${this.escapeAttr(im.media_type)};base64,${im.data}">`).join('') + '</div>'
+                : '';
+            return paras + imgHtml;
+        };
+
+        const qHtml = selected.map(q => {
+            const partsHtml = (q.parts || []).map(p => `
+                <div class="supo-print-part">
+                    <div class="supo-print-part-text"><strong>(${this.escapeHtml(p.label)})</strong> ${this.renderContent(p.text)}</div>
+                    <div class="supo-print-answer-label">Answer:</div>
+                    <div class="supo-print-answer">${renderAnswer(p.answer, p.images)}</div>
+                </div>
+            `).join('');
+            return `
+                <div class="supo-print-question">
+                    <h3>Question ${this.escapeHtml(q.label)}</h3>
+                    <div class="supo-print-q-text">${this.renderContent(q.text)}</div>
+                    ${partsHtml}
+                    ${(!q.parts || !q.parts.length) ? `
+                        <div class="supo-print-answer-label">Answer:</div>
+                        <div class="supo-print-answer">${renderAnswer(q.answer, q.images)}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        const html = `<!DOCTYPE html><html><head>
+            <meta charset="UTF-8">
+            <title>${this.escapeHtml(title)} — ${this.escapeHtml(studentName)}</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+            <style>
+                body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; max-width: 720px; margin: 2.5rem auto; padding: 0 1.5rem; color: #161616; line-height: 1.45; }
+                .supo-print-header { text-align: center; margin-bottom: 1.75rem; border-bottom: 2px solid #161616; padding-bottom: 1rem; }
+                .supo-print-header h1 { font-size: 1.25rem; margin: 0 0 0.35rem; }
+                .supo-print-header .meta { font-size: 0.8rem; color: #444; }
+                .supo-print-question { margin: 1.25rem 0; page-break-inside: avoid; break-inside: avoid; }
+                .supo-print-question h3 { font-size: 0.95rem; border-bottom: 1px solid #ccc; padding-bottom: 0.2rem; margin: 0 0 0.4rem; }
+                .supo-print-q-text { font-style: italic; font-size: 0.92rem; background: #faf7f2; padding: 0.5rem 0.75rem; border-left: 2px solid #161616; margin: 0.35rem 0 0.6rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                .supo-print-part { margin: 0.65rem 0 0.85rem 1rem; }
+                .supo-print-part-text { font-style: italic; font-size: 0.9rem; margin-bottom: 0.3rem; }
+                .supo-print-answer-label { font-weight: 600; font-size: 0.75rem; color: #555; margin: 0.25rem 0 0.1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+                .supo-print-answer { margin: 0.1rem 0 0.65rem; font-size: 0.92rem; }
+                .supo-print-answer p { margin: 0.4em 0; }
+                .supo-print-blank { color: #999; }
+                .supo-print-images { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+                .supo-print-images img { max-width: 100%; max-height: 320px; border: 1px solid #ddd; border-radius: 3px; page-break-inside: avoid; break-inside: avoid; }
+                pre, code { font-family: 'Menlo', monospace; background: #f4f1ec; padding: 0.05rem 0.3rem; border-radius: 3px; font-size: 0.85em; }
+                .katex { white-space: nowrap; }
+                @media print {
+                    html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    body { margin: 1.5cm; max-width: none; }
+                    .supo-print-question { page-break-inside: avoid; break-inside: avoid; }
+                    .supo-no-print { display: none !important; }
+                }
+                .supo-print-toolbar { position: sticky; top: 0; background: #fff; padding: 0.75rem 0; border-bottom: 1px solid #eee; margin-bottom: 1.5rem; text-align: right; z-index: 100; }
+                .supo-print-toolbar button { font: inherit; padding: 0.5rem 1.2rem; background: #161616; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+            </style>
+        </head><body>
+            <div class="supo-print-toolbar supo-no-print">
+                <button onclick="window.print()">Save as PDF / Print</button>
+            </div>
+            <div class="supo-print-header">
+                <h1>${this.escapeHtml(title)}</h1>
+                <div class="meta">
+                    ${this.escapeHtml(studentName)} · ${this.escapeHtml(college)}<br>
+                    ${course ? this.escapeHtml(course) + ' · ' : ''}${today}
+                </div>
+            </div>
+            ${qHtml}
+            <script>
+                // Wait for KaTeX CSS + any images to load before showing the
+                // print dialog. Some browsers print a blank page if window.print()
+                // fires before stylesheets and images are ready.
+                window.addEventListener('load', () => {
+                    setTimeout(() => { try { window.focus(); window.print(); } catch (e) {} }, 400);
+                });
+            <\/script>
+        </body></html>`;
+
+        // Use a Blob URL instead of window.open('', '_blank') + document.write().
+        // The latter causes a known bug where the print dialog renders a blank
+        // page in Chrome/Safari, even though the content displays correctly on
+        // screen. Navigating the new window to a real (blob) URL avoids it.
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const w = window.open(url, '_blank');
+        if (!w) {
+            alert('Please allow popups to generate the PDF.');
+            URL.revokeObjectURL(url);
+            return;
+        }
+        // Revoke after the new window has had time to fetch and parse the blob.
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    },
+
     // ---- Exam Planner ----
     showPlanner() {
         this.showView('planner');
@@ -3167,6 +3704,11 @@ const app = {
     MAX_IMAGE_DIMENSION: 1280,  // Resize larger pastes; tripos diagrams rarely need more.
 
     _imageStoreKey(textarea) {
+        if (textarea.dataset.supoAnswer !== undefined) {
+            const q = textarea.dataset.qidx ?? '';
+            const p = textarea.dataset.pidx ?? '';
+            return `supo-${q}-${p}`;
+        }
         return textarea.id || textarea.dataset.label || 'default';
     },
 

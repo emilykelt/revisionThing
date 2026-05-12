@@ -842,3 +842,129 @@ def weekly_retrospective(history_entries: list, days: int = 7) -> dict:
     except Exception as e:
         print(f'[claude] weekly_retrospective error: {e}')
         return {'summary': None, 'error': str(e)}
+
+
+# ---- Supervision work parsing & checking ----
+
+def parse_supervision_questions(pdf_text, filename=None):
+    """Given raw text from a supervision PDF, extract a structured list of
+    questions. Returns {'title', 'course_hint', 'questions': [{label, text, parts: [...]}]}.
+    `parts` is optional — only populated for multi-part questions."""
+    prompt = (
+        'You are parsing a Cambridge Computer Science supervision exercise sheet. '
+        'Extract every numbered exercise question into structured JSON.\n\n'
+        f'Filename: {filename or "unknown"}\n\n'
+        'Sheet text:\n"""\n'
+        f'{pdf_text[:60000]}\n'
+        '"""\n\n'
+        'Output ONLY JSON with this exact shape — use these EXACT keys:\n'
+        '{\n'
+        '  "title": "short sheet title (e.g. \'Artificial Intelligence — Exercises\')",\n'
+        '  "course_hint": "course name if obvious, else empty",\n'
+        '  "questions": [\n'
+        '    {"label": "1", "text": "full question text", "parts": []},\n'
+        '    {"label": "2", "text": "preamble before parts", "parts": [\n'
+        '       {"label": "a", "text": "part (a) text"},\n'
+        '       {"label": "b", "text": "part (b) text"}\n'
+        '    ]}\n'
+        '  ]\n'
+        '}\n\n'
+        'Critical rules:\n'
+        '- Use the key name `label` (NOT `id`, NOT `number`, NOT `section`).\n'
+        '- For sheets with numbered sections containing numbered questions, use a '
+        '  composite label like "3.1", "3.2" (section.question) so they remain '
+        '  uniquely identifiable.\n'
+        '- Preserve LaTeX maths verbatim ($...$, $$...$$).\n'
+        '- Include any setup context (definitions, given graphs, formulas) inside the '
+        '  question text so it can be answered standalone.\n'
+        '- If a question has no sub-parts, set "parts" to an empty array [].\n'
+        '- Do NOT include section headings as standalone questions.\n'
+        '- Do NOT include solutions/answers if the sheet contains them — only questions.\n'
+        '- Output JSON ONLY, no preamble, no trailing commentary.'
+    )
+    response = call_claude(prompt, model=EVAL_MODEL, max_tokens=16000)
+    result = extract_json_from_response(response)
+    if not result or 'questions' not in result or not isinstance(result.get('questions'), list):
+        return {
+            'title': filename or 'Supervision',
+            'course_hint': '',
+            'questions': [],
+            '_parse_error': 'Could not extract structured questions from this PDF.',
+            '_raw_preview': (response or '')[:400],
+        }
+
+    def _label(item, fallback=''):
+        # Accept label / id / number / num — first non-empty wins
+        for k in ('label', 'id', 'number', 'num'):
+            v = item.get(k)
+            if v not in (None, ''):
+                return str(v)
+        return fallback
+
+    questions = []
+    for i, q in enumerate(result.get('questions', [])):
+        if not isinstance(q, dict):
+            continue
+        parts_raw = q.get('parts') or q.get('subparts') or []
+        if not isinstance(parts_raw, list):
+            parts_raw = []
+        parts = []
+        for j, p in enumerate(parts_raw):
+            if not isinstance(p, dict):
+                continue
+            parts.append({
+                'label': _label(p, fallback=chr(ord('a') + j)),
+                'text': p.get('text') or p.get('question') or '',
+            })
+        questions.append({
+            'label': _label(q, fallback=str(i + 1)),
+            'text': q.get('text') or q.get('question') or '',
+            'parts': parts,
+        })
+
+    return {
+        'title': result.get('title') or (filename or 'Supervision'),
+        'course_hint': result.get('course_hint') or result.get('course') or '',
+        'questions': questions,
+    }
+
+
+def provisional_check_answer(question_text, answer_text, course_name=None, sheet_title=None):
+    """Lightweight sanity check on a supervision answer — flag glaring errors,
+    missed parts, or off-topic answers, but DO NOT mark or give a full critique.
+    Returns {'flags': [str], 'overall': str}."""
+    if not (answer_text or '').strip():
+        return {'flags': ['No answer written yet.'], 'overall': 'empty'}
+
+    context = []
+    if sheet_title:
+        context.append(f'Supervision: {sheet_title}')
+    if course_name:
+        context.append(f'Course: {course_name}')
+    context_block = ' | '.join(context) + '\n' if context else ''
+
+    prompt = (
+        'Cambridge CS supervisor doing a quick provisional sanity-check on a '
+        'student\'s draft supervision answer before they submit it. You are NOT '
+        'marking — you are flagging glaring problems only.\n\n'
+        f'{context_block}'
+        f'Question:\n"""\n{question_text}\n"""\n\n'
+        f'Student draft answer:\n"""\n{answer_text}\n"""\n\n'
+        'Flag ONLY things that are clearly wrong, clearly missing, or clearly '
+        'off-topic. Things to look for:\n'
+        '- factual / technical errors (e.g. wrong definition, wrong complexity class)\n'
+        '- missed sub-parts of the question\n'
+        '- the answer addresses a different question than asked\n'
+        '- a critical step or justification is missing\n\n'
+        'Do NOT comment on style, length, or polish. If the answer looks broadly '
+        'sound, return an empty flags array.\n\n'
+        'Respond ONLY with JSON:\n'
+        '{"flags": ["short specific issue", "another issue"], "overall": "ok" | "minor" | "major"}'
+    )
+    response = call_claude(prompt, model=EVAL_MODEL, max_tokens=600)
+    result = extract_json_from_response(response)
+    if not result:
+        return {'flags': [], 'overall': 'ok'}
+    flags = result.get('flags') or []
+    overall = result.get('overall') or 'ok'
+    return {'flags': [str(f) for f in flags][:8], 'overall': overall}

@@ -45,6 +45,9 @@
                 <button class="nav-btn" data-view="planner" onclick="app.showPlanner()">
                     <span class="nav-icon">☑</span>Planner
                 </button>
+                <button class="nav-btn" data-view="supervision" onclick="app.showSupervisions()">
+                    <span class="nav-icon">✦</span>Supervisions
+                </button>
             </nav>
         </div>
     </header>
@@ -201,6 +204,43 @@
             <button class="btn btn-secondary" id="history-load-more" onclick="app.loadMoreHistory()" style="display:none">Load more</button>
         </div>
 
+
+        <!-- Supervision View -->
+        <div id="view-supervision" class="view">
+            <div id="supo-list-page">
+                <div class="supo-list-header">
+                    <h2 class="section-title">Supervisions</h2>
+                    <label class="btn btn-primary supo-upload-btn">
+                        <input type="file" id="supo-pdf-input" accept="application/pdf" style="display:none">
+                        <span>+ New from PDF</span>
+                    </label>
+                </div>
+                <p class="supo-subtitle">Upload a supervision exercise sheet to draft answers. Work is saved automatically and exported as a PDF when you're done.</p>
+                <div id="supo-list"></div>
+            </div>
+
+            <div id="supo-editor-page" style="display:none">
+                <button class="back-btn" onclick="app.showSupervisions()">&larr; Back to all supervisions</button>
+                <div class="supo-editor-meta">
+                    <input id="supo-title" class="supo-title-input" placeholder="Supervision title">
+                    <input id="supo-course" class="supo-course-input" placeholder="Course (e.g. Complexity Theory)">
+                    <span class="supo-save-status" id="supo-save-status">All changes saved</span>
+                </div>
+                <div class="supo-pick-bar" id="supo-pick-bar"></div>
+                <div id="supo-questions"></div>
+                <div class="supo-editor-actions">
+                    <button class="btn btn-secondary" onclick="app.supoCheckAll()">⚐ Provisional check (all selected)</button>
+                    <button class="btn btn-primary" onclick="app.supoGeneratePdf()">↓ Generate PDF</button>
+                </div>
+            </div>
+
+            <div id="supo-parsing-overlay" class="supo-parsing-overlay" style="display:none">
+                <div class="supo-parsing-card">
+                    <span class="spinner"></span>
+                    <p>Reading your supervision sheet…</p>
+                </div>
+            </div>
+        </div>
 
         <!-- Exam Planner View -->
         <div id="view-planner" class="view">

@@ -10,7 +10,11 @@ from data import (
     get_dashboard_data, record_answer, record_mcq_answer, select_session_topics,
     save_knowledge, save_json, KNOWLEDGE_FILE,
 )
-from ai import generate_question, evaluate_answer, generate_mcqs, generate_hint, generate_flashcards, course_chat, weekly_retrospective
+from ai import (
+    generate_question, evaluate_answer, generate_mcqs, generate_hint,
+    generate_flashcards, course_chat, weekly_retrospective,
+    parse_supervision_questions, provisional_check_answer,
+)
 from config import DEFAULT_CONFIDENCE, DATA_DIR
 
 app = Flask(__name__)
@@ -899,6 +903,164 @@ def api_retrospective_generate():
     }
     _save_retro_cache(cache)
     return jsonify(cache)
+
+
+# ---- Supervision Work ----
+
+SUPERVISIONS_DIR = os.path.join(DATA_DIR, 'supervisions')
+
+
+def _ensure_supervisions_dir():
+    os.makedirs(SUPERVISIONS_DIR, exist_ok=True)
+
+
+def _supervision_path(supo_id):
+    safe = re.sub(r'[^a-zA-Z0-9_-]', '', supo_id)
+    if not safe:
+        return None
+    return os.path.join(SUPERVISIONS_DIR, f'{safe}.json')
+
+
+def _list_supervisions():
+    _ensure_supervisions_dir()
+    out = []
+    for fn in os.listdir(SUPERVISIONS_DIR):
+        if not fn.endswith('.json'):
+            continue
+        try:
+            with open(os.path.join(SUPERVISIONS_DIR, fn)) as f:
+                data = json.load(f)
+            out.append({
+                'id': data.get('id'),
+                'title': data.get('title') or 'Untitled supervision',
+                'course_name': data.get('course_name', ''),
+                'created_at': data.get('created_at'),
+                'updated_at': data.get('updated_at'),
+                'question_count': len(data.get('questions', [])),
+                'selected_count': sum(1 for q in data.get('questions', []) if q.get('selected')),
+            })
+        except Exception:
+            continue
+    out.sort(key=lambda s: s.get('updated_at') or '', reverse=True)
+    return out
+
+
+def _pdf_to_text(pdf_bytes):
+    """Run pdftotext on the bytes; return extracted text or empty string."""
+    import subprocess
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+        tmp.write(pdf_bytes)
+        tmp_path = tmp.name
+    try:
+        result = subprocess.run(
+            ['pdftotext', '-layout', tmp_path, '-'],
+            capture_output=True, timeout=30,
+        )
+        return result.stdout.decode('utf-8', errors='replace')
+    except Exception as e:
+        print(f'[supervision] pdftotext failed: {e}')
+        return ''
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except Exception:
+            pass
+
+
+@app.route('/api/supervision/parse', methods=['POST'])
+def api_supervision_parse():
+    """Accept a PDF upload, extract questions via LLM."""
+    if 'pdf' not in request.files:
+        return jsonify({'error': 'No PDF file uploaded'}), 400
+    f = request.files['pdf']
+    pdf_bytes = f.read()
+    if not pdf_bytes:
+        return jsonify({'error': 'Empty PDF'}), 400
+
+    text = _pdf_to_text(pdf_bytes)
+    if not text.strip():
+        return jsonify({'error': 'Could not extract text from PDF'}), 400
+
+    parsed = parse_supervision_questions(text, filename=f.filename)
+    return jsonify(parsed)
+
+
+@app.route('/api/supervision/sessions', methods=['GET'])
+def api_supervision_list():
+    return jsonify({'sessions': _list_supervisions()})
+
+
+@app.route('/api/supervision/sessions', methods=['POST'])
+def api_supervision_save():
+    """Create or update a supervision session."""
+    data = request.get_json() or {}
+    supo_id = data.get('id')
+    if not supo_id:
+        # Generate an id: timestamp + slug of title
+        slug = re.sub(r'[^a-z0-9]+', '-', (data.get('title') or 'supo').lower()).strip('-')[:30]
+        supo_id = f'{datetime.now().strftime("%Y%m%d-%H%M%S")}-{slug}'
+
+    path = _supervision_path(supo_id)
+    if not path:
+        return jsonify({'error': 'Invalid id'}), 400
+
+    _ensure_supervisions_dir()
+
+    existing = {}
+    if os.path.exists(path):
+        try:
+            with open(path) as fp:
+                existing = json.load(fp)
+        except Exception:
+            existing = {}
+
+    now = datetime.now().isoformat()
+    record = {
+        'id': supo_id,
+        'title': data.get('title', existing.get('title', 'Supervision')),
+        'course_name': data.get('course_name', existing.get('course_name', '')),
+        'student_name': data.get('student_name', existing.get('student_name', 'Emily Kelt')),
+        'college': data.get('college', existing.get('college', 'Pembroke College')),
+        'questions': data.get('questions', existing.get('questions', [])),
+        'created_at': existing.get('created_at') or now,
+        'updated_at': now,
+    }
+    with open(path, 'w') as fp:
+        json.dump(record, fp, indent=2)
+    return jsonify(record)
+
+
+@app.route('/api/supervision/sessions/<supo_id>', methods=['GET'])
+def api_supervision_get(supo_id):
+    path = _supervision_path(supo_id)
+    if not path or not os.path.exists(path):
+        return jsonify({'error': 'Not found'}), 404
+    with open(path) as fp:
+        return jsonify(json.load(fp))
+
+
+@app.route('/api/supervision/sessions/<supo_id>', methods=['DELETE'])
+def api_supervision_delete(supo_id):
+    path = _supervision_path(supo_id)
+    if not path or not os.path.exists(path):
+        return jsonify({'error': 'Not found'}), 404
+    os.unlink(path)
+    return jsonify({'ok': True})
+
+
+@app.route('/api/supervision/check', methods=['POST'])
+def api_supervision_check():
+    """Provisional check for one supervision answer."""
+    data = request.get_json() or {}
+    question_text = data.get('question_text', '')
+    answer_text = data.get('answer_text', '')
+    course_name = data.get('course_name', '')
+    sheet_title = data.get('sheet_title', '')
+    if not question_text:
+        return jsonify({'error': 'question_text required'}), 400
+    result = provisional_check_answer(question_text, answer_text, course_name, sheet_title)
+    return jsonify(result)
 
 
 if __name__ == '__main__':

@@ -553,6 +553,11 @@ h1, h2, h3, .display {
     transition: opacity 0.2s ease, transform 0.3s ease;
 }
 
+.course-card--taking::before {
+    color: var(--success);
+    opacity: 1;
+}
+
 .course-card:hover {
     background: var(--bg-card-hover);
     transform: translate(-2px, -2px);
@@ -2787,11 +2792,14 @@ h1, h2, h3, .display {
 .planner-conf-pct { font-size: 0.78rem; font-weight: 500; width: 34px; text-align: right; flex-shrink: 0; }
 .planner-conf-na { font-size: 0.75rem; color: var(--text-muted); width: 34px; }
 
-/* KaTeX: override inherited white-space so pre-wrap parents don't
-   break every glyph onto its own line. */
-.katex, .katex *, .katex-display, .katex-display * {
-    white-space: normal !important;
-}
+/* KaTeX: stop pre-wrap parents from leaking their white-space behaviour into
+   the math container, but let KaTeX's own internal rules govern its descendants
+   (they need `nowrap` on .nobreak/.mspace etc. to keep glyphs on one line —
+   the previous version applied `normal !important` to `.katex *` and broke
+   every inline expression vertically, e.g. `f_1(b, d)` rendered as three
+   stacked rows `f_1` / `(b,` / `d)`). */
+.katex { white-space: nowrap; }
+.katex-display { white-space: normal; }
 
 /* ---- Math pad ---- */
 .math-pad {
@@ -3650,4 +3658,205 @@ h1, h2, h3, .display {
 }
 .pp-row--elsewhere {
     background: rgba(217, 154, 43, 0.06);
+}
+
+
+/* ---- Supervision Work ---- */
+.supo-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+.supo-subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+.supo-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+.supo-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-card);
+    border: 1.5px solid var(--accent);
+    border-radius: 6px;
+    padding: 0.85rem 1.1rem;
+    margin-bottom: 0.6rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    box-shadow: var(--shadow-md);
+}
+.supo-list-item:hover {
+    background: var(--bg-card-hover);
+}
+.supo-list-item-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+.supo-list-item-meta {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-top: 0.15rem;
+}
+.supo-list-delete {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0.2rem 0.6rem;
+    line-height: 1;
+}
+.supo-list-delete:hover { color: var(--accent-orange); }
+
+.supo-editor-meta {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    margin: 1rem 0 1.5rem;
+}
+.supo-title-input,
+.supo-course-input {
+    font: inherit;
+    padding: 0.6rem 0.85rem;
+    border: 1.5px solid var(--accent);
+    border-radius: 4px;
+    background: var(--bg-card);
+}
+.supo-title-input {
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+.supo-save-status {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    text-align: right;
+}
+
+.supo-pick-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border: 1.5px solid var(--accent);
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+.supo-pick-summary { font-size: 0.92rem; }
+.supo-pick-actions { display: flex; gap: 0.5rem; }
+
+.supo-question {
+    background: var(--bg-card);
+    border: 1.5px solid var(--accent);
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.2rem;
+    box-shadow: var(--shadow-md);
+}
+.supo-question--selected {
+    background: var(--bg-card-hover);
+}
+.supo-question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+.supo-question-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 1.02rem;
+    cursor: pointer;
+}
+.supo-question-pick input { width: 1.05rem; height: 1.05rem; cursor: pointer; }
+.supo-question-text {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin-bottom: 0.75rem;
+}
+.supo-part {
+    margin: 0.85rem 0 0.85rem 1.2rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--text-muted);
+}
+.supo-part-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+.supo-part-text {
+    font-size: 0.93rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+}
+.supo-answer-textarea {
+    width: 100%;
+    min-height: 4.5rem;
+    margin-top: 0.5rem;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.55;
+}
+.supo-check-btn {
+    font-size: 0.82rem;
+}
+.supo-flags {
+    margin-top: 0.85rem;
+    padding: 0.7rem 0.95rem;
+    border-radius: 4px;
+    font-size: 0.88rem;
+    border: 1px solid;
+}
+.supo-flags-title { font-weight: 600; margin-bottom: 0.3rem; }
+.supo-flags ul { margin: 0.25rem 0 0 1.1rem; padding: 0; }
+.supo-flags li { margin: 0.15rem 0; }
+.supo-flags-ok       { background: rgba(77, 122, 77, 0.10); border-color: rgba(77, 122, 77, 0.4); color: #2f4d2f; }
+.supo-flags-minor    { background: rgba(217, 154, 43, 0.10); border-color: rgba(217, 154, 43, 0.4); color: #5b3d10; }
+.supo-flags-major    { background: rgba(221, 92, 46, 0.10); border-color: rgba(221, 92, 46, 0.45); color: #6b2710; }
+.supo-flags-checking { background: var(--bg-card-hover); border-color: var(--text-muted); color: var(--text-muted); font-style: italic; }
+.supo-flags-empty    { background: var(--bg-card-hover); border-color: var(--text-muted); color: var(--text-muted); }
+
+.supo-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin: 2rem 0 3rem;
+}
+
+.supo-parsing-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 12, 8, 0.45);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.supo-parsing-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--accent);
+    border-radius: 8px;
+    padding: 2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+    box-shadow: var(--shadow-lg);
+}
+.supo-parsing-card p { margin: 0; font-size: 0.95rem; }
+
+@media (max-width: 700px) {
+    .supo-editor-meta { grid-template-columns: 1fr; }
+    .supo-save-status { text-align: left; }
 }
