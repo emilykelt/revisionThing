@@ -3078,20 +3078,58 @@ const app = {
             <\/script>
         </body></html>`;
 
-        // Use a Blob URL instead of window.open('', '_blank') + document.write().
-        // The latter causes a known bug where the print dialog renders a blank
-        // page in Chrome/Safari, even though the content displays correctly on
-        // screen. Navigating the new window to a real (blob) URL avoids it.
-        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const w = window.open(url, '_blank');
-        if (!w) {
-            alert('Please allow popups to generate the PDF.');
-            URL.revokeObjectURL(url);
-            return;
-        }
-        // Revoke after the new window has had time to fetch and parse the blob.
-        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        // Print from a hidden iframe in this same page. We populate it by
+        // writing directly into iframe.contentDocument rather than using
+        // `srcdoc` or `iframe.src = blob:`, because:
+        //   - srcdoc has a ~few-MB length limit in Safari; a pasted screenshot
+        //     pushes the inline base64 over that limit and Safari fails with
+        //     "WebKitBlobResource error 1".
+        //   - blob: URLs trip the same Safari restriction when assigned to
+        //     window.open() and behave inconsistently for iframe.src.
+        //   - Same-page document.write into an iframe is unaffected by both,
+        //     since the document inherits the parent's origin and has no
+        //     length cap on the written stream.
+        // KaTeX CSS + base64 images load inside the iframe, then print() runs.
+
+        // Remove any previous print iframe so repeated clicks don't pile up.
+        const existing = document.getElementById('supo-print-iframe');
+        if (existing) existing.remove();
+
+        const iframe = document.createElement('iframe');
+        iframe.id = 'supo-print-iframe';
+        iframe.setAttribute('aria-hidden', 'true');
+        iframe.style.cssText = 'position:fixed; right:0; bottom:0; width:0; height:0; border:0; opacity:0; pointer-events:none;';
+        document.body.appendChild(iframe);
+
+        // The inline <script> in `html` triggers print() on its own load event,
+        // which is the most reliable signal that KaTeX CSS + images have
+        // settled. We also bind a parent-side fallback for browsers where the
+        // inline script is blocked by CSP or extensions.
+        let printed = false;
+        const fallbackPrint = () => {
+            if (printed) return;
+            printed = true;
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (e) {
+                console.error('print failed', e);
+                alert('Could not open the print dialog. Try ⌘P from the page.');
+            }
+        };
+        iframe.addEventListener('load', () => {
+            // Inline script in the doc usually wins; this is the backup.
+            setTimeout(fallbackPrint, 800);
+            // Leave the iframe in the DOM long enough that closing the
+            // print dialog still has a valid document, then clean up.
+            setTimeout(() => iframe.remove(), 60_000);
+        }, { once: true });
+
+        // Write the HTML stream directly into the iframe's document.
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
     },
 
     // ---- Exam Planner ----
