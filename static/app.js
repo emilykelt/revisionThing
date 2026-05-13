@@ -2767,7 +2767,8 @@ const app = {
             const isPart = pIdx !== undefined && pIdx !== '';
             const target = isPart ? supo.questions[qIdx].parts[+pIdx] : supo.questions[qIdx];
 
-            // Pre-populate image store from saved draft so thumbs reappear after reload
+            // Pre-populate image store from saved draft so thumbs reappear after reload.
+            // These came from disk, so they're already persisted — mark saved=true.
             const storeKey = this._imageStoreKey(ta);
             if (target.images && target.images.length) {
                 this._answerImages[storeKey] = target.images.map(im => ({
@@ -2775,6 +2776,7 @@ const app = {
                     data: im.data,
                     media_type: im.media_type,
                     dataUrl: `data:${im.media_type};base64,${im.data}`,
+                    saved: true,
                 }));
             }
 
@@ -2921,20 +2923,48 @@ const app = {
         }
         this._syncSupoImagesFromStore();
         const status = document.getElementById('supo-save-status');
+        // Snapshot which image IDs we're about to send, so we can mark exactly
+        // those (and not any pasted while the request was in flight) as saved.
+        const inFlightImageIds = new Set();
+        for (const key of Object.keys(this._answerImages || {})) {
+            for (const im of this._answerImages[key]) inFlightImageIds.add(im.id);
+        }
         try {
             const res = await fetch('/api/supervision/sessions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(this._currentSupo),
             });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
             const saved = await res.json();
             this._currentSupo.id = saved.id;
             this._currentSupo.updated_at = saved.updated_at;
             if (status) status.textContent = 'All changes saved';
+            this._markSupoImagesSaved(inFlightImageIds, true);
         } catch (e) {
             if (status) status.textContent = 'Save failed — retrying…';
+            this._markSupoImagesSaved(inFlightImageIds, 'error');
             setTimeout(() => this._saveSupo(), 3000);
         }
+    },
+
+    _markSupoImagesSaved(ids, state) {
+        // Flip the `saved` flag on in-memory images whose IDs were just sent
+        // to the server, then re-render thumbnails for any affected textarea.
+        const dirtyKeys = new Set();
+        for (const key of Object.keys(this._answerImages || {})) {
+            for (const im of this._answerImages[key]) {
+                if (ids.has(im.id) && im.saved !== state) {
+                    im.saved = state;
+                    dirtyKeys.add(key);
+                }
+            }
+        }
+        if (!dirtyKeys.size) return;
+        document.querySelectorAll('textarea[data-supo-answer]').forEach(ta => {
+            const k = this._imageStoreKey(ta);
+            if (dirtyKeys.has(k)) this._renderAnswerImageThumbs(ta);
+        });
     },
 
     async supoCheckOne(qIdx) {
@@ -3794,7 +3824,9 @@ const app = {
         try {
             const { dataUrl, base64, mediaType } = await this._processPastedImage(file);
             const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-            this._answerImages[key].push({ id, data: base64, media_type: mediaType, dataUrl });
+            // saved=false until autosave round-trips successfully. The supervision
+            // save flow flips this on every image once the POST completes.
+            this._answerImages[key].push({ id, data: base64, media_type: mediaType, dataUrl, saved: false });
             this._renderAnswerImageThumbs(textarea);
         } catch (err) {
             this._showAnswerImageError(textarea, 'Could not read pasted image.');
@@ -3855,10 +3887,16 @@ const app = {
         thumbsRow.className = 'answer-image-thumbs';
         for (const im of imgs) {
             const t = document.createElement('div');
-            t.className = 'answer-image-thumb';
+            t.className = 'answer-image-thumb' + (im.saved === false ? ' answer-image-thumb--unsaved' : '');
+            const badge = im.saved === false
+                ? '<span class="answer-image-badge answer-image-badge--saving" title="Not yet saved">Saving…</span>'
+                : im.saved === 'error'
+                    ? '<span class="answer-image-badge answer-image-badge--error" title="Save failed">Save failed</span>'
+                    : '<span class="answer-image-badge answer-image-badge--saved" title="Saved" aria-label="Saved">✓</span>';
             t.innerHTML = `
                 <img src="${im.dataUrl}" alt="pasted image">
                 <button type="button" class="answer-image-remove" data-img-id="${im.id}" aria-label="Remove image">×</button>
+                ${badge}
             `;
             t.querySelector('.answer-image-remove').addEventListener('click', () => {
                 this._answerImages[key] = imgs.filter(x => x.id !== im.id);

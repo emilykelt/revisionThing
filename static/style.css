@@ -3496,6 +3496,46 @@ h1, h2, h3, .display {
     align-self: flex-start;
 }
 
+/* Per-thumbnail save state badge — sits in the bottom-left corner.
+   Unsaved: amber "Saving…" pill. Saved: small green check disk. Error: red. */
+.answer-image-thumb--unsaved { border-color: rgba(217, 154, 43, 0.6); }
+.answer-image-badge {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-pill);
+    line-height: 1.2;
+    box-shadow: 1px 1px 0 var(--accent);
+    pointer-events: none;
+}
+.answer-image-badge--saving {
+    background: rgba(217, 154, 43, 0.95);
+    color: #2a1a04;
+    border: 1px solid #a06b1c;
+}
+.answer-image-badge--saved {
+    background: rgba(77, 122, 77, 0.95);
+    color: #fff;
+    border: 1px solid #2f4d2f;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.7rem;
+}
+.answer-image-badge--error {
+    background: rgba(196, 75, 63, 0.95);
+    color: #fff;
+    border: 1px solid var(--danger);
+}
+
 /* ---- Heatmap (GitHub-style) ---- */
 .dash-heatmap, .dash-retro {
     min-height: 140px;
