@@ -735,6 +735,27 @@ const app = {
             ppSummaryHtml = `<div class="pp-summary">${totalPP} past paper questions found for this course. ${ppLinkHtml}</div>`;
         }
 
+        // Syllabus — every topic, with its subtopics expanded as a read-only
+        // reference. Collapsible so it doesn't dominate the page.
+        const syllabusItems = course.topics.map((t, i) => {
+            const subs = (t.subtopics || []).filter(Boolean);
+            const subsHtml = subs.length
+                ? `<div class="syllabus-subtopics">${subs.map(s => `<span class="syllabus-sub">${this.escapeHtml(s)}</span>`).join('')}</div>`
+                : '';
+            return `
+                <li class="syllabus-item">
+                    <div class="syllabus-topic-name">${i + 1}. ${this.escapeHtml(t.name)}</div>
+                    ${subsHtml}
+                </li>
+            `;
+        }).join('');
+        const syllabusHtml = course.topics.length ? `
+            <details class="syllabus-block" open>
+                <summary class="syllabus-summary">Syllabus <span class="syllabus-count">${course.topics.length} topic${course.topics.length !== 1 ? 's' : ''}</span></summary>
+                <ol class="syllabus-list">${syllabusItems}</ol>
+            </details>
+        ` : '';
+
         detail.innerHTML = `
             <div class="course-detail-header">
                 <h2 class="course-detail-name">${course.name}</h2>
@@ -751,6 +772,7 @@ const app = {
                     <button class="btn btn-secondary" onclick="app.resetConfidence('course', '${courseId}')">Reset Progress</button>
                 </div>
             </div>
+            ${syllabusHtml}
             <div class="topic-list">${topicsHtml}</div>
         `;
 

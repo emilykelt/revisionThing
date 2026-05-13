@@ -3940,6 +3940,75 @@ h1, h2, h3, .display {
     .supo-save-status { text-align: left; }
 }
 
+/* ---- Course syllabus (collapsible) ---- */
+.syllabus-block {
+    background: var(--bg-card);
+    border: 1.5px solid var(--accent);
+    border-radius: 6px;
+    margin: 1.5rem 0;
+    padding: 0;
+    box-shadow: 2px 2px 0 var(--accent);
+}
+.syllabus-summary {
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+}
+.syllabus-summary::-webkit-details-marker { display: none; }
+.syllabus-summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.syllabus-block[open] > .syllabus-summary::before {
+    transform: rotate(90deg);
+}
+.syllabus-count {
+    margin-left: auto;
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+.syllabus-list {
+    margin: 0;
+    padding: 0 1rem 0.85rem 1rem;
+    list-style: none;
+    counter-reset: none;
+}
+.syllabus-item {
+    padding: 0.45rem 0;
+    border-top: 1px solid var(--border);
+}
+.syllabus-item:first-child { border-top: 1.5px solid var(--accent); padding-top: 0.6rem; }
+.syllabus-topic-name {
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin-bottom: 0.2rem;
+}
+.syllabus-subtopics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.syllabus-sub {
+    padding: 0.1rem 0.45rem;
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill, 12px);
+    white-space: nowrap;
+}
+
 /* ---- Rich text editor (Tiptap) ---- */
 .rich-editor-wrap {
     border: 1.5px solid var(--accent);
