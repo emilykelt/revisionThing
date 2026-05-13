@@ -927,6 +927,12 @@ const app = {
             ${bodyHtml}
             <div class="question-actions">
                 <button class="btn btn-primary" id="submit-btn" onclick="app.submitAnswer()">Submit Answer</button>
+                ${isMultiPart ? `
+                    <label class="btn btn-ghost handwritten-upload-btn" title="Upload a handwritten PDF script of your full answer">
+                        <input type="file" id="handwritten-pdf-input" accept="application/pdf" style="display:none">
+                        ✎ Upload handwritten PDF
+                    </label>
+                ` : ''}
                 ${!isMultiPart ? '<button class="btn btn-ghost" id="hint-btn" onclick="app.requestHint(null)">Hint</button>' : ''}
                 <button class="btn btn-secondary" onclick="app.skipQuestion()">Skip</button>
             </div>
@@ -957,6 +963,16 @@ const app = {
             this._attachMathPad(ta);
             this._attachImagePaste(ta);
         });
+
+        // Wire handwritten-PDF upload (multi-part past papers only)
+        const hwInput = document.getElementById('handwritten-pdf-input');
+        if (hwInput) {
+            hwInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (file) this.submitHandwrittenScript(file);
+            });
+        }
     },
 
     async requestHint(partIndex) {
@@ -1076,6 +1092,60 @@ const app = {
             feedbackContainer.innerHTML = '<div class="empty-state">Failed to evaluate. Check your connection.</div>';
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Answer';
+        }
+    },
+
+    async submitHandwrittenScript(file) {
+        const q = this.currentQuestion;
+        if (!q || !q.parts || !q.parts.length) {
+            alert('Handwritten upload only works on multi-part past-paper questions.');
+            return;
+        }
+        const feedbackContainer = document.getElementById('feedback-container');
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Reading PDF…'; }
+        feedbackContainer.innerHTML = `
+            <div class="loading handwritten-loading">
+                <span class="spinner"></span>
+                Reading your handwriting across the script — this can take 20–40s.
+            </div>`;
+
+        const fd = new FormData();
+        fd.append('pdf', file);
+        fd.append('topic_id', q.topic_id);
+        fd.append('course_id', q.course_id);
+        fd.append('all_topic_ids', JSON.stringify(q._all_topic_ids || []));
+        fd.append('source', q.source || '');
+        fd.append('parts', JSON.stringify(q.parts.map(p => ({
+            label: p.label, question: p.text, marks: p.marks || 0,
+        }))));
+
+        try {
+            const res = await fetch('/api/question/submit-handwritten', { method: 'POST', body: fd });
+            const result = await res.json();
+            if (!res.ok) {
+                feedbackContainer.innerHTML = `<div class="empty-state">${this.escapeHtml(result.error || 'Upload failed.')}</div>`;
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Answer'; }
+                return;
+            }
+            // Record past-paper progress (mirror what submitAnswer does)
+            if (q.is_actual_past_paper && q.source) {
+                fetch('/api/pp/progress', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ref: q.source,
+                        score: result.overall_score,
+                        total_marks: result.total_marks || q.total_marks || 0,
+                        marks_awarded: result.total_marks_awarded,
+                    }),
+                }).catch(() => {});
+                this._ppData = null;
+            }
+            this.renderFeedback(result);
+        } catch (err) {
+            feedbackContainer.innerHTML = '<div class="empty-state">Handwritten evaluation failed. Check your connection.</div>';
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Answer'; }
         }
     },
 

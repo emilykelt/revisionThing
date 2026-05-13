@@ -929,6 +929,101 @@ def parse_supervision_questions(pdf_text, filename=None):
     }
 
 
+def evaluate_handwritten_script(question_parts, page_images, topic_name, course_name, source=None):
+    """Grade an entire handwritten past-paper script in one Claude call.
+
+    Args:
+        question_parts: list of {'label', 'text', 'marks'} for every part of the question.
+        page_images: list of {'media_type', 'data'} (base64 PNGs) — one per PDF page,
+            in order. Claude reads them as image inputs and figures out which
+            part each region of writing addresses.
+
+    Returns:
+        list of per-part dicts shaped like evaluate_answer's output:
+        [{'label', 'marks_awarded', 'marks_available', 'score', 'feedback',
+          'model_solution', 'key_gaps'}]
+    """
+    if not page_images:
+        return []
+
+    total_marks = sum(p.get('marks', 0) for p in question_parts)
+    parts_block = '\n'.join(
+        f'  ({p["label"]}) [{p.get("marks", 0)} marks] {p.get("text", "")}'
+        for p in question_parts
+    )
+
+    prompt = (
+        'Cambridge CS supervisor marking a handwritten exam script. The student '
+        'has uploaded a PDF of their answers and we have rendered each page to '
+        f'an image (attached, {len(page_images)} page(s), in order).\n\n'
+        f'Course: {course_name} | Topic: {topic_name}'
+        f'{" | " + source if source else ""}\n\n'
+        f'QUESTION (total {total_marks} marks):\n{parts_block}\n\n'
+        'Your job:\n'
+        '1. Read the handwriting on every page. Treat diagrams, arrows, equations, '
+        'and crossings-out as part of the answer.\n'
+        '2. Identify which part of the question each region of writing addresses. '
+        'Parts may appear out of order or span multiple pages; the student may '
+        'have labelled them (a), (b) etc. — use those labels where present.\n'
+        '3. For each part, award an integer mark out of that part\'s available '
+        'marks, write specific feedback noting what was good and what was missing, '
+        'and give a concise model solution.\n'
+        '4. If a part has NO answer at all in the script, award 0 and say so '
+        'in feedback.\n\n'
+        'Be precise about what the handwriting actually says — do NOT charitably '
+        'fill in what they "meant" if the writing or diagram is wrong or absent. '
+        'For diagrams: describe what the student drew, then compare to what was '
+        'expected.\n\n'
+        'Use LaTeX for any maths in feedback/model_solution ($...$ inline, $$...$$ display).\n\n'
+        'Respond ONLY with JSON of this shape (one object per part, same order as above):\n'
+        '{\n'
+        '  "parts": [\n'
+        '    {"label": "a", "marks_awarded": 6, "marks_available": 8, '
+        '"feedback": "...", "model_solution": "...", "key_gaps": ["concept"]},\n'
+        '    ...\n'
+        '  ]\n'
+        '}'
+    )
+
+    response = _call_claude_with_images(prompt, page_images, model=EVAL_MODEL, max_tokens=6000)
+    result = extract_json_from_response(response)
+    if not result or 'parts' not in result or not isinstance(result['parts'], list):
+        # Defensive fallback — return zero marks per part with a hint to retry.
+        return [{
+            'label': p.get('label', ''),
+            'marks_awarded': 0,
+            'marks_available': p.get('marks', 0),
+            'score': 0.0,
+            'feedback': 'Evaluation failed — could not parse the script. Try re-uploading.',
+            'model_solution': '',
+            'key_gaps': [],
+        } for p in question_parts]
+
+    # Normalise: align Claude's output with the requested parts by label.
+    by_label = {str(p.get('label', '')).strip().lower(): p for p in result['parts'] if isinstance(p, dict)}
+    out = []
+    for req in question_parts:
+        label = str(req.get('label', '')).strip()
+        available = req.get('marks', 0)
+        ev = by_label.get(label.lower()) or {}
+        awarded = ev.get('marks_awarded', 0)
+        try:
+            awarded = max(0, min(available, int(round(float(awarded)))))
+        except (TypeError, ValueError):
+            awarded = 0
+        score = (awarded / available) if available else 0.0
+        out.append({
+            'label': label,
+            'marks_awarded': awarded,
+            'marks_available': available,
+            'score': score,
+            'feedback': ev.get('feedback', '') or '',
+            'model_solution': ev.get('model_solution', '') or '',
+            'key_gaps': ev.get('key_gaps', []) or [],
+        })
+    return out
+
+
 def provisional_check_answer(question_text, answer_text, course_name=None, sheet_title=None):
     """Lightweight sanity check on a supervision answer — flag glaring errors,
     missed parts, or off-topic answers, but DO NOT mark or give a full critique.

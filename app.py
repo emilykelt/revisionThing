@@ -14,6 +14,7 @@ from ai import (
     generate_question, evaluate_answer, generate_mcqs, generate_hint,
     generate_flashcards, course_chat, weekly_retrospective,
     parse_supervision_questions, provisional_check_answer,
+    evaluate_handwritten_script,
 )
 from config import DEFAULT_CONFIDENCE, DATA_DIR
 
@@ -905,6 +906,156 @@ def api_retrospective_generate():
     }
     _save_retro_cache(cache)
     return jsonify(cache)
+
+
+# ---- Handwritten past-paper script submission ----
+
+def _pdf_to_page_images(pdf_bytes, dpi=180, max_pages=20):
+    """Render every page of `pdf_bytes` to a PNG via pdftoppm. Returns a list of
+    {'media_type', 'data'} dicts (base64-encoded PNGs) suitable for passing to
+    Claude's image input. Capped at `max_pages` to bound API cost."""
+    import subprocess
+    import tempfile
+    import base64
+    import glob
+    out_images = []
+    with tempfile.TemporaryDirectory() as tmpdir:
+        pdf_path = os.path.join(tmpdir, 'in.pdf')
+        with open(pdf_path, 'wb') as f:
+            f.write(pdf_bytes)
+        prefix = os.path.join(tmpdir, 'page')
+        try:
+            subprocess.run(
+                ['pdftoppm', '-png', '-r', str(dpi), pdf_path, prefix],
+                check=True, capture_output=True, timeout=60,
+            )
+        except subprocess.CalledProcessError as e:
+            print(f'[handwritten] pdftoppm failed: {e.stderr.decode("utf-8", "replace")}')
+            return []
+        except subprocess.TimeoutExpired:
+            print('[handwritten] pdftoppm timed out')
+            return []
+        for png in sorted(glob.glob(prefix + '-*.png'))[:max_pages]:
+            with open(png, 'rb') as f:
+                out_images.append({
+                    'media_type': 'image/png',
+                    'data': base64.b64encode(f.read()).decode('ascii'),
+                })
+    return out_images
+
+
+@app.route('/api/question/submit-handwritten', methods=['POST'])
+def api_submit_handwritten():
+    """Grade a handwritten past-paper script uploaded as a PDF.
+
+    Form data:
+        pdf:        the script (multipart file)
+        topic_id:   primary topic id (for confidence tracking)
+        course_id:  course id
+        all_topic_ids: JSON-encoded list of topic ids tagged on this question
+        parts:      JSON-encoded list of {label, question, marks}
+        source:     e.g. "2022 Paper 6 Q3" (recorded on history entry)
+    """
+    if 'pdf' not in request.files:
+        return jsonify({'error': 'No PDF uploaded'}), 400
+    pdf_file = request.files['pdf']
+    pdf_bytes = pdf_file.read()
+    if not pdf_bytes:
+        return jsonify({'error': 'Empty PDF'}), 400
+
+    topic_id = request.form.get('topic_id')
+    course_id = request.form.get('course_id')
+    if not topic_id:
+        return jsonify({'error': 'topic_id required'}), 400
+
+    try:
+        parts = json.loads(request.form.get('parts') or '[]')
+    except json.JSONDecodeError:
+        return jsonify({'error': 'parts must be valid JSON'}), 400
+    if not parts:
+        return jsonify({'error': 'parts is empty'}), 400
+
+    try:
+        all_topic_ids = json.loads(request.form.get('all_topic_ids') or '[]')
+    except json.JSONDecodeError:
+        all_topic_ids = []
+    extra_topic_ids = [t for t in all_topic_ids if t != topic_id]
+    source = request.form.get('source') or ''
+
+    # Resolve topic & course names from the catalogue (same lookup as the JSON submit path)
+    courses = load_courses()
+    topic_name = ''
+    course_name = ''
+    for term in courses['terms'].values():
+        for cid, course in term['courses'].items():
+            if cid == course_id:
+                course_name = course['name']
+                for topic in course['topics']:
+                    if topic['id'] == topic_id:
+                        topic_name = topic['name']
+                        break
+
+    # Render PDF → page PNGs
+    page_images = _pdf_to_page_images(pdf_bytes)
+    if not page_images:
+        return jsonify({'error': 'Could not render PDF to page images. Is it a valid PDF?'}), 400
+
+    # Hand the whole script to Claude in one call
+    part_results = evaluate_handwritten_script(
+        question_parts=parts,
+        page_images=page_images,
+        topic_name=topic_name,
+        course_name=course_name,
+        source=source,
+    )
+
+    # Compute aggregates, record history, generate flashcards (mirrors api_submit_answer)
+    total_marks_awarded = sum(r.get('marks_awarded', 0) for r in part_results)
+    total_marks = sum(r.get('marks_available', 0) for r in part_results)
+    overall_score = (total_marks_awarded / total_marks) if total_marks else 0.0
+    all_gaps = []
+    for r in part_results:
+        all_gaps.extend(r.get('key_gaps', []))
+
+    combined_q = ' | '.join(f"({p.get('label','')}) {p.get('question','') or p.get('text','')}" for p in parts)
+    combined_a = ' | '.join(f"({r['label']}) (handwritten — see uploaded PDF)" for r in part_results)
+    combined_fb = ' | '.join(f"({r['label']}) {r.get('feedback','')}" for r in part_results)
+    combined_ms = ' | '.join(f"({r['label']}) {r.get('model_solution','')}" for r in part_results)
+
+    new_confidence = record_answer(
+        topic_id, course_id, combined_q, combined_a,
+        overall_score, combined_fb, combined_ms,
+        extra_topic_ids=extra_topic_ids,
+        source=source or None,
+    )
+
+    # Queue flashcards for parts answered poorly
+    for r in part_results:
+        if r.get('score', 0) < 0.5 and r.get('model_solution'):
+            _queue_flashcards(
+                next((p.get('question', '') for p in parts if p.get('label') == r['label']), ''),
+                r['model_solution'],
+                topic_name, course_name, topic_id, course_id,
+            )
+
+    return jsonify({
+        'part_results': [{
+            'label': r['label'],
+            'question_text': next((p.get('question', '') for p in parts if p.get('label') == r['label']), ''),
+            'score': r['score'],
+            'marks_awarded': r['marks_awarded'],
+            'marks_available': r['marks_available'],
+            'feedback': r['feedback'],
+            'model_solution': r['model_solution'],
+            'key_gaps': r['key_gaps'],
+        } for r in part_results],
+        'overall_score': overall_score,
+        'total_marks_awarded': total_marks_awarded,
+        'total_marks': total_marks,
+        'new_confidence': new_confidence,
+        'key_gaps': list(dict.fromkeys(all_gaps)),
+        'page_count': len(page_images),
+    })
 
 
 # ---- Supervision Work ----
