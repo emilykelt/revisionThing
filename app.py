@@ -290,6 +290,7 @@ def api_submit_answer():
             ' | '.join(f"({r['label']}) {r['feedback']}" for r in part_results),
             ' | '.join(f"({r['label']}) {r['model_solution']}" for r in part_results),
             extra_topic_ids=extra_topic_ids,
+            source=data.get('source') or None,
         )
 
         total_marks_awarded = sum(r['marks_awarded'] for r in part_results if r.get('marks_awarded') is not None)
@@ -322,6 +323,7 @@ def api_submit_answer():
             evaluation.get('feedback', ''),
             evaluation.get('model_solution', ''),
             extra_topic_ids=extra_topic_ids,
+            source=data.get('source') or None,
         )
 
         if evaluation['score'] < 0.5 and evaluation.get('model_solution'):

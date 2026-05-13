@@ -97,7 +97,7 @@ def update_confidence(current, score, times_tested, streak):
     return round(max(0.0, min(1.0, new_conf)), 3)
 
 
-def record_answer(topic_id, course_id, question, answer, score, feedback, model_solution, extra_topic_ids=None):
+def record_answer(topic_id, course_id, question, answer, score, feedback, model_solution, extra_topic_ids=None, source=None):
     """Record an answer and update confidence. Returns the new confidence."""
     knowledge = load_knowledge()
     history = load_history()
@@ -129,7 +129,7 @@ def record_answer(topic_id, course_id, question, answer, score, feedback, model_
     save_knowledge(knowledge)
 
     # Append to history log
-    history.append({
+    entry_record = {
         'timestamp': datetime.now().isoformat(),
         'topic_id': topic_id,
         'course_id': course_id,
@@ -140,7 +140,10 @@ def record_answer(topic_id, course_id, question, answer, score, feedback, model_
         'model_solution': model_solution,
         'confidence_before': confidence_before,
         'confidence_after': entry['confidence'],
-    })
+    }
+    if source:
+        entry_record['source'] = source
+    history.append(entry_record)
     save_history(history)
 
     return entry['confidence']

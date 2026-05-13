@@ -3597,6 +3597,45 @@ h1, h2, h3, .display {
     font-family: var(--font-mono);
 }
 
+/* Compact variant used at the bottom of the dashboard so the retro doesn't
+   dominate the footer row. Tighter typography, capped height with internal
+   scroll, smaller padding. Headings/lists still readable but trimmed. */
+.dash-retro--compact {
+    padding: 1rem 1.15rem;
+    min-height: 0;
+}
+.dash-retro--compact .dash-mini-label { margin-bottom: 0.35rem; }
+.dash-retro--compact .dash-retro-body {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    max-height: 180px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+.dash-retro--compact .dash-retro-body p { margin: 0.25rem 0; }
+.dash-retro--compact .dash-retro-body ul { margin: 0.2rem 0 0.3rem 1rem; }
+.dash-retro--compact .dash-retro-body li { margin: 0.05rem 0; }
+.dash-retro--compact .dash-retro-body h1,
+.dash-retro--compact .dash-retro-body h2,
+.dash-retro--compact .dash-retro-body h3,
+.dash-retro--compact .dash-retro-body h4 {
+    font-size: 0.85rem;
+    margin: 0.5rem 0 0.2rem;
+}
+.dash-retro--compact .dash-retro-meta { margin-top: 0.4rem; font-size: 0.65rem; }
+
+/* The footer row sits below the term grid; give it a little breathing room
+   plus a thin separator line so it reads as a distinct section. */
+.dash-bento--footer {
+    margin-top: 2.5rem;
+    margin-bottom: 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+.dash-bento--footer .dash-heatmap,
+.dash-bento--footer .dash-retro { min-height: 110px; }
+.dash-bento--footer .dash-bento-card { padding: 1rem 1.15rem; }
+
 /* ---- Topic-frequency heatmap on past-papers page ---- */
 .pp-freq {
     margin: 0 0 0.9rem 0;

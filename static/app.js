@@ -407,17 +407,22 @@ const app = {
             }
         }
 
-        // Walk in-app history for past-paper attempts.
+        // Walk in-app history for past-paper attempts. A history entry counts
+        // as a past-paper attempt if it has a `source` field set (e.g.
+        // "2022 Paper 6 Q3") — that's persisted by record_answer for any
+        // submission that came from the past-papers flow.
         try {
             const histRes = await fetch('/api/history?limit=400');
             const hist = await histRes.json();
+            const ppRe = /Paper \d+ Q\d+/i;
             for (const h of (hist.items || [])) {
                 const ts = h.timestamp || '';
                 const iso = ts.slice(0, 10);
                 if (!buckets[iso]) continue;
-                // Only count attempts on actual past-paper questions (skip warm-up/practice).
-                if (!h.question || !/Paper \d+ Q\d+/i.test(h.question)) continue;
-                buckets[iso].push({ ref: h.topic_id, score: h.score ?? null, marked: false });
+                const isPp = (h.source && ppRe.test(h.source))
+                    || (h.question && ppRe.test(h.question));
+                if (!isPp) continue;
+                buckets[iso].push({ ref: h.source || h.topic_id, score: h.score ?? null, marked: false });
             }
         } catch {
             // History fetch is best-effort; heatmap still renders with elsewhere-only data.
