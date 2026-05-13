@@ -17,7 +17,7 @@
 // CDN: esm.sh handles dependency dedup. Initial load fetches ~100 KB gzipped;
 // subsequent loads hit the browser cache.
 
-import { Editor }       from 'https://esm.sh/@tiptap/core@2.10.4';
+import { Editor, Extension } from 'https://esm.sh/@tiptap/core@2.10.4';
 import StarterKit       from 'https://esm.sh/@tiptap/starter-kit@2.10.4';
 import Table            from 'https://esm.sh/@tiptap/extension-table@2.10.4';
 import TableRow         from 'https://esm.sh/@tiptap/extension-table-row@2.10.4';
@@ -25,6 +25,32 @@ import TableHeader      from 'https://esm.sh/@tiptap/extension-table-header@2.10
 import TableCell        from 'https://esm.sh/@tiptap/extension-table-cell@2.10.4';
 import ImageExt         from 'https://esm.sh/@tiptap/extension-image@2.10.4';
 import Placeholder      from 'https://esm.sh/@tiptap/extension-placeholder@2.10.4';
+
+// ---------- Custom extensions ----------
+//
+// TabHandler: stop Tab from moving focus out of the editor when the cursor
+// isn't inside a table. Tiptap's table extension already handles Tab inside
+// table cells (moves to next cell); this just keeps Tab usable as a real
+// tab character everywhere else.
+const TabHandler = Extension.create({
+    name: 'tabHandler',
+    addKeyboardShortcuts() {
+        return {
+            Tab: () => {
+                const { editor } = this;
+                if (editor.isActive('table')) return false; // let table ext handle
+                return editor.chain().insertContent('\t').run();
+            },
+            'Shift-Tab': () => {
+                const { editor } = this;
+                if (editor.isActive('table')) return false; // table ext: prev cell
+                // Outside tables, swallow Shift-Tab so it doesn't focus the
+                // previous element either; no-op is fine.
+                return true;
+            },
+        };
+    },
+});
 
 // ---------- Markdown serialiser ----------
 // Walks Tiptap JSON and emits markdown-flavoured plain text. This is what
@@ -149,16 +175,35 @@ window.RichEditor = {
                     heading: { levels: [1, 2, 3] },
                     codeBlock: { HTMLAttributes: { class: 're-code' } },
                 }),
-                Table.configure({ resizable: true, HTMLAttributes: { class: 're-table' } }),
+                // Inline border styles on every table node so they're visible
+                // regardless of any CSS specificity issues (Tiptap's tables
+                // sometimes render inside a `.tableWrapper` div that interferes
+                // with descendant selectors).
+                Table.configure({
+                    resizable: true,
+                    HTMLAttributes: {
+                        class: 're-table',
+                        style: 'border-collapse: collapse; width: 100%; margin: 0.6em 0; border: 2px solid #161616;',
+                    },
+                }),
                 TableRow,
-                TableHeader,
-                TableCell,
+                TableHeader.configure({
+                    HTMLAttributes: {
+                        style: 'border: 1.5px solid #161616; padding: 0.4em 0.55em; background: #efe6d4; font-weight: 600; text-align: left; vertical-align: top; min-width: 5em;',
+                    },
+                }),
+                TableCell.configure({
+                    HTMLAttributes: {
+                        style: 'border: 1.5px solid #161616; padding: 0.4em 0.55em; vertical-align: top; min-width: 5em;',
+                    },
+                }),
                 ImageExt.configure({ inline: false, allowBase64: true, HTMLAttributes: { class: 're-image' } }),
                 Placeholder.configure({
                     placeholder: opts.placeholder || 'Type your answer…',
                     showOnlyWhenEditable: true,
                     showOnlyCurrent: false,
                 }),
+                TabHandler,
             ],
             content: normaliseContent(opts.content),
             editorProps: {

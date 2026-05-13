@@ -853,16 +853,14 @@ const app = {
                     </div>
                     <div class="answer-area">
                         <label>Answer to (${this.escapeHtml(part.label)})</label>
-                        <textarea
-                            class="answer-textarea part-answer"
-                            data-label="${this.escapeHtml(part.label)}"
-                            data-question="${this.escapeAttr(part.text)}"
-                            data-marks="${part.marks}"
-                            data-part-index="${i}"
-                            placeholder="Type your answer to part (${this.escapeHtml(part.label)})..."
-                            autocomplete="off" spellcheck="true"
-                            ${i === 0 ? 'id="first-answer"' : ''}
-                        ></textarea>
+                        ${this._richEditorTemplate(
+                            `data-label="${this.escapeHtml(part.label)}"
+                             data-question="${this.escapeAttr(part.text)}"
+                             data-marks="${part.marks}"
+                             data-part-index="${i}"
+                             ${i === 0 ? 'data-first-answer="1"' : ''}`,
+                            'part-answer'
+                        )}
                         <div class="part-btn-row">
                             <button class="btn btn-ghost hint-part-btn" id="hint-btn-${i}"
                                 onclick="app.requestHint(${i})">Hint</button>
@@ -882,8 +880,8 @@ const app = {
                     ${q.marks ? `<div class="question-marks">[${q.marks} marks]</div>` : ''}
                 </div>
                 <div class="answer-area">
-                    <label for="answer-input">Your Answer</label>
-                    <textarea id="answer-input" class="answer-textarea" placeholder="Type your answer here..." autocomplete="off" spellcheck="true"></textarea>
+                    <label>Your Answer</label>
+                    ${this._richEditorTemplate('data-answer-input="1"', 'answer-input-wrap')}
                 </div>
             `;
         }
@@ -940,29 +938,47 @@ const app = {
             <div id="feedback-container"></div>
         `;
 
-        // Focus first textarea
-        setTimeout(() => {
-            const ta = document.getElementById('first-answer') || document.getElementById('answer-input');
-            if (ta) ta.focus();
-        }, 100);
-
         // Reset per-question image storage
         this._answerImages = {};
 
-        // Ctrl+Enter to submit on any textarea; update progress dots on input
-        container.querySelectorAll('.answer-textarea').forEach(ta => {
-            ta.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') this.submitAnswer();
+        // Attach Tiptap rich editors to every past-paper answer wrap.
+        container.querySelectorAll('.rich-editor-wrap').forEach(wrap => {
+            const partIdx = wrap.dataset.partIndex;
+            this._ensureImagePreviewBeside(wrap);
+            this._renderAnswerImageThumbs(wrap);
+
+            this._attachRichEditor(wrap, {
+                content: '',
+                placeholder: wrap.dataset.label
+                    ? `Answer for (${wrap.dataset.label})…`
+                    : 'Type your answer here…',
+                onUpdate: (editor) => {
+                    if (partIdx !== undefined) {
+                        const dot = document.getElementById(`pp-dot-${partIdx}`);
+                        const text = editor.getText() || '';
+                        if (dot) dot.classList.toggle('filled', text.trim().length > 0);
+                    }
+                },
+                onImagePaste: (file) => this._addAnswerImage(wrap, file),
             });
-            if (ta.dataset.partIndex !== undefined) {
-                ta.addEventListener('input', () => {
-                    const dot = document.getElementById(`pp-dot-${ta.dataset.partIndex}`);
-                    if (dot) dot.classList.toggle('filled', ta.value.trim().length > 0);
-                });
-            }
-            this._attachMathPad(ta);
-            this._attachImagePaste(ta);
+
+            // ⌘/Ctrl+Enter to submit anywhere inside the editor
+            wrap.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    this.submitAnswer();
+                }
+            });
+
+            this._attachMathPad(wrap);
         });
+
+        // Focus the first answer editor for the question
+        setTimeout(() => {
+            const first = container.querySelector('.rich-editor-wrap[data-first-answer], .rich-editor-wrap[data-answer-input]')
+                       || container.querySelector('.rich-editor-wrap');
+            if (first && first._editor) first._editor.commands.focus();
+        }, 120);
 
         // Wire handwritten-PDF upload (multi-part past papers only)
         const hwInput = document.getElementById('handwritten-pdf-input');
@@ -1030,15 +1046,17 @@ const app = {
         let body;
 
         if (q.parts && q.parts.length > 0) {
-            // Collect answers for each part
+            // Collect answers for each part — read from Tiptap editors
             const partAnswers = [];
-            document.querySelectorAll('.part-answer').forEach(ta => {
-                const key = ta.id || ta.dataset.label;
+            document.querySelectorAll('.rich-editor-wrap.part-answer').forEach(wrap => {
+                const editor = wrap._editor;
+                const answer = editor ? editor.getMarkdown() : '';
+                const key = this._imageStoreKey(wrap);
                 partAnswers.push({
-                    label: ta.dataset.label,
-                    question: ta.dataset.question,
-                    answer: ta.value,
-                    marks: parseInt(ta.dataset.marks) || 8,
+                    label: wrap.dataset.label,
+                    question: wrap.dataset.question,
+                    answer,
+                    marks: parseInt(wrap.dataset.marks) || 8,
                     images: (this._answerImages?.[key] || []).map(im => ({
                         media_type: im.media_type, data: im.data,
                     })),
@@ -1049,9 +1067,11 @@ const app = {
             body = { topic_id: q.topic_id, course_id: q.course_id, parts: partAnswers, all_topic_ids: q._all_topic_ids || [],
                      has_diagram: q.has_diagram || false, source: q.source || '' };
         } else {
-            const ta = document.getElementById('answer-input');
-            const answer = ta.value;
-            const images = (this._answerImages?.['answer-input'] || []).map(im => ({
+            const wrap = document.querySelector('.rich-editor-wrap[data-answer-input]');
+            const editor = wrap && wrap._editor;
+            const answer = editor ? editor.getMarkdown() : '';
+            const key = wrap ? this._imageStoreKey(wrap) : 'default';
+            const images = (this._answerImages?.[key] || []).map(im => ({
                 media_type: im.media_type, data: im.data,
             }));
             if (!answer.trim() && images.length === 0) return;
@@ -2829,17 +2849,17 @@ const app = {
         container.querySelectorAll('[data-supo-math]').forEach(el => {
             el.innerHTML = this.renderContent(el.dataset.supoMath || '');
         });
-        // Wire textareas — same affordances as past-paper answers
+        // Wire rich editors — Tiptap instance per answer field, with table/list
+        // support and image-paste integration into our existing image store.
         if (!this._answerImages) this._answerImages = {};
-        container.querySelectorAll('textarea[data-supo-answer]').forEach(ta => {
-            const qIdx = +ta.dataset.qidx;
-            const pIdx = ta.dataset.pidx;
+        container.querySelectorAll('.rich-editor-wrap[data-supo-answer]').forEach(wrap => {
+            const qIdx = +wrap.dataset.qidx;
+            const pIdx = wrap.dataset.pidx;
             const isPart = pIdx !== undefined && pIdx !== '';
             const target = isPart ? supo.questions[qIdx].parts[+pIdx] : supo.questions[qIdx];
 
             // Pre-populate image store from saved draft so thumbs reappear after reload.
-            // These came from disk, so they're already persisted — mark saved=true.
-            const storeKey = this._imageStoreKey(ta);
+            const storeKey = this._imageStoreKey(wrap);
             if (target.images && target.images.length) {
                 this._answerImages[storeKey] = target.images.map(im => ({
                     id: im.id || ('img_' + Math.random().toString(36).slice(2, 9)),
@@ -2850,31 +2870,35 @@ const app = {
                 }));
             }
 
-            ta.addEventListener('input', (e) => {
-                target.answer = e.target.value;
-                this._scheduleSupoSave();
-                e.target.style.height = 'auto';
-                e.target.style.height = e.target.scrollHeight + 'px';
-            });
-            // Clicking away from a textarea immediately flushes, so brief
-            // pauses + navigation actions never leave keystrokes unsaved.
-            ta.addEventListener('blur', () => this._flushSupoSave());
-            ta.style.height = 'auto';
-            ta.style.height = ta.scrollHeight + 'px';
+            // Ensure an image preview container exists as a sibling of the wrap
+            // so _renderAnswerImageThumbs can find/render thumbs there.
+            this._ensureImagePreviewBeside(wrap);
+            this._renderAnswerImageThumbs(wrap);
 
-            // Attach the math pad + image paste from the past-paper answer flow
-            this._attachMathPad(ta);
-            this._attachImagePaste(ta);
-
-            // Render any existing thumbnails + schedule a save after a paste so
-            // newly-attached images get persisted to the draft.
-            this._renderAnswerImageThumbs(ta);
-            ta.addEventListener('paste', () => {
-                setTimeout(() => this._scheduleSupoSave(), 400);
+            this._attachRichEditor(wrap, {
+                content: target.answer_json || target.answer || '',
+                placeholder: isPart
+                    ? `Answer for (${target.label || ''})…`
+                    : 'Type your answer…',
+                onUpdate: (editor) => {
+                    const { text, json, html } = this._serialiseRichEditor(editor);
+                    target.answer = text;
+                    target.answer_json = json;
+                    target.answer_html = html;
+                    this._scheduleSupoSave();
+                },
+                onBlur: () => this._flushSupoSave(),
+                onImagePaste: (file) => {
+                    this._addAnswerImage(wrap, file);
+                    setTimeout(() => this._scheduleSupoSave(), 400);
+                },
             });
-            // Removing a thumb triggers a click on the .answer-image-remove inside
-            // the preview; catch that to re-sync too.
-            const preview = ta.parentElement.querySelector(':scope > .answer-image-preview');
+
+            // Math pad still goes next to the editor wrap
+            this._attachMathPad(wrap);
+
+            // Removing a thumb triggers an autosave
+            const preview = wrap.parentElement.querySelector(':scope > .answer-image-preview');
             if (preview && !preview.dataset.supoWired) {
                 preview.dataset.supoWired = '1';
                 preview.addEventListener('click', (e) => {
@@ -2896,17 +2920,17 @@ const app = {
     },
 
     _syncSupoImagesFromStore() {
-        // Walk every supo answer textarea and copy this._answerImages[key] back
+        // Walk every supo answer wrap and copy this._answerImages[key] back
         // onto the corresponding answer/part record so it saves with the draft.
         const supo = this._currentSupo;
         if (!supo) return;
-        document.querySelectorAll('textarea[data-supo-answer]').forEach(ta => {
-            const qIdx = +ta.dataset.qidx;
-            const pIdx = ta.dataset.pidx;
+        document.querySelectorAll('.rich-editor-wrap[data-supo-answer]').forEach(wrap => {
+            const qIdx = +wrap.dataset.qidx;
+            const pIdx = wrap.dataset.pidx;
             const target = (pIdx === undefined || pIdx === '')
                 ? supo.questions[qIdx]
                 : supo.questions[qIdx].parts[+pIdx];
-            const key = this._imageStoreKey(ta);
+            const key = this._imageStoreKey(wrap);
             const imgs = (this._answerImages && this._answerImages[key]) || [];
             target.images = imgs.map(im => ({
                 id: im.id, data: im.data, media_type: im.media_type,
@@ -2915,6 +2939,9 @@ const app = {
     },
 
     _renderSupoQuestion(q, idx) {
+        const richEditorAttrs = (pIdx) =>
+            `data-supo-answer data-qidx="${idx}" data-pidx="${pIdx ?? ''}"`;
+
         const partsHtml = (q.parts || []).map((p, pIdx) => `
             <div class="supo-part">
                 <div class="supo-part-label">(${this.escapeHtml(p.label)})</div>
@@ -2922,10 +2949,7 @@ const app = {
                 ${q.selected ? `
                     <div class="answer-area">
                         <label>Answer to (${this.escapeHtml(p.label)})</label>
-                        <textarea class="answer-textarea supo-answer-textarea"
-                            data-supo-answer data-qidx="${idx}" data-pidx="${pIdx}"
-                            placeholder="Type your answer to (${this.escapeAttr(p.label)})…"
-                            autocomplete="off" spellcheck="true">${this.escapeHtml(p.answer || '')}</textarea>
+                        ${this._richEditorTemplate(richEditorAttrs(pIdx))}
                     </div>
                 ` : ''}
             </div>
@@ -2935,10 +2959,7 @@ const app = {
             ${q.selected ? `
                 <div class="answer-area">
                     <label>Your answer</label>
-                    <textarea class="answer-textarea supo-answer-textarea"
-                        data-supo-answer data-qidx="${idx}" data-pidx=""
-                        placeholder="Type your answer…"
-                        autocomplete="off" spellcheck="true">${this.escapeHtml(q.answer || '')}</textarea>
+                    ${this._richEditorTemplate(richEditorAttrs(''))}
                 </div>
             ` : ''}
         `;
@@ -3095,19 +3116,27 @@ const app = {
         // Make sure the latest paste/thumb-removal is reflected before we serialise
         this._syncSupoImagesFromStore();
 
-        const renderAnswer = (text, images) => {
-            const hasText = text && text.trim();
+        const renderAnswer = (target) => {
+            const html = target.answer_html;
+            const text = target.answer;
+            const images = target.images;
+            const hasHtml = html && html.trim() && html !== '<p></p>';
+            const hasText = !hasHtml && text && text.trim();
             const hasImages = images && images.length;
-            if (!hasText && !hasImages) return '<em class="supo-print-blank">(no answer)</em>';
-            const paras = hasText
-                ? text.split(/\n\n+/).map(p =>
-                    `<p>${this.renderContent(p.replace(/\n/g, '  \n'))}</p>`).join('')
-                : '';
+            if (!hasHtml && !hasText && !hasImages) return '<em class="supo-print-blank">(no answer)</em>';
+            // Prefer Tiptap HTML (preserves tables, lists, formatting). Fall
+            // back to the legacy markdown-ish text rendered with renderContent.
+            const body = hasHtml
+                ? html
+                : (hasText
+                    ? text.split(/\n\n+/).map(p =>
+                        `<p>${this.renderContent(p.replace(/\n/g, '  \n'))}</p>`).join('')
+                    : '');
             const imgHtml = hasImages
                 ? '<div class="supo-print-images">' + images.map(im =>
                     `<img src="data:${this.escapeAttr(im.media_type)};base64,${im.data}">`).join('') + '</div>'
                 : '';
-            return paras + imgHtml;
+            return body + imgHtml;
         };
 
         const qHtml = selected.map(q => {
@@ -3115,7 +3144,7 @@ const app = {
                 <div class="supo-print-part">
                     <div class="supo-print-part-text"><strong>(${this.escapeHtml(p.label)})</strong> ${this.renderContent(p.text)}</div>
                     <div class="supo-print-answer-label">Answer:</div>
-                    <div class="supo-print-answer">${renderAnswer(p.answer, p.images)}</div>
+                    <div class="supo-print-answer">${renderAnswer(p)}</div>
                 </div>
             `).join('');
             return `
@@ -3125,7 +3154,7 @@ const app = {
                     ${partsHtml}
                     ${(!q.parts || !q.parts.length) ? `
                         <div class="supo-print-answer-label">Answer:</div>
-                        <div class="supo-print-answer">${renderAnswer(q.answer, q.images)}</div>` : ''}
+                        <div class="supo-print-answer">${renderAnswer(q)}</div>` : ''}
                 </div>
             `;
         }).join('');
@@ -3151,6 +3180,13 @@ const app = {
                 .supo-print-images { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
                 .supo-print-images img { max-width: 100%; max-height: 320px; border: 1px solid #ddd; border-radius: 3px; page-break-inside: avoid; break-inside: avoid; }
                 pre, code { font-family: 'Menlo', monospace; background: #f4f1ec; padding: 0.05rem 0.3rem; border-radius: 3px; font-size: 0.85em; }
+                /* Tables from Tiptap rich editor */
+                table.re-table { border-collapse: collapse; width: 100%; margin: 0.6em 0; }
+                table.re-table th, table.re-table td { border: 1px solid #444; padding: 0.35em 0.55em; vertical-align: top; font-size: 0.88rem; }
+                table.re-table th { background: #f4ede0; font-weight: 600; text-align: left; }
+                blockquote { border-left: 3px solid #161616; margin: 0.5em 0; padding: 0.1em 0 0.1em 0.85em; color: #555; font-style: italic; }
+                ul, ol { margin: 0.4em 0 0.4em 1.4em; padding: 0; }
+                li { margin: 0.15em 0; }
                 .katex { white-space: nowrap; }
                 @media print {
                     html, body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -3627,6 +3663,125 @@ const app = {
         ]},
     },
 
+    // ---- Rich text editor (Tiptap) integration ----
+    // Each answer field that uses the rich editor renders a wrapper div with
+    // toolbar + content area. After rendering, we walk the DOM and attach a
+    // Tiptap editor instance to each mount, keeping a reference on the wrapper
+    // so the save/sync code can read getMarkdown()/getJSON() from it.
+
+    _richEditorTemplate(extraDataAttrs = '', extraClasses = '') {
+        // Returns HTML for the wrapper + toolbar + mount point. The mount div
+        // (`.rich-editor-mount`) is where Tiptap injects its content editor.
+        // `extraDataAttrs` lets callers tag the wrapper with data-qidx etc.
+        // `extraClasses` tacks on additional class names (e.g. 'part-answer').
+        const cls = ['rich-editor-wrap', extraClasses].filter(Boolean).join(' ');
+        return `
+            <div class="${cls}" ${extraDataAttrs}>
+                <div class="rich-editor-toolbar">
+                    <div class="rich-editor-toolbar-group">
+                        <button type="button" class="rich-editor-btn" data-re-cmd="code"        title="Inline code">‹/›</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="bulletList"  title="Bullet list">•</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="orderedList" title="Numbered list">1.</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="codeBlock"   title="Code block">{ }</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="blockquote"  title="Quote">❝</button>
+                    </div>
+                    <div class="rich-editor-toolbar-group rich-editor-toolbar-group--table">
+                        <button type="button" class="rich-editor-btn" data-re-cmd="insertTable" title="Insert table">⊞ Table</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="addColumnAfter" title="Add column after" data-re-needs-table>⊕ Col</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="addRowAfter"    title="Add row below"    data-re-needs-table>⊕ Row</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="deleteColumn"   title="Delete column"    data-re-needs-table>⊖ Col</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="deleteRow"      title="Delete row"       data-re-needs-table>⊖ Row</button>
+                        <button type="button" class="rich-editor-btn" data-re-cmd="deleteTable"    title="Delete table"     data-re-needs-table>× Table</button>
+                    </div>
+                </div>
+                <div class="rich-editor-mount"></div>
+            </div>
+        `;
+    },
+
+    _attachRichEditor(wrapEl, { content, placeholder, onUpdate, onBlur, onImagePaste }) {
+        if (!window.RichEditor) {
+            console.error('RichEditor module not loaded yet');
+            return null;
+        }
+        const mount = wrapEl.querySelector('.rich-editor-mount');
+        if (!mount) return null;
+        const editor = window.RichEditor.create(mount, {
+            content,
+            placeholder,
+            onUpdate: (ed) => {
+                this._refreshRichEditorToolbar(wrapEl, ed);
+                if (onUpdate) onUpdate(ed);
+            },
+            onBlur: (ed) => { if (onBlur) onBlur(ed); },
+            onFocus: (ed) => { this._activeRichEditor = ed; },
+            onImagePaste,
+        });
+        // Track the focused editor for the math pad
+        this._activeRichEditor = editor;
+
+        // Wire toolbar buttons
+        wrapEl.querySelectorAll('.rich-editor-btn').forEach(btn => {
+            btn.addEventListener('mousedown', (e) => e.preventDefault());  // keep editor focus
+            btn.addEventListener('click', () => this._handleRichEditorToolbarClick(editor, btn.dataset.reCmd));
+        });
+        wrapEl._editor = editor;
+        this._refreshRichEditorToolbar(wrapEl, editor);
+        return editor;
+    },
+
+    _handleRichEditorToolbarClick(editor, cmd) {
+        if (!editor || !cmd) return;
+        const chain = editor.chain().focus();
+        switch (cmd) {
+            case 'bold':        chain.toggleBold().run(); break;
+            case 'italic':      chain.toggleItalic().run(); break;
+            case 'strike':      chain.toggleStrike().run(); break;
+            case 'code':        chain.toggleCode().run(); break;
+            case 'bulletList':  chain.toggleBulletList().run(); break;
+            case 'orderedList': chain.toggleOrderedList().run(); break;
+            case 'codeBlock':   chain.toggleCodeBlock().run(); break;
+            case 'blockquote':  chain.toggleBlockquote().run(); break;
+            case 'insertTable':
+                chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+                break;
+            case 'addColumnAfter': chain.addColumnAfter().run(); break;
+            case 'addRowAfter':    chain.addRowAfter().run(); break;
+            case 'deleteColumn':   chain.deleteColumn().run(); break;
+            case 'deleteRow':      chain.deleteRow().run(); break;
+            case 'deleteTable':    chain.deleteTable().run(); break;
+        }
+    },
+
+    _refreshRichEditorToolbar(wrapEl, editor) {
+        if (!editor) return;
+        const inTable = editor.isActive('table');
+        wrapEl.querySelectorAll('.rich-editor-btn[data-re-cmd]').forEach(btn => {
+            const cmd = btn.dataset.reCmd;
+            // Active states for the formatting toggles
+            const activeMap = {
+                bold: 'bold', italic: 'italic', strike: 'strike', code: 'code',
+                bulletList: 'bulletList', orderedList: 'orderedList',
+                codeBlock: 'codeBlock', blockquote: 'blockquote',
+            };
+            if (activeMap[cmd]) btn.classList.toggle('is-active', editor.isActive(activeMap[cmd]));
+            // Table-only buttons get disabled when not in a table
+            if (btn.dataset.reNeedsTable !== undefined) btn.disabled = !inTable;
+        });
+    },
+
+    _serialiseRichEditor(editor) {
+        // Returns { text, json, html } for persistence. `text` is markdown-ish
+        // (Claude / plain-text consumers), `json` is Tiptap's lossless format
+        // for round-trip editing, `html` is what the PDF generator renders.
+        if (!editor) return { text: '', json: null, html: '' };
+        return {
+            text: editor.getMarkdown ? editor.getMarkdown() : editor.getText(),
+            json: editor.getJSON(),
+            html: editor.getHTML(),
+        };
+    },
+
     _attachMathPad(textarea) {
         if (textarea.dataset.mathPad) return;
         textarea.dataset.mathPad = '1';
@@ -3711,8 +3866,15 @@ const app = {
             }
         });
 
+        const readContent = () => {
+            // textarea: .value; rich editor wrap: read from the editor instance
+            if (textarea._editor) {
+                return textarea._editor.getText ? textarea._editor.getText() : '';
+            }
+            return typeof textarea.value === 'string' ? textarea.value : '';
+        };
         const updatePreview = () => {
-            const v = textarea.value;
+            const v = readContent();
             const hasMath = /[\$\\]|[α-ωΑ-Ω∀∃∈∉∑∏∫∂∇∅⇒⇔⇓⟶↦⊢⊨≤≥≠≈≡⊑⟨⟩⟦⟧]/.test(v);
             if (hasMath && v.trim()) {
                 preview.style.display = '';
@@ -3722,7 +3884,11 @@ const app = {
                 preview.innerHTML = '';
             }
         };
-        textarea.addEventListener('input', updatePreview);
+        if (textarea._editor) {
+            textarea._editor.on('update', updatePreview);
+        } else {
+            textarea.addEventListener('input', updatePreview);
+        }
         updatePreview();
     },
 
@@ -3745,6 +3911,23 @@ const app = {
     },
 
     _insertAtTextarea(ta, text, cursorOffset = null) {
+        // If the math pad was attached to a rich-editor mount, route the insert
+        // through the active editor's commands instead of treating it as a
+        // textarea. The mount element exposes the editor via the wrapper.
+        const wrap = ta && ta.closest ? ta.closest('.rich-editor-wrap') : null;
+        if (wrap && wrap._editor) {
+            wrap._editor.chain().focus().insertContent(text).run();
+            return;
+        }
+        // Some math-pad attachments may have been wired to the *active* rich
+        // editor without a textarea (e.g. global keyboard shortcut). Fall back
+        // to whatever editor currently has focus.
+        if (!ta || !('selectionStart' in ta)) {
+            if (this._activeRichEditor) {
+                this._activeRichEditor.chain().focus().insertContent(text).run();
+            }
+            return;
+        }
         ta.focus();
         const start = ta.selectionStart;
         const end = ta.selectionEnd;
@@ -3853,6 +4036,22 @@ const app = {
             return `supo-${q}-${p}`;
         }
         return textarea.id || textarea.dataset.label || 'default';
+    },
+
+    _ensureImagePreviewBeside(el) {
+        // Tiptap intercepts image paste at the editor level, so we don't wire
+        // the textarea paste handler. We still need the preview container
+        // (where thumbs render) to exist as a sibling of `el`.
+        let preview = el.parentElement.querySelector(':scope > .answer-image-preview');
+        if (preview) return preview;
+        preview = document.createElement('div');
+        preview.className = 'answer-image-preview';
+        el.parentElement.insertBefore(preview, el.nextSibling);
+        const hint = document.createElement('div');
+        hint.className = 'answer-image-hint';
+        hint.textContent = '⌘/Ctrl + V to paste a diagram or screenshot';
+        preview.appendChild(hint);
+        return preview;
     },
 
     _attachImagePaste(textarea) {

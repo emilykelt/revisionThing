@@ -3939,3 +3939,212 @@ h1, h2, h3, .display {
     .supo-editor-meta { grid-template-columns: 1fr; }
     .supo-save-status { text-align: left; }
 }
+
+/* ---- Rich text editor (Tiptap) ---- */
+.rich-editor-wrap {
+    border: 1.5px solid var(--accent);
+    border-radius: 6px;
+    background: var(--bg-card);
+    transition: border-color 0.15s ease;
+    box-shadow: 2px 2px 0 var(--accent);
+}
+.rich-editor-wrap:focus-within {
+    border-color: var(--accent-orange);
+}
+.rich-editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.4rem 0.55rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card-hover);
+    border-radius: 6px 6px 0 0;
+}
+.rich-editor-toolbar-group {
+    display: flex;
+    gap: 0.15rem;
+    padding-right: 0.45rem;
+    border-right: 1px solid var(--border);
+}
+.rich-editor-toolbar-group:last-child { border-right: none; }
+.rich-editor-btn {
+    font: inherit;
+    font-size: 0.78rem;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-primary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1;
+    min-height: 26px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: background 0.1s ease, border-color 0.1s ease;
+}
+.rich-editor-btn:hover { background: rgba(0, 0, 0, 0.06); }
+.rich-editor-btn.is-active { background: var(--accent); color: var(--bg-cream, #faf6f0); }
+.rich-editor-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
+.rich-editor-btn--bold { font-weight: 700; }
+.rich-editor-btn--italic { font-style: italic; }
+.rich-editor-btn--strike { text-decoration: line-through; }
+.rich-editor-content {
+    min-height: 4.5rem;
+    padding: 0.7rem 0.85rem;
+    outline: none;
+    font-family: inherit;
+    line-height: 1.55;
+    font-size: 0.95rem;
+    overflow-wrap: break-word;
+}
+.rich-editor-content > *:first-child { margin-top: 0; }
+.rich-editor-content > *:last-child  { margin-bottom: 0; }
+.rich-editor-content p { margin: 0.5em 0; }
+.rich-editor-content h1, .rich-editor-content h2, .rich-editor-content h3 { margin: 0.85em 0 0.3em; line-height: 1.3; }
+.rich-editor-content h1 { font-size: 1.15rem; }
+.rich-editor-content h2 { font-size: 1.05rem; }
+.rich-editor-content h3 { font-size: 0.98rem; }
+.rich-editor-content ul, .rich-editor-content ol { margin: 0.4em 0; padding-left: 1.5em; }
+.rich-editor-content li { margin: 0.15em 0; }
+/* Inline code (the `code` mark, not block code) — clear visual treatment so
+   it doesn't look like "just monospace text". */
+.rich-editor-content code,
+.rich-editor-content p code,
+.rich-editor-content li code,
+.rich-editor-content td code,
+.rich-editor-content th code {
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 0.88em;
+    background: #f0e8d4;
+    border: 1px solid #c9bea6;
+    border-radius: 3px;
+    padding: 0.05em 0.4em;
+    color: #5b3d10;
+    white-space: nowrap;
+}
+.rich-editor-content pre code {
+    /* Inside a code BLOCK, suppress the inline-code styling. */
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+    white-space: pre;
+}
+.rich-editor-content pre.re-code {
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.6em 0.85em;
+    font-family: 'Menlo', 'Monaco', monospace;
+    font-size: 0.85em;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+.rich-editor-content blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 0.5em 0;
+    padding: 0.1em 0 0.1em 0.85em;
+    color: var(--text-muted);
+}
+.rich-editor-content img.re-image {
+    max-width: 100%;
+    border-radius: 4px;
+    margin: 0.5em 0;
+    display: block;
+}
+.rich-editor-content .ProseMirror-selectednode {
+    outline: 2px solid var(--accent-orange);
+    outline-offset: 2px;
+}
+/* Placeholder text */
+.rich-editor-content p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: var(--text-muted);
+    pointer-events: none;
+    height: 0;
+    font-style: italic;
+}
+
+/* Tables — Tiptap renders tables wrapped in `.tableWrapper`. We need to
+   target both the wrapper and explicit table elements; some browsers (notably
+   Safari) also need a fallback `border-style: solid` declaration so the
+   border collapses don't get optimised away. */
+.rich-editor-content .tableWrapper {
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+.rich-editor-content table,
+.rich-editor-content table.re-table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+    margin: 0;
+}
+.rich-editor-content table td,
+.rich-editor-content table th,
+.rich-editor-content table.re-table td,
+.rich-editor-content table.re-table th {
+    border: 1.5px solid #161616;
+    border-style: solid;
+    padding: 0.4em 0.55em;
+    vertical-align: top;
+    box-sizing: border-box;
+    position: relative;
+    min-width: 4em;
+}
+.rich-editor-content table th,
+.rich-editor-content table.re-table th {
+    background: #efe6d4;
+    font-weight: 600;
+    text-align: left;
+}
+.rich-editor-content table .selectedCell {
+    background: rgba(221, 92, 46, 0.10);
+}
+.rich-editor-content table .column-resize-handle {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--accent-orange);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.rich-editor-content table:hover .column-resize-handle { opacity: 0.5; }
+
+/* Toolbar table sub-menu (Insert table N×M picker) */
+.rich-editor-table-popover {
+    position: absolute;
+    background: var(--bg-card);
+    border: 1.5px solid var(--accent);
+    border-radius: 6px;
+    padding: 0.6rem;
+    box-shadow: 4px 4px 0 var(--accent);
+    z-index: 50;
+}
+.rich-editor-table-popover-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 18px);
+    grid-auto-rows: 18px;
+    gap: 2px;
+}
+.rich-editor-table-popover-cell {
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border);
+    cursor: pointer;
+}
+.rich-editor-table-popover-cell.is-on {
+    background: var(--accent-orange);
+    border-color: var(--accent-orange);
+}
+.rich-editor-table-popover-label {
+    text-align: center;
+    margin-top: 0.4rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
