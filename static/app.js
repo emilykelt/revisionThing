@@ -1212,6 +1212,38 @@ const app = {
         const feedbackContainer = document.getElementById('feedback-container');
         document.getElementById('submit-btn').style.display = 'none';
 
+        // Pick the drill context: for multi-part, target the lowest-scoring part.
+        // For single-part, just use the whole result.
+        let drillCtx = null;
+        const q = this.currentQuestion || {};
+        if (result.part_results && result.part_results.length) {
+            const sorted = [...result.part_results].sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
+            const worst = sorted[0];
+            if (worst && worst.score < 0.9) {
+                drillCtx = {
+                    question: worst.question_text || '',
+                    answer: '(see your submitted answer)',
+                    feedback: worst.feedback || '',
+                    key_gaps: worst.key_gaps || [],
+                    model_solution: worst.model_solution || '',
+                    topic_id: q.topic_id || '',
+                    course_id: q.course_id || '',
+                    part_label: worst.label,
+                };
+            }
+        } else if (result && (result.score ?? 1) < 0.9) {
+            drillCtx = {
+                question: q.question || '',
+                answer: '(see your submitted answer)',
+                feedback: result.feedback || '',
+                key_gaps: result.key_gaps || [],
+                model_solution: result.model_solution || '',
+                topic_id: q.topic_id || '',
+                course_id: q.course_id || '',
+            };
+        }
+        this._drillCtx = drillCtx;
+
         const confNewPct = result.new_confidence != null
             ? Math.round(result.new_confidence * 100) : null;
         const confHtml = confNewPct != null
@@ -1264,9 +1296,11 @@ const app = {
                     <div class="feedback-section-title">Per-part Feedback</div>
                     ${partsHtml}
                     ${gapsHtml}
-                    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+                    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         ${this.getNextQuestionButton()}
+                        ${drillCtx ? `<button class="btn btn-ghost drill-btn" onclick="app.requestGapDrill()">🎯 Drill the gap${drillCtx.part_label ? ` (${this.escapeHtml(drillCtx.part_label)})` : ''}</button>` : ''}
                     </div>
+                    <div id="gap-drill-container"></div>
                 </div>
             `;
         } else {
@@ -1293,11 +1327,108 @@ const app = {
                     <div class="feedback-text">${this.renderContent(result.feedback || '')}</div>
                     ${gapsHtml}
                     ${modelSolHtml}
-                    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+                    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         ${this.getNextQuestionButton()}
+                        ${drillCtx ? `<button class="btn btn-ghost drill-btn" onclick="app.requestGapDrill()">🎯 Drill the gap</button>` : ''}
                     </div>
+                    <div id="gap-drill-container"></div>
                 </div>
             `;
+        }
+    },
+
+    // ---- Gap drill: focused follow-up that targets the missing mechanism ----
+    async requestGapDrill() {
+        const ctx = this._drillCtx;
+        const slot = document.getElementById('gap-drill-container');
+        if (!ctx || !slot) return;
+        slot.innerHTML = '<div class="drill-loading"><span class="spinner"></span> Generating a 5-min follow-up…</div>';
+        try {
+            const res = await fetch('/api/question/drill/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ctx),
+            });
+            const drill = await res.json();
+            if (!res.ok || !drill.drill_question) {
+                slot.innerHTML = `<div class="drill-error">${this.escapeHtml(drill.error || 'Drill generation failed.')}</div>`;
+                return;
+            }
+            this._currentDrill = { ...drill, topic_id: ctx.topic_id, course_id: ctx.course_id };
+            this._renderGapDrill(this._currentDrill);
+        } catch (e) {
+            slot.innerHTML = '<div class="drill-error">Network error generating drill.</div>';
+        }
+    },
+
+    _renderGapDrill(drill) {
+        const slot = document.getElementById('gap-drill-container');
+        if (!slot) return;
+        slot.innerHTML = `
+            <div class="drill-card">
+                <div class="drill-card-header">
+                    <span class="drill-card-tag">🎯 Gap drill · ${drill.marks} marks</span>
+                    <button class="drill-card-close" onclick="document.getElementById('gap-drill-container').innerHTML='';" title="Dismiss">×</button>
+                </div>
+                <div class="drill-card-target"><strong>Targeting:</strong> ${this.escapeHtml(drill.target_mechanism || 'the missing mechanism')}</div>
+                <div class="drill-card-question">${this.renderContent(drill.drill_question)}</div>
+                ${drill.hint ? `<details class="drill-card-hint"><summary>Hint</summary><div>${this.renderContent(drill.hint)}</div></details>` : ''}
+                <div class="rich-editor-mount-host">
+                    ${this._richEditorTemplate('data-drill-answer="1"', 'drill-answer-editor')}
+                </div>
+                <div class="drill-card-actions">
+                    <button class="btn btn-primary" onclick="app.submitGapDrill()">Submit drill answer</button>
+                </div>
+                <div id="drill-feedback-slot"></div>
+            </div>
+        `;
+        // Mount Tiptap into the drill's editor wrap
+        const wrap = slot.querySelector('.rich-editor-wrap');
+        if (wrap) {
+            this._attachRichEditor(wrap, {
+                content: '',
+                placeholder: 'Walk through the missing step…',
+            });
+            this._attachMathPad(wrap);
+            setTimeout(() => wrap._editor && wrap._editor.commands.focus(), 50);
+        }
+    },
+
+    async submitGapDrill() {
+        const drill = this._currentDrill;
+        const slot = document.getElementById('drill-feedback-slot');
+        const wrap = document.querySelector('.rich-editor-wrap[data-drill-answer]');
+        if (!drill || !wrap || !wrap._editor || !slot) return;
+        const answerText = wrap._editor.getMarkdown ? wrap._editor.getMarkdown() : wrap._editor.getText();
+        if (!answerText.trim()) return;
+
+        slot.innerHTML = '<div class="drill-loading"><span class="spinner"></span> Marking the bridge…</div>';
+        try {
+            const res = await fetch('/api/question/drill/evaluate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    drill_question: drill.drill_question,
+                    drill_answer: answerText,
+                    target_mechanism: drill.target_mechanism,
+                    marks: drill.marks,
+                    topic_id: drill.topic_id,
+                    course_id: drill.course_id,
+                }),
+            });
+            const result = await res.json();
+            const ok = result.chain_completed;
+            slot.innerHTML = `
+                <div class="drill-result drill-result--${ok ? 'ok' : 'missing'}">
+                    <div class="drill-result-header">
+                        ${ok ? '✓ Chain completed' : '○ Almost — one more link'} · ${result.marks_awarded}/${result.marks_available}
+                    </div>
+                    <div class="drill-result-feedback">${this.renderContent(result.feedback || '')}</div>
+                    ${!ok && result.what_was_missing ? `<div class="drill-result-missing"><strong>Still missing:</strong> ${this.escapeHtml(result.what_was_missing)}</div>` : ''}
+                </div>
+            `;
+        } catch (e) {
+            slot.innerHTML = '<div class="drill-error">Marking failed — try again.</div>';
         }
     },
 

@@ -15,6 +15,7 @@ from ai import (
     generate_flashcards, course_chat, weekly_retrospective,
     parse_supervision_questions, provisional_check_answer,
     evaluate_handwritten_script,
+    generate_gap_drill, evaluate_drill_answer,
 )
 from config import DEFAULT_CONFIDENCE, DATA_DIR
 
@@ -906,6 +907,72 @@ def api_retrospective_generate():
     }
     _save_retro_cache(cache)
     return jsonify(cache)
+
+
+# ---- Gap-drill: targeted follow-up for unfinished analytical chains ----
+
+@app.route('/api/question/drill/generate', methods=['POST'])
+def api_drill_generate():
+    """Generate a focused follow-up that targets the missing mechanism in a
+    previously-graded answer. Caller passes the original question text, the
+    student's answer, the feedback they got, and (optionally) the model
+    solution and key_gaps from the eval."""
+    data = request.get_json() or {}
+    topic_id = data.get('topic_id', '')
+    course_id = data.get('course_id', '')
+
+    courses = load_courses()
+    topic_name, course_name = '', ''
+    for term in courses['terms'].values():
+        for cid, course in term['courses'].items():
+            if cid == course_id:
+                course_name = course['name']
+                for t in course['topics']:
+                    if t['id'] == topic_id:
+                        topic_name = t['name']
+                        break
+
+    drill = generate_gap_drill(
+        original_question=data.get('question', ''),
+        student_answer=data.get('answer', ''),
+        feedback=data.get('feedback', ''),
+        key_gaps=data.get('key_gaps', []) or [],
+        topic_name=topic_name,
+        course_name=course_name,
+        model_solution=data.get('model_solution', ''),
+    )
+    if not drill:
+        return jsonify({'error': 'Could not generate a drill — try again.'}), 500
+    return jsonify(drill)
+
+
+@app.route('/api/question/drill/evaluate', methods=['POST'])
+def api_drill_evaluate():
+    """Grade a gap-drill answer. Single focus: did the chain get completed?"""
+    data = request.get_json() or {}
+    topic_id = data.get('topic_id', '')
+    course_id = data.get('course_id', '')
+
+    courses = load_courses()
+    topic_name, course_name = '', ''
+    for term in courses['terms'].values():
+        for cid, course in term['courses'].items():
+            if cid == course_id:
+                course_name = course['name']
+                for t in course['topics']:
+                    if t['id'] == topic_id:
+                        topic_name = t['name']
+                        break
+
+    result = evaluate_drill_answer(
+        drill_question=data.get('drill_question', ''),
+        drill_answer=data.get('drill_answer', ''),
+        target_mechanism=data.get('target_mechanism', ''),
+        topic_name=topic_name,
+        course_name=course_name,
+        marks=int(data.get('marks', 4) or 4),
+    )
+    return jsonify(result)
 
 
 # ---- Handwritten past-paper script submission ----

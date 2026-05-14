@@ -3940,6 +3940,124 @@ h1, h2, h3, .display {
     .supo-save-status { text-align: left; }
 }
 
+/* ---- Gap drill: focused follow-up that targets the missing mechanism ---- */
+.drill-btn {
+    border: 1.5px solid var(--accent-orange);
+    color: #5b3d10;
+}
+.drill-btn:hover { background: rgba(221, 92, 46, 0.08); }
+
+.drill-card {
+    margin-top: 1.5rem;
+    padding: 1.1rem 1.25rem;
+    background: var(--bg-card);
+    border: 2px solid var(--accent-orange);
+    border-radius: 8px;
+    box-shadow: 4px 4px 0 var(--accent-orange);
+    position: relative;
+}
+.drill-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+.drill-card-tag {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5b3d10;
+}
+.drill-card-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.3rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 0.3rem;
+}
+.drill-card-close:hover { color: var(--accent-orange); }
+.drill-card-target {
+    background: rgba(221, 92, 46, 0.06);
+    border-left: 2.5px solid var(--accent-orange);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.85rem;
+}
+.drill-card-question {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    margin-bottom: 0.85rem;
+}
+.drill-card-hint {
+    margin: 0 0 0.85rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.drill-card-hint summary {
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.drill-card-hint summary::-webkit-details-marker { display: none; }
+.drill-card-hint summary::before { content: '▶ '; font-size: 0.7em; }
+.drill-card-hint[open] summary::before { content: '▼ '; }
+.drill-card-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+}
+.drill-loading {
+    padding: 1rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.drill-error {
+    padding: 0.75rem 1rem;
+    background: rgba(196, 75, 63, 0.08);
+    border: 1px solid var(--danger);
+    border-radius: 4px;
+    color: var(--danger);
+    font-size: 0.88rem;
+}
+.drill-result {
+    margin-top: 1.1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 6px;
+    border: 1.5px solid;
+}
+.drill-result--ok {
+    background: rgba(77, 122, 77, 0.10);
+    border-color: #4D7A4D;
+}
+.drill-result--missing {
+    background: rgba(217, 154, 43, 0.10);
+    border-color: #d99a2b;
+}
+.drill-result-header {
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin-bottom: 0.4rem;
+}
+.drill-result-feedback {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+.drill-result-missing {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #5b3d10;
+    background: rgba(217, 154, 43, 0.08);
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+}
+
 /* ---- Course syllabus (collapsible) ---- */
 .syllabus-block {
     background: var(--bg-card);

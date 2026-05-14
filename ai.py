@@ -1024,6 +1024,126 @@ def evaluate_handwritten_script(question_parts, page_images, topic_name, course_
     return out
 
 
+def generate_gap_drill(original_question, student_answer, feedback, key_gaps,
+                       topic_name, course_name, model_solution=''):
+    """Generate ONE short focused follow-up question that targets exactly the
+    'mechanism gap' the student left in their first attempt. This is the
+    pattern where the student states X (premise) and Y (conclusion) but skips
+    the mechanism that bridges them.
+
+    Returns {'drill_question': str, 'marks': int, 'target_mechanism': str,
+             'hint': str}.
+    """
+    prompt = (
+        'You are a Cambridge CS supervisor running a 5-minute targeted drill '
+        'on a single student. The student just answered a tripos question and '
+        'the feedback identifies the specific pattern: correct intuition, but '
+        'they stopped short of the mechanism that completes the argument.\n\n'
+        'Your job: generate ONE focused follow-up question that drills *only* '
+        'the missing mechanism. Not a re-do of the original. Not a broader '
+        'restatement. A short prompt that asks the student to walk through '
+        'EXACTLY the step they skipped — usually phrased as "explain '
+        'mechanically how X causes Y", "trace step-by-step what happens '
+        'between A and B", "given X, derive Y by stating each intermediate '
+        'step", or similar.\n\n'
+        f'Course: {course_name} | Topic: {topic_name}\n\n'
+        f'Original question:\n"""\n{original_question}\n"""\n\n'
+        f'Student\'s answer:\n"""\n{student_answer or "(blank)"}\n"""\n\n'
+        f'Examiner feedback:\n"""\n{feedback}\n"""\n\n'
+        f'Key gaps:\n"""\n{", ".join(key_gaps) if key_gaps else "(none listed)"}\n"""\n\n'
+        + (f'Model solution (for reference, do not copy from it):\n"""\n{model_solution[:1500]}\n"""\n\n' if model_solution else '')
+        + 'Pick the SINGLE most important missing mechanism. Frame a drill '
+        'that targets it precisely. The drill should be answerable in 3–5 '
+        'sentences, worth 3–5 marks.\n\n'
+        'Use LaTeX for any maths ($...$ inline, $$...$$ display).\n\n'
+        'Respond ONLY with this JSON:\n'
+        '{\n'
+        '  "drill_question": "full text of the focused follow-up question",\n'
+        '  "marks": 4,\n'
+        '  "target_mechanism": "one-sentence description of the specific bridge the student must build",\n'
+        '  "hint": "a single nudge (one sentence) — what kind of thing they should walk through"\n'
+        '}'
+    )
+    response = call_claude(prompt, model=EVAL_MODEL, max_tokens=900)
+    result = extract_json_from_response(response)
+    if not result or 'drill_question' not in result:
+        return None
+    try:
+        marks = int(result.get('marks', 4))
+        marks = max(2, min(6, marks))
+    except (TypeError, ValueError):
+        marks = 4
+    return {
+        'drill_question':    result.get('drill_question', '').strip(),
+        'marks':             marks,
+        'target_mechanism':  (result.get('target_mechanism') or '').strip(),
+        'hint':              (result.get('hint') or '').strip(),
+    }
+
+
+def evaluate_drill_answer(drill_question, drill_answer, target_mechanism,
+                          topic_name, course_name, marks=4):
+    """Grade a gap-drill answer with a single focus: did the student build the
+    bridge this time? Returns {'score', 'marks_awarded', 'marks_available',
+    'chain_completed': bool, 'feedback', 'what_was_missing'}."""
+    if not (drill_answer or '').strip():
+        return {
+            'score': 0.0,
+            'marks_awarded': 0,
+            'marks_available': marks,
+            'chain_completed': False,
+            'feedback': 'No answer provided.',
+            'what_was_missing': target_mechanism or 'The mechanism connecting the premise to the conclusion.',
+        }
+    prompt = (
+        'You are a Cambridge CS supervisor marking a single follow-up drill. '
+        'The student previously stopped short of a specific mechanism. The '
+        'drill asks them to fill in that mechanism. You are ONLY judging '
+        'whether they completed the chain this time — not style, not '
+        'comprehensiveness on other points.\n\n'
+        f'Course: {course_name} | Topic: {topic_name}\n\n'
+        f'Drill question:\n"""\n{drill_question}\n"""\n\n'
+        f'Target mechanism (what they need to articulate):\n"""\n{target_mechanism}\n"""\n\n'
+        f'Student answer:\n"""\n{drill_answer}\n"""\n\n'
+        'Give credit for any clearly-articulated intermediate step that '
+        'bridges the premise to the conclusion. Be specific in feedback: '
+        'quote the step the student took, and either (a) confirm the chain '
+        'is complete, or (b) point at the next link they still owe.\n\n'
+        'Use LaTeX for any maths.\n\n'
+        f'Respond ONLY with this JSON:\n'
+        '{\n'
+        f'  "marks_awarded": <int 0..{marks}>,\n'
+        f'  "marks_available": {marks},\n'
+        '  "chain_completed": true | false,\n'
+        '  "feedback": "1–3 sentences: specific to what the student wrote, naming the bridge step",\n'
+        '  "what_was_missing": "if chain_completed is false, one sentence on the next link they should have stated; else empty string"\n'
+        '}'
+    )
+    response = call_claude(prompt, model=EVAL_MODEL, max_tokens=600)
+    result = extract_json_from_response(response)
+    if not result:
+        return {
+            'score': 0.5,
+            'marks_awarded': marks // 2,
+            'marks_available': marks,
+            'chain_completed': False,
+            'feedback': 'Unable to evaluate this drill — try again.',
+            'what_was_missing': target_mechanism,
+        }
+    try:
+        awarded = max(0, min(marks, int(round(float(result.get('marks_awarded', 0))))))
+    except (TypeError, ValueError):
+        awarded = 0
+    return {
+        'score': awarded / marks if marks else 0.0,
+        'marks_awarded': awarded,
+        'marks_available': marks,
+        'chain_completed': bool(result.get('chain_completed', False)),
+        'feedback': (result.get('feedback') or '').strip(),
+        'what_was_missing': (result.get('what_was_missing') or '').strip(),
+    }
+
+
 def provisional_check_answer(question_text, answer_text, course_name=None, sheet_title=None):
     """Lightweight sanity check on a supervision answer — flag glaring errors,
     missed parts, or off-topic answers, but DO NOT mark or give a full critique.
