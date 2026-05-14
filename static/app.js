@@ -612,12 +612,29 @@ const app = {
         this._renderPpHeatmap();
         this._renderRetro();
 
-        // Overall progress
-        const pct = Math.round(data.overall_confidence * 100);
+        // Overall progress — if the planner has any courses selected, average
+        // ONLY across topics in those courses so the headline number reflects
+        // what you're actually preparing. Falls back to the server-computed
+        // figure (all courses) when nothing is selected.
+        const taking = this._takingCourseIds();
+        let overallConf = data.overall_confidence;
+        if (taking && taking.size) {
+            const confs = [];
+            for (const term of Object.values(data.terms || {})) {
+                for (const [cid, course] of Object.entries(term.courses || {})) {
+                    if (!taking.has(cid)) continue;
+                    for (const t of (course.topics || [])) {
+                        if (typeof t.confidence === 'number') confs.push(t.confidence);
+                    }
+                }
+            }
+            if (confs.length) overallConf = confs.reduce((a, b) => a + b, 0) / confs.length;
+        }
+        const pct = Math.round(overallConf * 100);
         document.getElementById('overall-pct').textContent = `${pct}%`;
         const bar = document.getElementById('overall-bar');
         bar.style.width = `${pct}%`;
-        bar.className = `progress-bar-inner ${this.getConfClass(data.overall_confidence)}`;
+        bar.className = `progress-bar-inner ${this.getConfClass(overallConf)}`;
 
         // Terms
         const container = document.getElementById('terms-container');
@@ -1212,31 +1229,38 @@ const app = {
         const feedbackContainer = document.getElementById('feedback-container');
         document.getElementById('submit-btn').style.display = 'none';
 
-        // Pick the drill context: for multi-part, target the lowest-scoring part.
-        // For single-part, just use the whole result.
+        // Drill context: only built when the evaluator explicitly flagged the
+        // answer with `needs_drill` — i.e. correct intuition / wrong formalism
+        // / missing mechanism. Wrong answers, off-topic answers, and complete
+        // answers all skip this so we don't waste time drilling the wrong bridge.
         let drillCtx = null;
         const q = this.currentQuestion || {};
         if (result.part_results && result.part_results.length) {
-            const sorted = [...result.part_results].sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
-            const worst = sorted[0];
-            if (worst && worst.score < 0.9) {
+            const drillable = result.part_results.filter(pr => pr.needs_drill);
+            // Prefer the lowest-scoring drillable part — that's where the gap
+            // bit hardest.
+            drillable.sort((a, b) => (a.score ?? 0) - (b.score ?? 0));
+            const target = drillable[0];
+            if (target) {
                 drillCtx = {
-                    question: worst.question_text || '',
+                    question: target.question_text || '',
                     answer: '(see your submitted answer)',
-                    feedback: worst.feedback || '',
-                    key_gaps: worst.key_gaps || [],
-                    model_solution: worst.model_solution || '',
+                    feedback: target.feedback || '',
+                    key_gaps: target.key_gaps || [],
+                    drill_reason: target.drill_reason || '',
+                    model_solution: target.model_solution || '',
                     topic_id: q.topic_id || '',
                     course_id: q.course_id || '',
-                    part_label: worst.label,
+                    part_label: target.label,
                 };
             }
-        } else if (result && (result.score ?? 1) < 0.9) {
+        } else if (result && result.needs_drill) {
             drillCtx = {
                 question: q.question || '',
                 answer: '(see your submitted answer)',
                 feedback: result.feedback || '',
                 key_gaps: result.key_gaps || [],
+                drill_reason: result.drill_reason || '',
                 model_solution: result.model_solution || '',
                 topic_id: q.topic_id || '',
                 course_id: q.course_id || '',
@@ -1298,7 +1322,7 @@ const app = {
                     ${gapsHtml}
                     <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         ${this.getNextQuestionButton()}
-                        ${drillCtx ? `<button class="btn btn-ghost drill-btn" onclick="app.requestGapDrill()">🎯 Drill the gap${drillCtx.part_label ? ` (${this.escapeHtml(drillCtx.part_label)})` : ''}</button>` : ''}
+                        ${drillCtx ? `<button class="btn btn-ghost drill-btn" onclick="app.requestGapDrill()" title="${this.escapeAttr(drillCtx.drill_reason || 'Drill the missing mechanism')}">🎯 Drill the gap${drillCtx.part_label ? ` (${this.escapeHtml(drillCtx.part_label)})` : ''}</button>` : ''}
                     </div>
                     <div id="gap-drill-container"></div>
                 </div>
@@ -1329,7 +1353,7 @@ const app = {
                     ${modelSolHtml}
                     <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         ${this.getNextQuestionButton()}
-                        ${drillCtx ? `<button class="btn btn-ghost drill-btn" onclick="app.requestGapDrill()">🎯 Drill the gap</button>` : ''}
+                        ${drillCtx ? `<button class="btn btn-ghost drill-btn" onclick="app.requestGapDrill()" title="${this.escapeAttr(drillCtx.drill_reason || 'Drill the missing mechanism')}">🎯 Drill the gap</button>` : ''}
                     </div>
                     <div id="gap-drill-container"></div>
                 </div>

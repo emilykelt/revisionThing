@@ -480,6 +480,32 @@ def evaluate_answer(question, answer, topic_name, course_name, part_label=None, 
         f'handwritten working, or pasted figures. Treat them as part of the answer.'
         if images else ''
     )
+    # `needs_drill` flags a specific failure mode we want to detect: the
+    # student stated the correct intuition / endpoints, but stopped short of
+    # the mechanism, derivation, or formal step that connects them. It must
+    # NOT be set when the answer is simply wrong (drilling that wastes time)
+    # or when the answer is fine. Definition is included verbatim in the
+    # prompt so Claude can apply it consistently.
+    drill_schema = (
+        f'  "needs_drill": true | false,\n'
+        f'  "drill_reason": "if needs_drill is true, one sentence naming the missing mechanism / formalism; else empty"\n'
+    )
+    drill_rule = (
+        'Set "needs_drill": true ONLY if the student\'s answer fits THIS '
+        'specific pattern: correct intuition / correct endpoints / correct '
+        'high-level claim, BUT skipped the mechanism, derivation, formal '
+        'argument, or step-by-step justification that an examiner needs to '
+        'award full marks. The hallmarks: the answer names the right '
+        'concepts but stops at the conclusion; uses informal language where '
+        'a precise rule / definition / algorithm was required; states X and '
+        'states Y without writing the bridge that translates X into Y.\n\n'
+        'Set "needs_drill": false if ANY of these apply:\n'
+        '- the answer is factually wrong (drilling the wrong bridge wastes time);\n'
+        '- the answer is on the wrong question / off-topic;\n'
+        '- the answer is already complete, formal, and mechanistic;\n'
+        '- the answer is so empty that there is no intuition to build on.\n\n'
+    )
+
     prompt = (
         f'Cambridge CS supervisor marking a tripos answer.\n'
         f'Course: {course_name} | Topic: {topic_name}{part_context}{marks_context}\n'
@@ -487,13 +513,27 @@ def evaluate_answer(question, answer, topic_name, course_name, part_label=None, 
         f'Question being marked: {question}\n'
         f'Student answer (text): {answer or "(see attached image(s))"}'
         f'{image_note}\n\n'
-        f'Use LaTeX for any maths ($...$ inline, $$...$$ display).\n'
+        f'Use LaTeX for any maths ($...$ inline, $$...$$ display).\n\n'
+        + drill_rule +
         f'Respond ONLY with this JSON:\n'
         + (
-            f'{{"marks_awarded": 3, "marks_available": {marks_available}, "feedback": "...", "model_solution": "...", "key_gaps": ["concept1"]}}\n'
+            '{\n'
+            f'  "marks_awarded": 3,\n'
+            f'  "marks_available": {marks_available},\n'
+            f'  "feedback": "...",\n'
+            f'  "model_solution": "...",\n'
+            f'  "key_gaps": ["concept1"],\n'
+            + drill_schema +
+            '}\n'
             f'Award marks_awarded as an integer 0–{marks_available}. Be specific about what was good and what was missing.'
             if marks_available else
-            f'{{"score": 0.7, "feedback": "...", "model_solution": "...", "key_gaps": ["concept1"]}}\n'
+            '{\n'
+            f'  "score": 0.7,\n'
+            f'  "feedback": "...",\n'
+            f'  "model_solution": "...",\n'
+            f'  "key_gaps": ["concept1"],\n'
+            + drill_schema +
+            '}\n'
             f'Score 0.0–1.0. Be specific about what was good and what was missing.'
         )
     )
@@ -502,20 +542,28 @@ def evaluate_answer(question, answer, topic_name, course_name, part_label=None, 
         else call_claude(prompt, model=EVAL_MODEL)
     result = extract_json_from_response(response)
 
+    def _normalise_drill_fields(res):
+        # Coerce to plain bool/string + clear drill_reason when not needed.
+        nd = bool(res.get('needs_drill', False))
+        res['needs_drill'] = nd
+        reason = (res.get('drill_reason') or '').strip() if isinstance(res.get('drill_reason'), str) else ''
+        res['drill_reason'] = reason if nd else ''
+        return res
+
     if result:
         if marks_available and 'marks_awarded' in result:
             awarded = max(0, min(marks_available, int(round(float(result['marks_awarded'])))))
             result['marks_awarded'] = awarded
             result['marks_available'] = marks_available
             result['score'] = awarded / marks_available
-            return result
+            return _normalise_drill_fields(result)
         if 'score' in result:
             score = max(0.0, min(1.0, float(result['score'])))
             result['score'] = score
             if marks_available:
                 result['marks_awarded'] = int(round(score * marks_available))
                 result['marks_available'] = marks_available
-            return result
+            return _normalise_drill_fields(result)
 
     # Parsing failed entirely. Try to salvage a readable feedback string from
     # the raw response rather than dumping the broken JSON blob into the UI.

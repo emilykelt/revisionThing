@@ -275,6 +275,8 @@ def api_submit_answer():
                 'feedback': ev.get('feedback', ''),
                 'model_solution': ev.get('model_solution', ''),
                 'key_gaps': ev.get('key_gaps', []),
+                'needs_drill': ev.get('needs_drill', False),
+                'drill_reason': ev.get('drill_reason', ''),
             })
             total_weighted_score += ev['score'] * marks
             total_marks += marks
@@ -339,6 +341,8 @@ def api_submit_answer():
             'feedback': evaluation.get('feedback', ''),
             'model_solution': evaluation.get('model_solution', ''),
             'key_gaps': evaluation.get('key_gaps', []),
+            'needs_drill': evaluation.get('needs_drill', False),
+            'drill_reason': evaluation.get('drill_reason', ''),
             'new_confidence': new_confidence,
         })
 
