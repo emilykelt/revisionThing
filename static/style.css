@@ -2560,9 +2560,49 @@ h1, h2, h3, .display {
 
 .diagram-embed-frame {
     width: 100%;
-    height: 600px;
-    border: 1px solid var(--border);
+    height: 100%;
+    border: 1.5px solid var(--accent);
     border-radius: var(--radius);
+    box-shadow: 4px 4px 0 var(--accent);
+    background: #fff;
+    display: block;
+}
+
+/* Split-pane layout: when active, #question-container becomes a 2-column
+   grid. Left column is the sticky PDF viewer; right column is everything
+   else (question, answers, feedback) and scrolls naturally with the page. */
+#question-container.pdf-split-active {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+.pdf-split-sidebar {
+    /* Hidden by default; revealed only when the layout class is on. */
+    display: none;
+}
+#question-container.pdf-split-active > .pdf-split-sidebar {
+    display: block;
+    position: sticky;
+    top: 1rem;
+    height: calc(100vh - 2rem);
+    align-self: start;
+}
+.question-main-content {
+    /* `min-width: 0` prevents children with long content (code blocks,
+       tables) from blowing out the grid column width. */
+    min-width: 0;
+}
+/* Below tablet, collapse to single column and place the PDF above the
+   content (no longer sticky — there's not enough vertical room). */
+@media (max-width: 900px) {
+    #question-container.pdf-split-active {
+        grid-template-columns: 1fr;
+    }
+    #question-container.pdf-split-active > .pdf-split-sidebar {
+        position: static;
+        height: 60vh;
+    }
 }
 
 /* ---- Responsive ---- */

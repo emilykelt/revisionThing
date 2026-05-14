@@ -926,15 +926,17 @@ const app = {
         }
 
         const isDifficult = q.difficult || false;
+        // The button toggles a split-pane layout: when active, the PDF
+        // becomes a sticky left column and the rest of the page scrolls on
+        // the right. The empty `.pdf-split-sidebar` aside (rendered below
+        // inside #question-container) is where the iframe gets injected.
         const diagramHtml = (q.is_actual_past_paper && q.pdf_url && q.has_diagram) ? `
             <div class="diagram-notice">
                 <span class="diagram-icon">⊞</span> This question references a diagram.
-                <button class="btn btn-ghost diagram-toggle-btn" onclick="app.toggleDiagramEmbed(this, '${this.escapeAttr(q.pdf_url)}')">Show PDF</button>
-                <div class="diagram-embed-container" style="display:none"></div>
+                <button class="btn btn-ghost diagram-toggle-btn" onclick="app.toggleDiagramEmbed(this, '${this.escapeAttr(q.pdf_url)}')">Show PDF alongside</button>
             </div>` : (q.is_actual_past_paper && q.pdf_url ? `
             <div class="diagram-notice diagram-notice--subtle">
-                <button class="btn btn-ghost diagram-toggle-btn" onclick="app.toggleDiagramEmbed(this, '${this.escapeAttr(q.pdf_url)}')">View original PDF</button>
-                <div class="diagram-embed-container" style="display:none"></div>
+                <button class="btn btn-ghost diagram-toggle-btn" onclick="app.toggleDiagramEmbed(this, '${this.escapeAttr(q.pdf_url)}')">Show PDF alongside</button>
             </div>` : '');
         const ppActionsHtml = q.is_actual_past_paper ? `
             <div class="pp-question-actions">
@@ -942,39 +944,42 @@ const app = {
                 <button class="btn btn-ghost pp-similar-btn" onclick="app.toggleSimilarPastPapers()">Similar papers</button>
             </div>` : '';
         container.innerHTML = `
-            <div class="question-header">
-                <div class="question-breadcrumb">
-                    ${this.escapeHtml(q.course_name)} &rsaquo; ${this.escapeHtml(q.topic_name)}
-                    <span class="question-difficulty ${q.difficulty}">${q.difficulty}</span>
-                    ${q.total_marks ? `<span class="total-marks">${q.total_marks} marks</span>` : ''}
+            <aside class="pdf-split-sidebar" id="pdf-split-sidebar" hidden></aside>
+            <div class="question-main-content">
+                <div class="question-header">
+                    <div class="question-breadcrumb">
+                        ${this.escapeHtml(q.course_name)} &rsaquo; ${this.escapeHtml(q.topic_name)}
+                        <span class="question-difficulty ${q.difficulty}">${q.difficulty}</span>
+                        ${q.total_marks ? `<span class="total-marks">${q.total_marks} marks</span>` : ''}
+                    </div>
+                    <div class="question-header-right">
+                        ${sourceHtml}
+                        <button class="flag-difficult-btn ${isDifficult ? 'flagged' : ''}"
+                            id="flag-difficult-btn"
+                            onclick="app.flagDifficult('${q.topic_id}')"
+                            title="${isDifficult ? 'Remove difficult flag' : 'Flag this topic as difficult'}">
+                            ${isDifficult ? '⚑ Difficult' : '⚐ Flag as difficult'}
+                        </button>
+                    </div>
                 </div>
-                <div class="question-header-right">
-                    ${sourceHtml}
-                    <button class="flag-difficult-btn ${isDifficult ? 'flagged' : ''}"
-                        id="flag-difficult-btn"
-                        onclick="app.flagDifficult('${q.topic_id}')"
-                        title="${isDifficult ? 'Remove difficult flag' : 'Flag this topic as difficult'}">
-                        ${isDifficult ? '⚑ Difficult' : '⚐ Flag as difficult'}
-                    </button>
+                ${ppActionsHtml}
+                <div id="similar-pp-container"></div>
+                ${diagramHtml}
+                ${bodyHtml}
+                <div class="question-actions">
+                    <button class="btn btn-primary" id="submit-btn" onclick="app.submitAnswer()">Submit Answer</button>
+                    ${isMultiPart ? `
+                        <label class="btn btn-ghost handwritten-upload-btn" title="Upload a handwritten PDF script of your full answer">
+                            <input type="file" id="handwritten-pdf-input" accept="application/pdf" style="display:none">
+                            ✎ Upload handwritten PDF
+                        </label>
+                    ` : ''}
+                    ${!isMultiPart ? '<button class="btn btn-ghost" id="hint-btn" onclick="app.requestHint(null)">Hint</button>' : ''}
+                    <button class="btn btn-secondary" onclick="app.skipQuestion()">Skip</button>
                 </div>
+                ${!isMultiPart ? '<div id="hint-container"></div>' : ''}
+                <div id="feedback-container"></div>
             </div>
-            ${ppActionsHtml}
-            <div id="similar-pp-container"></div>
-            ${diagramHtml}
-            ${bodyHtml}
-            <div class="question-actions">
-                <button class="btn btn-primary" id="submit-btn" onclick="app.submitAnswer()">Submit Answer</button>
-                ${isMultiPart ? `
-                    <label class="btn btn-ghost handwritten-upload-btn" title="Upload a handwritten PDF script of your full answer">
-                        <input type="file" id="handwritten-pdf-input" accept="application/pdf" style="display:none">
-                        ✎ Upload handwritten PDF
-                    </label>
-                ` : ''}
-                ${!isMultiPart ? '<button class="btn btn-ghost" id="hint-btn" onclick="app.requestHint(null)">Hint</button>' : ''}
-                <button class="btn btn-secondary" onclick="app.skipQuestion()">Skip</button>
-            </div>
-            ${!isMultiPart ? '<div id="hint-container"></div>' : ''}
-            <div id="feedback-container"></div>
         `;
 
         // Reset per-question image storage
@@ -3709,17 +3714,24 @@ const app = {
     },
 
     toggleDiagramEmbed(btn, pdfUrl) {
-        const embedContainer = btn.nextElementSibling;
-        if (!embedContainer) return;
-        if (embedContainer.style.display === 'none') {
-            embedContainer.style.display = 'block';
-            if (!embedContainer.innerHTML) {
-                embedContainer.innerHTML = `<iframe src="${pdfUrl}" class="diagram-embed-frame" title="Past paper question PDF"></iframe>`;
+        // Split-pane: when the PDF is showing, the question container becomes
+        // a 2-column grid with the PDF sticky on the left, content scrolling
+        // on the right. Toggling off restores the single column layout.
+        const container = document.getElementById('question-container');
+        const sidebar  = document.getElementById('pdf-split-sidebar');
+        if (!container || !sidebar) return;
+        const active = container.classList.contains('pdf-split-active');
+        if (!active) {
+            if (!sidebar.querySelector('iframe')) {
+                sidebar.innerHTML = `<iframe src="${pdfUrl}" class="diagram-embed-frame" title="Past paper question PDF"></iframe>`;
             }
+            sidebar.hidden = false;
+            container.classList.add('pdf-split-active');
             btn.textContent = 'Hide PDF';
         } else {
-            embedContainer.style.display = 'none';
-            btn.textContent = btn.closest('.diagram-notice')?.classList.contains('diagram-notice--subtle') ? 'View original PDF' : 'Show PDF';
+            sidebar.hidden = true;
+            container.classList.remove('pdf-split-active');
+            btn.textContent = 'Show PDF alongside';
         }
     },
 
