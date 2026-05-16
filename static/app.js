@@ -69,6 +69,51 @@ const app = {
         { name: 'Paper 1', date: '2026-06-08' },
     ],
 
+    // Vault metadata for obsidian:// deep-links from the dashboard
+    OBSIDIAN_VAULT_NAME: 'Knowledge Base',
+    OBSIDIAN_PLAN_PATH: 'Projects/Cambridge IB Revision Plan 2026',
+
+    // Mirror of the day-by-day plan that lives in Obsidian. Sat 16 May → Sun 7
+    // June; rest days, mocks, and the cross-cutting drill day are explicit so
+    // the dashboard can tell you exactly what today's slot is.
+    REVISION_PLAN: {
+        '2026-05-16': { kind: 'primary', course_id: 'concurrent-distributed', course_name: 'Concurrent and Distributed Systems', topics: ['Synchronization Primitives', 'Monitors and Condition Variables', 'Consistency Models and CRDTs'], drill: '2019 Paper 5 Q6 — signal/notify formal table' },
+        '2026-05-17': { kind: 'primary', course_id: 'computer-networking', course_name: 'Computer Networking', topics: ['Transport Layer (TCP state machine + congestion control)'], drill: '2022 Paper 5 Q3 with cwnd-vs-time diagram' },
+        '2026-05-18': { kind: 'primary', course_id: 'computation-theory', course_name: 'Computation Theory', topics: ['The Halting Problem (diagonalisation template)', 'Turing Machines', 'Lambda Calculus'], drill: '2023 Paper 6 Q3/Q4 reduction' },
+        '2026-05-19': { kind: 'primary', course_id: 'logic-proof', course_name: 'Logic and Proof', topics: ['Sequent Calculus', 'Resolution Theorem Proving', 'Unification'], drill: '2024 Paper 6 Q7 (induction-heavy)' },
+        '2026-05-20': { kind: 'primary', course_id: 'semantics', course_name: 'Semantics of Programming Languages', topics: ['Transition Systems and Operational Semantics', 'Type Systems', 'Data Types (sums + exhaustiveness)'], drill: '2024 Paper 6 Q9 — typing rules in Γ ⊢ e : τ notation' },
+        '2026-05-21': { kind: 'primary', course_id: 'compiler-construction', course_name: 'Compiler Construction', topics: ['Syntax Analysis and Parsing', 'Optimisation (tail call elimination)'], drill: '2024 Paper 4 Q1' },
+        '2026-05-22': { kind: 'rest', note: 'Rest / catch-up. Generate a weekly retrospective.' },
+        '2026-05-23': { kind: 'primary', course_id: 'prog-c-cpp', course_name: 'Programming in C and C++', topics: ['C Semantics and Safety (UB)', 'C++ Fundamentals (RAII)'], drill: '2024 Paper 4 Q5 or Q6' },
+        '2026-05-24': { kind: 'primary', course_id: 'prolog', course_name: 'Prolog', topics: ['Backtracking, Cut and Negation', 'Difference Structures'], drill: '2024 Paper 4 Q4' },
+        '2026-05-25': { kind: 'primary', course_id: 'intro-comp-arch', course_name: 'Introduction to Computer Architecture', topics: ['Pipelining (hazards + forwarding)', 'Memory Hierarchy and Caching (MESI)'], drill: '2024 Paper 5 Q6, Q7 or Q8' },
+        '2026-05-26': { kind: 'primary', course_id: 'further-hci', course_name: 'Further Human-Computer Interaction', topics: ['HCI - Visual Design', 'HCI - Designing Smart Systems (Bayes for CLIs)', 'HCI - Human Performance & Design (Fitts)'], drill: '2024 Paper 7 Q9 or Q10' },
+        '2026-05-27': { kind: 'primary', course_id: 'artificial-intelligence', course_name: 'Artificial Intelligence', topics: ['Uninformed Search', 'Heuristic Search (A* admissibility/consistency)', 'Game Playing (α-β pruning)'], drill: '2024 Paper 7 Q1 or Q2' },
+        '2026-05-28': { kind: 'primary', course_id: 'formal-models-language', course_name: 'Formal Models of Language', topics: ['Chomsky Hierarchy and Language Classes (pumping lemmas)', 'Information Theory and Language'], drill: '2024 Paper 7 Q5 or Q6' },
+        '2026-05-29': { kind: 'cross-cutting', note: 'Cross-cutting drill day: one timed past-paper question per paper (4 × 30 min). Pick from your weakest subjects.' },
+        '2026-05-30': { kind: 'primary', course_id: 'econ-law-ethics', course_name: 'Economics, Law and Ethics', topics: ['Information Economics (lock-in, network effects)', 'Market Failure (externalities, adverse selection)', 'Law and the Internet (GDPR)'], drill: '2024 Paper 7 Q3 or Q4' },
+        '2026-05-31': { kind: 'buffer', note: 'Buffer / weak-area deep-drill — pick subject with the most recent retrospective flag.' },
+        '2026-06-01': { kind: 'buffer', note: 'Second pass on the shakiest subject from Fri 29 May cross-cutting day.' },
+        '2026-06-02': { kind: 'strategy', note: 'Paper-strategy day: pick your 5 questions per paper. Definition recall pass across all 13 sat subjects.' },
+        '2026-06-03': { kind: 'rest', note: 'Half-day review + rest afternoon. Stop revising by 4pm.' },
+        '2026-06-04': { kind: 'mock', note: 'Full Paper 4 mock (3h timed). Hand-write; upload to app for marking.' },
+        '2026-06-05': { kind: 'mock', note: 'Full Paper 5 mock (3h timed).' },
+        '2026-06-06': { kind: 'mock', note: 'Full Paper 6 mock (3h timed).' },
+        '2026-06-07': { kind: 'mock', note: 'Full Paper 7 mock (morning). Stop revising by 4pm. Lay out exam kit.' },
+    },
+
+    _planForToday() {
+        const iso = this._isoToday();
+        return { iso, entry: this.REVISION_PLAN[iso] || null };
+    },
+
+    _obsidianPlanUrl() {
+        // obsidian:// deep-link to the full revision plan note
+        const vault = encodeURIComponent(this.OBSIDIAN_VAULT_NAME);
+        const file = encodeURIComponent(this.OBSIDIAN_PLAN_PATH);
+        return `obsidian://open?vault=${vault}&file=${file}`;
+    },
+
     _isoToday() {
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -294,64 +339,92 @@ const app = {
         return { focus, pastPapers, ankiCourse, dayKey: todayIso, daysTill, ppBudget };
     },
 
+    _itemsForPlanDay(entry) {
+        // Build to-do items from today's plan slot. Each item gets a stable
+        // ID for the localStorage check-off persistence the existing
+        // dash-todo list already uses.
+        if (!entry) return [];
+        const items = [];
+        if (entry.kind === 'primary') {
+            (entry.topics || []).forEach(t => {
+                items.push({
+                    id: `plan:${entry.course_id}:topic:${t}`,
+                    kind: 'plan-topic',
+                    label: this.escapeHtml(t),
+                    meta: this.escapeHtml(entry.course_name),
+                    action: entry.course_id
+                        ? `app.showCourse('${this.escapeAttr(entry.course_id)}')`
+                        : null,
+                });
+            });
+            if (entry.drill) {
+                items.push({
+                    id: `plan:${entry.course_id}:drill`,
+                    kind: 'plan-drill',
+                    label: `Drill — <strong>${this.escapeHtml(entry.drill)}</strong>`,
+                    meta: 'Timed past-paper drill',
+                    action: null,
+                });
+            }
+            return items;
+        }
+        // Non-primary day (rest / mock / cross-cutting / buffer / strategy)
+        const kindLabel = {
+            rest: 'Rest day',
+            mock: 'Mock exam',
+            'cross-cutting': 'Cross-cutting drill',
+            buffer: 'Buffer day',
+            strategy: 'Strategy day',
+        }[entry.kind] || 'Plan day';
+        items.push({
+            id: `plan:${entry.kind}:${entry.note || ''}`.slice(0, 80),
+            kind: 'plan-note',
+            label: `<strong>${this.escapeHtml(kindLabel)}</strong>`,
+            meta: this.escapeHtml(entry.note || ''),
+            action: null,
+        });
+        return items;
+    },
+
     _renderTodoToday() {
         const el = document.getElementById('dash-todo');
         if (!el || !this.dashboardData) return;
 
-        // Lazy-load past paper data once per session.
-        if (!this._allPapers && !this._allPapersLoading) {
-            this._allPapersLoading = true;
-            fetch('/api/pastpapers/all')
-                .then(r => r.json())
-                .then(d => { this._allPapers = d.courses || []; this._renderTodoToday(); })
-                .catch(() => { this._allPapers = []; })
-                .finally(() => { this._allPapersLoading = false; });
-        }
-
-        const { focus, pastPapers, ankiCourse, dayKey } = this._todoForToday();
+        // The to-do list is plan-driven: pull today's slot from the revision
+        // plan and render every topic / drill / mock as its own tickable
+        // item. No more algorithmic past-paper / Anki / weak-topic surfacing.
+        const { iso, entry } = this._planForToday();
+        const dayKey = iso;
         const checkKey = `todoChecks-${dayKey}`;
         const checks = JSON.parse(localStorage.getItem(checkKey) || '{}');
 
-        const items = [];
-        for (const t of focus) {
-            const id = `topic:${t.id}`;
-            items.push({
-                id,
-                kind: 'practice',
-                label: `Practice <strong>${this.escapeHtml(t.name)}</strong>`,
-                meta: `${this.escapeHtml(t.course_name)} · ${Math.round((t.confidence ?? 0) * 100)}%`,
-                action: `app.practiceTopicDirect('${this.escapeAttr(t.id)}','${this.escapeAttr(t.course_id)}')`,
-            });
-        }
-        for (const q of pastPapers) {
-            const id = `pp:${q.course_id}:${q.year}p${q.paper}q${q.question}`;
-            items.push({
-                id,
-                kind: 'pp',
-                label: `Past paper — <strong>${this.escapeHtml(q.ref)}</strong>`,
-                meta: `${this.escapeHtml(q.course_name)} · ${q.total_marks} marks`,
-                action: `app.practicePastPaper('${this.escapeAttr(q.course_id)}',${q.year},${q.paper},${q.question})`,
-            });
-        }
-        if (ankiCourse) {
-            items.push({
-                id: `anki:${ankiCourse.id}`,
-                kind: 'anki',
-                label: `Review Anki — <strong>${this.escapeHtml(ankiCourse.name)}</strong>`,
-                meta: 'Today\u2019s spaced-repetition rotation',
-                action: null,
-            });
-        }
-
+        const items = this._itemsForPlanDay(entry);
         const done = items.filter(i => checks[i.id]).length;
+        const dayName = new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', {
+            weekday: 'short', day: 'numeric', month: 'short',
+        });
+        const planUrl = this._obsidianPlanUrl();
+        const subjectLine = (entry && entry.kind === 'primary')
+            ? `<div class="dash-todo-subject">${this.escapeHtml(entry.course_name)}</div>`
+            : '';
+        const subtitle = entry
+            ? this.escapeHtml(dayName)
+            : `${this.escapeHtml(dayName)} — no plan slot`;
+        const courseBtn = (entry && entry.kind === 'primary' && entry.course_id)
+            ? `<button class="btn btn-ghost dash-todo-action-btn" onclick="app.showCourse('${this.escapeAttr(entry.course_id)}')">Open course</button>`
+            : '';
 
         el.innerHTML = `
             <div class="dash-todo-header">
-                <div class="dash-card-label">To do today</div>
+                <div class="dash-todo-header-main">
+                    <div class="dash-card-label">To do today</div>
+                    <div class="dash-todo-subtitle">${subtitle}</div>
+                </div>
                 <span class="dash-todo-count">${done} / ${items.length}</span>
             </div>
+            ${subjectLine}
             <ul class="dash-todo-list">
-                ${items.map(i => `
+                ${items.length ? items.map(i => `
                     <li class="dash-todo-item${checks[i.id] ? ' checked' : ''}" data-todo-id="${this.escapeAttr(i.id)}">
                         <button class="dash-todo-check" aria-label="Toggle done"></button>
                         <div class="dash-todo-body">
@@ -360,8 +433,14 @@ const app = {
                         </div>
                         ${i.action ? `<button class="dash-todo-go" onclick="${i.action}" aria-label="Open">→</button>` : ''}
                     </li>
-                `).join('')}
+                `).join('') : `
+                    <li class="dash-todo-empty">No items for today — exam week or post-plan. Day-of-paper protocol is in the plan note.</li>
+                `}
             </ul>
+            <div class="dash-todo-actions">
+                ${courseBtn}
+                <a class="btn btn-ghost dash-todo-action-btn" href="${planUrl}">Open in Obsidian</a>
+            </div>
         `;
 
         el.querySelectorAll('.dash-todo-item').forEach(li => {

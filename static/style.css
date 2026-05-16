@@ -295,6 +295,46 @@ h1, h2, h3, .display {
     list-style: none; padding: 0; margin: 0;
     display: flex; flex-direction: column; gap: 0.4rem;
 }
+
+/* Plan-driven to-do additions — subject heading + footer actions.
+   Uses the same neutral palette as the rest of the dashboard. */
+.dash-todo-header-main {
+    display: flex; flex-direction: column; gap: 0.15rem;
+}
+.dash-todo-subtitle {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+}
+.dash-todo-subject {
+    font-weight: 700;
+    font-size: 1.02rem;
+    margin: 0.15rem 0 0.7rem;
+    color: var(--text-primary);
+}
+.dash-todo-empty {
+    list-style: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 0.5rem 0;
+}
+.dash-todo-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.85rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--border);
+}
+.dash-todo-action-btn {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.75rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
 .dash-todo-item {
     display: flex; align-items: center; gap: 0.7rem;
     padding: 0.55rem 0.6rem;
