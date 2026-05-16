@@ -17,7 +17,10 @@ from ai import (
     evaluate_handwritten_script,
     generate_gap_drill, evaluate_drill_answer,
 )
-from config import DEFAULT_CONFIDENCE, DATA_DIR
+from config import (
+    DEFAULT_CONFIDENCE, DATA_DIR,
+    OBSIDIAN_API_BASE_URL, OBSIDIAN_API_TOKEN, OBSIDIAN_TRACKER_VAULT_PATH,
+)
 
 app = Flask(__name__)
 
@@ -856,6 +859,169 @@ def _save_retro_cache(data):
         json.dump(data, f, indent=2)
 
 
+OBSIDIAN_STATUS_FILE = os.path.join(DATA_DIR, 'obsidian_status.json')
+
+
+def _write_obsidian_status(payload):
+    """Persist the latest Obsidian-push outcome so the dashboard / curl can
+    read it without re-running the (potentially slow) iCloud filesystem call."""
+    try:
+        payload = {**payload, 'updated_at': datetime.now().isoformat()}
+        with open(OBSIDIAN_STATUS_FILE, 'w') as f:
+            json.dump(payload, f, indent=2)
+    except OSError as e:
+        print(f'[obsidian] cannot write status file: {e}')
+
+
+def _push_to_obsidian_background(summary, days, entry_count):
+    """Spawn a daemon thread that pushes the diagnosis to Obsidian via the
+    Local REST API plugin. Backgrounded purely so the retrospective endpoint
+    returns immediately — the HTTP call itself has its own timeout."""
+    import threading
+    _write_obsidian_status({'status': 'pending', 'path': '', 'error': ''})
+
+    def _run():
+        try:
+            result = _push_retro_to_obsidian(summary, days, entry_count)
+        except Exception as e:
+            result = {'status': 'error', 'path': '', 'error': f'unexpected: {e!r}'}
+        _write_obsidian_status(result)
+
+    threading.Thread(target=_run, daemon=True).start()
+
+
+@app.route('/api/obsidian/status', methods=['GET'])
+def api_obsidian_status():
+    """Read the most recent Obsidian-push outcome (pending / ok / error)."""
+    try:
+        with open(OBSIDIAN_STATUS_FILE) as f:
+            return jsonify(json.load(f))
+    except (OSError, json.JSONDecodeError):
+        return jsonify({'status': 'unknown', 'path': '', 'error': '', 'updated_at': None})
+
+
+def _push_retro_to_obsidian(summary, days, entry_count):
+    """Prepend a dated diagnosis section to the Revision Tracker note via
+    Obsidian's Local REST API plugin. Obsidian's process owns iCloud access,
+    so Flask never touches the filesystem — it just makes an HTTP round trip
+    to 127.0.0.1.
+
+    Returns {'status': 'ok' | 'error', 'path': str, 'error': str}. Never
+    raises — failure modes (auth, 404, plugin not running, network) all
+    produce a clear error string."""
+    import urllib.request
+    import urllib.error
+    import ssl
+
+    def fail(msg):
+        print(f'[obsidian] {msg}')
+        return {'status': 'error', 'path': '', 'error': msg}
+
+    if not OBSIDIAN_API_TOKEN:
+        return fail('OBSIDIAN_API_TOKEN is empty — set it in .env')
+
+    base = OBSIDIAN_API_BASE_URL.rstrip('/')
+    rel = OBSIDIAN_TRACKER_VAULT_PATH.lstrip('/')
+    # urllib auto-encodes the path components when we build the URL string
+    # via Request — Obsidian wants the vault-relative path raw, with spaces.
+    from urllib.parse import quote
+    url = f'{base}/vault/{quote(rel)}'
+
+    # HTTPS variant uses a self-signed cert by default; HTTP needs no context.
+    ssl_ctx = None
+    if url.startswith('https://'):
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+
+    def _request(method, body=None, content_type='application/json'):
+        headers = {'Authorization': f'Bearer {OBSIDIAN_API_TOKEN}'}
+        if body is not None:
+            headers['Content-Type'] = content_type
+        req = urllib.request.Request(url, method=method, headers=headers,
+                                     data=body.encode('utf-8') if isinstance(body, str) else body)
+        return urllib.request.urlopen(req, timeout=10, context=ssl_ctx) if ssl_ctx \
+            else urllib.request.urlopen(req, timeout=10)
+
+    # 1. GET the existing note (may be 404 — that's fine, we'll create it).
+    existing = ''
+    try:
+        with _request('GET') as resp:
+            existing = resp.read().decode('utf-8', errors='replace')
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            existing = ''
+        elif e.code == 401:
+            return fail('401 Unauthorized — OBSIDIAN_API_TOKEN is wrong')
+        else:
+            return fail(f'GET {url} failed: {e.code} {e.reason}')
+    except urllib.error.URLError as e:
+        return fail(f'cannot reach Obsidian REST API at {base} — is the plugin running? ({e.reason})')
+
+    today_iso = datetime.now().date().isoformat()
+    today_human = datetime.now().strftime('%A, %d %B %Y')
+    new_section = (
+        f'## {today_iso} — Diagnosis\n'
+        f'*Generated {today_human} · last {days} days · {entry_count} attempts*\n\n'
+        f'{summary.strip()}\n\n'
+        f'---\n\n'
+    )
+
+    if existing:
+        # Preserve YAML frontmatter; insert new section under the H1 if there
+        # is one, else right after the frontmatter, else at the very top.
+        fm_end = 0
+        if existing.startswith('---\n'):
+            second = existing.find('\n---\n', 4)
+            if second != -1:
+                fm_end = second + len('\n---\n')
+        head, body = existing[:fm_end], existing[fm_end:]
+        h1_match = re.search(r'^#\s.+?$', body, re.MULTILINE)
+        if h1_match:
+            insert_at = body.find('\n\n', h1_match.end())
+            insert_at = insert_at + 2 if insert_at != -1 else h1_match.end() + 1
+        else:
+            insert_at = 0
+        new_body = body[:insert_at] + new_section + body[insert_at:]
+        content = head + new_body
+    else:
+        content = (
+            '---\n'
+            'tags: [revision, cambridge-ib]\n'
+            'title: Revision Tracker\n'
+            '---\n\n'
+            '# Revision Tracker\n\n'
+            'Auto-updated by the revision app every time a weekly '
+            'retrospective is generated. Newest diagnosis at the top.\n\n'
+        ) + new_section
+
+    # 2. PUT the merged content back. The plugin expects text/markdown.
+    try:
+        with _request('PUT', body=content, content_type='text/markdown') as resp:
+            if resp.status >= 400:
+                return fail(f'PUT returned {resp.status}')
+    except urllib.error.HTTPError as e:
+        return fail(f'PUT {url} failed: {e.code} {e.reason}')
+    except urllib.error.URLError as e:
+        return fail(f'PUT to Obsidian failed: {e.reason}')
+
+    print(f'[obsidian] wrote diagnosis to vault://{rel}')
+    return {'status': 'ok', 'path': f'vault://{rel}', 'error': ''}
+
+
+@app.route('/api/retrospective/push-obsidian', methods=['POST'])
+def api_retrospective_push_obsidian():
+    """Diagnostic: queue an Obsidian push for the most recently cached
+    retrospective. Returns immediately with status='queued'; poll
+    /api/obsidian/status (or check obsidian_status.json) for the outcome."""
+    cache = _load_retro_cache()
+    summary = cache.get('summary')
+    if not summary:
+        return jsonify({'status': 'error', 'error': 'no cached retrospective to push'}), 400
+    _push_to_obsidian_background(summary, cache.get('days', 7), cache.get('entry_count', 0))
+    return jsonify({'status': 'queued'})
+
+
 @app.route('/api/retrospective', methods=['GET'])
 def api_retrospective_get():
     """Cached weekly retrospective. Returns the latest cached summary if it's
@@ -910,6 +1076,15 @@ def api_retrospective_generate():
         'entry_count': len(recent),
     }
     _save_retro_cache(cache)
+
+    # Mirror to Obsidian Revision Tracker in a background thread — iCloud's
+    # `cloudd` daemon can block filesystem calls for tens of seconds on a
+    # cold vault directory, and we don't want the dashboard's "Refresh"
+    # button to inherit that latency. Status lands in obsidian_status.json
+    # (and the /api/obsidian/status endpoint).
+    _push_to_obsidian_background(result['summary'], days, len(recent))
+    cache['obsidian'] = {'status': 'pending', 'path': '', 'error': ''}
+
     return jsonify(cache)
 
 
