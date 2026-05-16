@@ -1462,6 +1462,43 @@ def api_supervision_check():
     return jsonify(result)
 
 
+# ---- Planner persistence ----
+# Server-side mirror of the browser's `plannerSelections` so backend scripts
+# (revision plan generator, Obsidian sync, etc.) can read which subjects are
+# being sat without going through the browser.
+
+PLANNER_FILE = os.path.join(DATA_DIR, 'planner.json')
+
+
+@app.route('/api/planner', methods=['GET'])
+def api_planner_get():
+    try:
+        with open(PLANNER_FILE) as f:
+            data = json.load(f)
+        return jsonify(data)
+    except (OSError, json.JSONDecodeError):
+        return jsonify({'selections': {}, 'updated_at': None})
+
+
+@app.route('/api/planner', methods=['PUT'])
+def api_planner_put():
+    """Replace the persisted planner state. Body: {selections: {...}}."""
+    body = request.get_json() or {}
+    selections = body.get('selections')
+    if not isinstance(selections, dict):
+        return jsonify({'error': 'selections must be an object'}), 400
+    record = {
+        'selections': selections,
+        'updated_at': datetime.now().isoformat(),
+    }
+    try:
+        with open(PLANNER_FILE, 'w') as f:
+            json.dump(record, f, indent=2)
+    except OSError as e:
+        return jsonify({'error': str(e)}), 500
+    return jsonify(record)
+
+
 if __name__ == '__main__':
     import os
     # Default to 5001: macOS reserves port 5000 for AirPlay Receiver.

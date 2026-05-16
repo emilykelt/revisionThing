@@ -121,6 +121,20 @@ const app = {
         `;
     },
 
+    _syncPlannerToServer(selections) {
+        // Best-effort: push localStorage state to the server so backend scripts
+        // can read which subjects are being sat. No user-visible feedback on
+        // success; failure is silent (planner still works locally).
+        try {
+            fetch('/api/planner', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ selections: selections || {} }),
+                keepalive: true,
+            }).catch(() => {});
+        } catch (_) { /* ignore */ }
+    },
+
     _takingCourseIds() {
         // Course IDs the user has selected at least one question for in the
         // exam planner. Returns null if nothing is selected (so callers fall
@@ -3462,6 +3476,12 @@ const app = {
     },
 
     _renderPlanner() {
+        // Push the current localStorage state to the server on entry so the
+        // backend mirror is always at least as fresh as the page load.
+        try {
+            const sel = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
+            this._syncPlannerToServer(sel);
+        } catch (_) { /* ignore */ }
         // Cambridge Part IB CS 2026 paper structure (Papers 4–7).
         // Each course entry lists its question NUMBERS in that paper, so the
         // user can pick any subset (not all-or-nothing per course).
@@ -3607,6 +3627,10 @@ const app = {
                         saved[pKey] = all[pKey];
                         pill.classList.toggle('selected', next);
                         updateCountUI(PAPERS.find(p => p.num === paperNum));
+                        // Server-side mirror so backend scripts (revision plan
+                        // generator, Obsidian sync) can read these selections
+                        // without going through the browser.
+                        this._syncPlannerToServer(all);
                     });
                 });
             });
