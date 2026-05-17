@@ -1,111 +1,22 @@
 {
   "concurrent-distributed": {
-    "total_questions": 16,
+    "total_questions": 14,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ConcurrentandDistributedSystems.html",
     "topic_frequencies": {
-      "cds-replication": 5,
-      "cds-consistency-models": 3,
-      "cds-consensus": 12,
-      "cds-transactions": 10,
-      "cds-faults": 9,
-      "cds-threads": 4,
-      "cds-sync": 14,
-      "cds-monitors": 6,
+      "cds-monitors": 4,
+      "cds-sync": 12,
+      "cds-transactions": 9,
       "cds-rpc": 2,
       "cds-deadlock": 12,
       "cds-time": 15,
+      "cds-faults": 8,
+      "cds-replication": 2,
+      "cds-consistency-models": 2,
+      "cds-threads": 3,
+      "cds-consensus": 11,
       "cds-recovery": 3
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 5,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p5q4.pdf",
-        "topics": [
-          "cds-replication",
-          "cds-consistency-models",
-          "cds-consensus",
-          "cds-transactions",
-          "cds-faults"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Your first thought is to represent each hourly time slot for each supervision room as a separate register, with the value of the register indicating the supervisor who has booked it (if any), and to use the algorithm by Attiya, Bar-Noy, and Dolev (ABD algorithm) to replicate those registers. Assume that every time slot begins on the hour and lasts for an hour, so there are no overlapping slots. Explain briefly how the ABD algorithm works, and which consistency properties such a room booking system would have. Pseudocode is not needed.",
-            "marks": 6,
-            "topics": [
-              "cds-replication",
-              "cds-consistency-models"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Your second idea is to instead use state machine replication (SMR). Give pseudocode for a SMR-based supervision room database, and explain the pros and cons of this approach compared to using ABD. You may assume that you already have an implementation of total order broadcast.",
-            "marks": 6,
-            "topics": [
-              "cds-replication",
-              "cds-consensus"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Your third idea is to use two-phase commit (2PC) to coordinate writes to the replicas. Explain how 2PC works, and how it compares to the previous two approaches in the context of the room booking system.",
-            "marks": 6,
-            "topics": [
-              "cds-transactions",
-              "cds-faults"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Which of the three approaches (ABD, SMR, 2PC) is best for this system? Briefly explain why.",
-            "marks": 2,
-            "topics": [
-              "cds-replication"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 5,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p5q5.pdf",
-        "topics": [
-          "cds-threads",
-          "cds-sync",
-          "cds-monitors"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Assume the server uses one thread per connected user to handle that user's connection. Outline (in words, not code) how you might implement a module that determines which users to connect to each other. How will you ensure it is thread-safe when multiple users connect concurrently?",
-            "marks": 4,
-            "topics": [
-              "cds-threads",
-              "cds-sync"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Using Java's monitor API (synchronized, wait(), notify(), notifyAll()), write pseudocode for a class with a thread-safe method matchUser(u1) \u2192 u2 that takes a user object u1 and returns another user object u2. The return value u2 must be the argument passed by another thread to the same method in a call matchUser(u2) \u2192 u1, and that call must return u1. In other words, u1 and u2 are two users whose video feeds will be linked together. You do not need to write any pseudocode for the video handling. If no other user object is currently available for matching, the method must block until another thread has called matchUser().\n\nBriefly justify why your solution is correct, for example using comments in your pseudocode. Details of syntax and Java APIs are not important; the pseudocode just needs to be clear.",
-            "marks": 10,
-            "topics": [
-              "cds-monitors",
-              "cds-sync"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Java offers signal-and-continue semantics for its monitors. Explain what this means, and how you ensure that the code you wrote for Part (b) is correct under this semantics. Also, justify why you used notify() or notifyAll() in your answer to Part (b).",
-            "marks": 6,
-            "topics": [
-              "cds-monitors"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 5,
@@ -856,16 +767,16 @@
     ]
   },
   "compiler-construction": {
-    "total_questions": 16,
+    "total_questions": 14,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-CompilerConstruction.html",
     "topic_frequencies": {
-      "cc-lexing": 7,
-      "cc-advanced": 6,
-      "cc-overview": 9,
-      "cc-data-procs": 19,
-      "cc-optimisation": 6,
       "cc-parsing": 23,
+      "cc-lexing": 3,
+      "cc-overview": 8,
+      "cc-data-procs": 17,
+      "cc-advanced": 2,
       "cc-correctness": 10,
+      "cc-optimisation": 5,
       "SLR-parsing": 2,
       "parsing-tables": 1,
       "LR-parsing": 1,
@@ -873,99 +784,6 @@
       "stack-machine": 1
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 4,
-        "question": 1,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p4q1.pdf",
-        "topics": [
-          "cc-lexing"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "The specification is ambiguous: multiple lexing rules match the same string.\n\n(i) Give an example of ambiguity that is resolved by the first match rule. [1 mark]\n\n(ii) Give an example of ambiguity that is resolved by the longest match rule. [1 mark]\n\n(iii) Identify an ineffectual lexing rule in the specification. [1 mark]",
-            "marks": 3,
-            "topics": [
-              "cc-lexing"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Convert the specification to a tagged deterministic finite automaton (DFA). [7 marks]",
-            "marks": 7,
-            "topics": [
-              "cc-lexing"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Give a new lexing rule that skips over comments. Comments start with the two-character sequence {- and end with the two-character sequence -}, and can contain any characters except the closing sequence -}.\n\nYou can use standard operators (\u2205, c, \u03f5, r1 |r2 , r1 r2 , r\u2217, r+) and positive and negative character sets such as [a-z] and [^a-z]. [3 marks]",
-            "marks": 3,
-            "topics": [
-              "cc-lexing"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "One way of constructing lexer DFAs is to use derivatives. The derivative of a regular expression r with respect to a character c is another regular expression \u2202c r that matches s if r matches cs.\n\n(i) Define \u2202c for sequencing r1 r2 , intersection r1 &r2 and negation \u00acr. [3 marks]\n\n(ii) Give a set of derivatives that can be used to construct a DFA for the lexer specification, including the lexing rule for comments from part (c). Omit cases that produce \u2205. You do not need to actually construct the DFA. [4 marks]",
-            "marks": 7,
-            "topics": [
-              "cc-lexing"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 4,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p4q2.pdf",
-        "topics": [
-          "cc-advanced",
-          "cc-overview",
-          "cc-data-procs",
-          "cc-optimisation"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Outline the benefits and drawbacks of implementing laziness in the compiler rather than in a library.",
-            "marks": 4,
-            "topics": [
-              "cc-advanced",
-              "cc-overview"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Give new Jargon VM instructions that can implement delay and force and describe their behaviour.",
-            "marks": 6,
-            "topics": [
-              "cc-advanced",
-              "cc-data-procs"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Give the translation of the delay and force constructs into your extended instruction set.",
-            "marks": 6,
-            "topics": [
-              "cc-advanced",
-              "cc-data-procs"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "You now consider adding an optimization that evaluates the argument of delay eagerly rather than creating a delayed computation.\n\n(i) Give an expression e for which the transformation is valid (that is, behaviour-preserving) and always an optimization.\n\n(ii) Give an expression e for which the transformation is valid and only sometimes an optimization.\n\n(iii) Give an expression e for which the compiler cannot ascertain whether the transformation is valid.\n\n(iv) Give an expression e for which the transformation is not valid.",
-            "marks": 4,
-            "topics": [
-              "cc-optimisation",
-              "cc-advanced"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 4,
@@ -1685,115 +1503,16 @@
     ]
   },
   "computation-theory": {
-    "total_questions": 16,
+    "total_questions": 12,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ComputationTheory.html",
     "topic_frequencies": {
-      "ct-lambda": 38,
-      "ct-recursive": 15,
-      "ct-halting": 9,
-      "ct-universal": 10,
-      "ct-register": 26
+      "ct-recursive": 6,
+      "ct-lambda": 29,
+      "ct-register": 22,
+      "ct-universal": 9,
+      "ct-halting": 5
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 3,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q3.pdf",
-        "topics": [
-          "ct-lambda"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Present, with justification, a \u03bb-term H such that we have\n\n$$H [n_1, n_2, \\ldots, n_m] =_\\beta n_1.$$",
-            "marks": 2,
-            "topics": [
-              "ct-lambda"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Present, with justification, a \u03bb-term L such that for any list l we have\n\n$$\\text{length}\\; l =_\\beta L\\; l.$$",
-            "marks": 4,
-            "topics": [
-              "ct-lambda"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Suppose a function g is represented with the \u03bb-term G. Present, with justification, a \u03bb-term M such that for any list l we have\n\n$$\\text{map}\\; g\\; l =_\\beta M\\; G\\; l.$$",
-            "marks": 4,
-            "topics": [
-              "ct-lambda"
-            ]
-          },
-          {
-            "label": "d(i)",
-            "text": "Consider this Ocaml code for reversing a list:\n\n```\nlet rec aux r l =\n    if l = []\n    then r\n    else aux ((hd l) :: r) (tl l)\n\nlet rev = aux []\n```\n\nIn answering the following questions you may use these \u03bb-terms and facts.\n$$Y F =_\\beta F (Y F) \\qquad \\text{IF TRUE } F\\; S =_\\beta F$$\n$$N\\; [] =_\\beta \\text{TRUE} \\qquad \\text{IF FALSE } F\\; S =_\\beta S$$\n$$N\\; [n_1, \\ldots, n_m] =_\\beta \\text{FALSE} \\qquad C\\; n\\; l =_\\beta n :: l$$\n\nDefine \u03bb-terms A representing aux and R representing rev.",
-            "marks": 4,
-            "topics": [
-              "ct-lambda"
-            ]
-          },
-          {
-            "label": "d(ii)",
-            "text": "Prove that R l correctly implements list reversal for every list l.",
-            "marks": 6,
-            "topics": [
-              "ct-lambda"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q4.pdf",
-        "topics": [
-          "ct-recursive",
-          "ct-halting",
-          "ct-universal"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Are all total partial recursive functions primitive recursive?",
-            "marks": 2,
-            "topics": [
-              "ct-recursive"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Suppose that $S \\subseteq \\mathbb{N}$ is decidable. Prove that $S$ is recursively enumerable.",
-            "marks": 6,
-            "topics": [
-              "ct-recursive"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Prove that a set $S \\subseteq \\mathbb{N}$ is decidable if and only if both $S$ and its complement $\\bar{S}$ are recursively enumerable.",
-            "marks": 6,
-            "topics": [
-              "ct-recursive",
-              "ct-halting"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Provide a complete proof that the set $S_0 = \\{e \\mid \\phi_e(0) \\downarrow\\}$ is recursively enumerable but its complement is not.",
-            "marks": 6,
-            "topics": [
-              "ct-halting",
-              "ct-universal",
-              "ct-recursive"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 6,
@@ -2029,109 +1748,6 @@
         ],
         "_text_extracted": true,
         "total_marks": 20
-      },
-      {
-        "year": 2022,
-        "paper": 6,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q5.pdf",
-        "topics": [
-          "ct-register",
-          "ct-recursive"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Every subset S \u2286 N is equal to I(f ) for some register machine computable partial function f .",
-            "marks": 4,
-            "topics": [
-              "ct-register"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "If f is register machine computable, then I(f ) is equal to D(g) for some partial recursive function g.",
-            "marks": 7,
-            "topics": [
-              "ct-register",
-              "ct-recursive"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "If f is register machine computable, then D(f ) is equal to I(g) for some total recursive function g.",
-            "marks": 4,
-            "topics": [
-              "ct-register",
-              "ct-recursive"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "If g is a partial recursive function, then D(g) is equal to I(f ) for some register machine computable partial function f .",
-            "marks": 5,
-            "topics": [
-              "ct-recursive",
-              "ct-register"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 6,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q6.pdf",
-        "topics": [
-          "ct-lambda",
-          "ct-recursive",
-          "ct-halting"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Explain why the Church-Rosser Theorem implies that any \u03bb-term that is \u03b2-convertible (=\u03b2 ) to a term in \u03b2-normal form is in fact \u03b2-reducible () to one in \u03b2-normal form.",
-            "marks": 2,
-            "topics": [
-              "ct-lambda"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Let Bnf denote the set of \u03bb-terms that have a \u03b2-normal form. Give with justification an example of two closed \u03bb-terms I and \u03a9 with I \u2208 Bnf and \u03a9 \u2208/ Bnf .",
-            "marks": 3,
-            "topics": [
-              "ct-lambda"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Suppose that # is a bijection between the set of all \u03bb-terms and the set N of all natural numbers and that there are recursive functions \u03b1 : N \u00d7 N \u2192 N and \u03bd : N \u2192 N satisfying for all \u03bb-terms M, N and numbers n that\n\n$$\\alpha(\\#(M ), \\#(N )) = \\#(M N) \\tag{1}$$\n$$\\nu(n) = \\#(\\mathbf{n}) \\tag{2}$$\n\nwhere the \u03bb-term n is the nth Church numeral. Writing pMq for #(M ), show that there are closed \u03bb-terms App and Num satisfying for all \u03bb-terms M, N that\n\n$$\\text{App}\\, pMq\\, pNq =_\\beta pMNq \\tag{3}$$\n$$\\text{Num}\\, pNq =_\\beta ppNqq \\tag{4}$$\n\n(Any general properties of partial recursive functions with respect to \u03bb-calculus you use should be carefully stated, but need not be proved.)",
-            "marks": 6,
-            "topics": [
-              "ct-lambda",
-              "ct-recursive"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Consider the following property of a closed \u03bb-term F (where pMq is as in part (c)):\n$$\\text{for all \u03bb-terms } M, \\quad F\\, pMq =_\\beta \\begin{cases} \\mathbf{0} & \\text{if } M \\in \\text{Bnf} \\\\ \\mathbf{1} & \\text{if } M \\notin \\text{Bnf} \\end{cases} \\tag{7}$$\nLet H = \u03bbh.P \u03a9 I (F (App h (Num h))) where P = \u03bbx y f.f (\u03bbz.y) x and \u03a9 and I are as in part (b). By considering whether or not H pHq is in Bnf , deduce that there can be no \u03bb-term F satisfying (7).",
-            "marks": 6,
-            "topics": [
-              "ct-lambda",
-              "ct-halting"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Deduce from part (d ) that {#(M ) | M \u2208 Bnf } is an undecidable set of numbers.",
-            "marks": 3,
-            "topics": [
-              "ct-halting",
-              "ct-recursive"
-            ]
-          }
-        ]
       },
       {
         "year": 2021,
@@ -2510,119 +2126,17 @@
     ]
   },
   "complexity-theory": {
-    "total_questions": 16,
+    "total_questions": 13,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ComplexityTheory.html",
     "topic_frequencies": {
-      "cx-np": 32,
-      "cx-np-problems": 14,
-      "cx-space": 13,
-      "cx-conp": 13,
-      "cx-randomised": 7,
-      "cx-time": 18
+      "cx-conp": 12,
+      "cx-np": 26,
+      "cx-time": 13,
+      "cx-randomised": 2,
+      "cx-np-problems": 13,
+      "cx-space": 10
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 1,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q1.pdf",
-        "topics": [
-          "cx-np",
-          "cx-np-problems",
-          "cx-space",
-          "cx-conp"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Provide two definitions of the class NP: one in terms of non-determinism and the other in terms of verification. Prove that the two notions are equivalent.",
-            "marks": 6,
-            "topics": [
-              "cx-np"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Show that SSP \u2208 NP.",
-            "marks": 2,
-            "topics": [
-              "cx-np"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Prove that SSP is NP-complete. (Hint: to establish hardness, you can reduce from the NP-complete 3D Matching Problem, defined as follows. Given disjoint sets X, Y , Z, each of size n, and a collection of triples T \u2286 X \u00d7Y \u00d7Z, determine whether there exists a subset M \u2286 T of size n such that each element of X, Y , and Z appears in exactly one triple of M . )",
-            "marks": 8,
-            "topics": [
-              "cx-np",
-              "cx-np-problems"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Suppose that one finds a non-deterministic logspace algorithm for SSP. What would this imply about the NP vs co-NP problem?",
-            "marks": 4,
-            "topics": [
-              "cx-space",
-              "cx-conp"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q2.pdf",
-        "topics": [
-          "cx-randomised",
-          "cx-time"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Define the class BPP formally.",
-            "marks": 2,
-            "topics": [
-              "cx-randomised"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Show that the standard choice of error probability bound in the definition of BPP can be reduced to an exponentially small error.",
-            "marks": 4,
-            "topics": [
-              "cx-randomised"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Suppose we set the error probability bound to only require less than 1/2 (i.e., success probability at least 1/2) in the above definition. Would that change the resulting complexity class?",
-            "marks": 6,
-            "topics": [
-              "cx-randomised"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Prove that BPP \u2286 P/Poly.",
-            "marks": 4,
-            "topics": [
-              "cx-randomised",
-              "cx-time"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Is BPP = P/Poly? Justify your answer.",
-            "marks": 4,
-            "topics": [
-              "cx-randomised",
-              "cx-time"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 6,
@@ -2673,48 +2187,6 @@
         ],
         "total_marks": 20,
         "_text_extracted": true
-      },
-      {
-        "year": 2024,
-        "paper": 6,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q2.pdf",
-        "topics": [
-          "cx-time",
-          "cx-np",
-          "cx-space"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Provide a precise definition of the following complexity classes: EXP, NEXP, and NPSPACE.",
-            "marks": 3,
-            "topics": [
-              "cx-time",
-              "cx-np",
-              "cx-space"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Prove that NPSPACE \u2286 EXP \u2286 NEXP.",
-            "marks": 7,
-            "topics": [
-              "cx-space",
-              "cx-time",
-              "cx-np"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Prove that if P = NP, then EXP = NEXP.",
-            "marks": 10,
-            "topics": [
-              "cx-time",
-              "cx-np"
-            ]
-          }
-        ]
       },
       {
         "year": 2023,
@@ -3289,124 +2761,16 @@
     ]
   },
   "artificial-intelligence": {
-    "total_questions": 16,
+    "total_questions": 14,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ArtificialIntelligence.html",
     "topic_frequencies": {
-      "ai-search-heuristic": 12,
-      "ai-neural": 21,
-      "ai-planning": 29,
-      "ai-csp": 13,
+      "ai-neural": 17,
+      "ai-planning": 25,
+      "ai-csp": 12,
+      "ai-search-heuristic": 7,
       "ai-knowledge": 1
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 7,
-        "question": 1,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p7q1.pdf",
-        "topics": [
-          "ai-search-heuristic",
-          "ai-neural"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "In the context of algorithms for search in AI, what is a heuristic and how is it used? Give a definition of what it means for a heuristic to be admissible.",
-            "marks": 3,
-            "topics": [
-              "ai-search-heuristic"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "You have a collection h1 , h2 , . . . , hn of heuristics, each of which is admissible. Prove that the heuristic\n\\[\nh(s) = \\sum_{i=1}^{n} a_i h_i(s) \\text{ where } a_i > 0 \\text{ and } \\sum_{i=1}^{n} a_i = 1\n\\]\nis also admissible.",
-            "marks": 2,
-            "topics": [
-              "ai-search-heuristic"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "How would you address this as a supervised learning problem? Is linear regression likely to be a good method? Explain your answer.",
-            "marks": 3,
-            "topics": [
-              "ai-neural",
-              "ai-search-heuristic"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "You find that VectorDribble's built-in function uses the standard measure of error\n\\[\nE(w) = \\sum_{i=1}^{m} \\left(h'(s_i) - f(s_i, w)\\right)^2\n\\]\nwhere w is the learned vector of weights and f(s_i, w) is the output of the learned function. Your friend claims that this is the error you must use as it is built into the library. Explain why this function should not be used.",
-            "marks": 2,
-            "topics": [
-              "ai-neural",
-              "ai-search-heuristic"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Suggest a better function to use in place of the built-in E(w). Explain how it improves on the built-in version.",
-            "marks": 4,
-            "topics": [
-              "ai-neural",
-              "ai-search-heuristic"
-            ]
-          },
-          {
-            "label": "f",
-            "text": "As you now can not use VectorDribble to solve the problem, derive a gradient descent-based learning algorithm that is suitable. You may continue to assume that the underlying linearity is appropriate.",
-            "marks": 6,
-            "topics": [
-              "ai-neural"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 7,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p7q2.pdf",
-        "topics": [
-          "ai-planning",
-          "ai-csp"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Describe the elements of the state-variable representation.",
-            "marks": 5,
-            "topics": [
-              "ai-planning"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Give examples of how the following three elements of Evil Robot's cave problem can be represented in the state-variable representation: the locations of the traps and key dispensers, obtaining a key, and escape from the prison.",
-            "marks": 5,
-            "topics": [
-              "ai-planning"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Movement is achieved using actions goLeft, goRight, goForward and goBack. We wish to use a single action description for each. However the cave is surrounded by walls and not all locations have the same effect when moved into. Explain how rigid relations can be used to obtain precisely four action descriptions with the desired behaviour. Make sure you account for the fact that it should not be possible to escape from the prison just by moving.",
-            "marks": 5,
-            "topics": [
-              "ai-planning"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "One of the advantages of the state-variable representation is that planning problems can easily be translated into a form solvable by a constraint satisfaction solver. Briefly describe how your goRight action would be modelled as part of a constraint satisfaction problem.",
-            "marks": 5,
-            "topics": [
-              "ai-planning",
-              "ai-csp"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 7,
@@ -4039,102 +3403,19 @@
     ]
   },
   "prog-c-cpp": {
-    "total_questions": 12,
+    "total_questions": 8,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ProgramminginCandC++.html",
     "topic_frequencies": {
-      "pcc-intro": 11,
-      "pcc-memory": 14,
-      "pcc-pointers": 16,
-      "pcc-undefined": 11,
-      "pcc-cpp-basics": 7,
-      "pcc-cpp-advanced": 13,
+      "pcc-cpp-basics": 5,
+      "pcc-intro": 7,
+      "pcc-cpp-advanced": 11,
+      "pcc-undefined": 7,
+      "pcc-pointers": 7,
+      "pcc-memory": 8,
       "pcc-debugging": 1,
       "pcc-performance": 2
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 4,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p4q5.pdf",
-        "topics": [
-          "pcc-intro",
-          "pcc-memory",
-          "pcc-pointers",
-          "pcc-undefined"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "For the C code running in the device, what is the minimum support needed (if any) from an operating system or run-time system?",
-            "marks": 4,
-            "topics": [
-              "pcc-intro"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Can C code in the device or in general operate without a heap? Would it then have no pointers?",
-            "marks": 4,
-            "topics": [
-              "pcc-memory",
-              "pcc-pointers"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "The following code turns two adjacent LEDs on. Explain four features of the code.\n\n      #define IO_BASE 0xE000\n      ((volatile unsigned char *)IO_BASE)[4] = 0x60;",
-            "marks": 4,
-            "topics": [
-              "pcc-pointers",
-              "pcc-undefined"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "The rotary encoder has two output bits (as in the ECAD classes) that advance through the following infinitely repeating pattern in the low two bits read at offset 8 from the IO_BASE when rotating clockwise, ...0132013... The sequence is reversed when the encoder is turned the other way. Define a C subroutine poll() that is to be repeatedly called at a suitable rate (eg 1 kHz). The outcome should be that a single LED is lit at any time, with which one being suitably adjusted by the encoder.",
-            "marks": 8,
-            "topics": [
-              "pcc-pointers",
-              "pcc-intro"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 4,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p4q6.pdf",
-        "topics": [
-          "pcc-pointers",
-          "pcc-cpp-basics",
-          "pcc-undefined",
-          "pcc-memory",
-          "pcc-cpp-advanced"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "You are building a complex-number library where the expression R = R \u2217 A \u2217 B is coded roughly like\n       struct cpx { double re, im; };\n       extern cpx A, B; cpx R = { 1.0, 1.0 };\n       mul(R, R, mul(A, B));\nThe outer call to mul returns its result using pass-by-reference in its first argument: the other two arguments are the operands.\n(i) Give a complete implementation of the multiply function (and any overloads needed) and an example of using it, using C++ where all arguments to mul are references. There might not be any deviations from the original coding style, but if there are, justify changes with a brief comment. [4 marks]\n(ii) Likewise, give a complete C implementation, including the caller and callee, where all arguments are pointers. To achieve overloading in C, variations on the method name can be used. [4 marks]\n(iii) Explain how the passing of R to mul twice (aliasing) can cause an incorrect result in some simple implementations and suggest a fix if either of your implementations might fail. [2 marks]",
-            "marks": 10,
-            "topics": [
-              "pcc-pointers",
-              "pcc-cpp-basics",
-              "pcc-undefined"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "You have no access to the standard library and must code a flexible C++ reference counter class refct<T>. It will automatically delete a heap object when its reference count reaches zero.\n\n(i) Briefly assess each of the above three design sketches. [2 marks]\n(ii) Write a C++ implementation of the middle design so that it would behave sensibly under the following (far from ideal) artificial use pattern:\n     foo *copy1 = new foo(); // An object to be managed.\n     refct<foo> rcf(copy1);   // Add management to the first reference.\n     foo *copy2 = rcf.new_user(); // Create a second reference to it.\n     ...\n     rcf.drop();      // Drop one of the references.\n     rcf.drop();      // Drop the last one, causing foo to be deleted.\n[5 marks]\n(iii) Criticise the inclusion of the drop() method, suggesting an improvement to the overall design that follows the RAII (Resource Acquisition Is Initialization) programming idiom. [3 marks]",
-            "marks": 10,
-            "topics": [
-              "pcc-memory",
-              "pcc-cpp-advanced"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 4,
@@ -4388,105 +3669,6 @@
         "total_marks": 20
       },
       {
-        "year": 2022,
-        "paper": 4,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p4q4.pdf",
-        "topics": [
-          "pcc-intro",
-          "pcc-memory",
-          "pcc-pointers",
-          "pcc-undefined"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "BCPL was a precursor to C. It stored character strings using a byte initialised to l, the length of the string, with the characters of the string held in the following bytes. What differences arise from the C method for storing character strings?",
-            "marks": 3,
-            "topics": [
-              "pcc-intro"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A dictionary data structure in C stores key/value pairs where both elements are character strings. Entries are created or updated using\n\n    void insert(const char *key, const char *value)\n\nDiscuss whether the caller or callee should be responsible for allocating store for the strings. What consequences could arise if a caller mutates its local copy of a key?",
-            "marks": 5,
-            "topics": [
-              "pcc-memory",
-              "pcc-pointers"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Students have been told that, in many situations, C array declarations are interchangeable with C pointer declarations. Rather than using a shared header file, a student writes 'extern char *mydata;' at top-level directly in a .c file. Their program does not work. A friend changes it to 'extern char mydata[];'. Might this change make any difference to compiler errors/warnings or run-time operation? Would a shared header file ('.h') help?",
-            "marks": 6,
-            "topics": [
-              "pcc-pointers",
-              "pcc-undefined"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Stating any assumptions made, and considering endianness, describe what happens inside the compiler and at run time for each of the following type casts.\n\n    extern double f1;\n    int i1 = (int)f1;\n    char *p2 = (char *)(&i1);\n    int i3 = (int)(*p2);",
-            "marks": 6,
-            "topics": [
-              "pcc-intro",
-              "pcc-pointers",
-              "pcc-undefined"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 4,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p4q5.pdf",
-        "topics": [
-          "pcc-pointers",
-          "pcc-memory",
-          "pcc-cpp-basics",
-          "pcc-cpp-advanced"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "A FIFO is implemented in C using a singly-linked list that maintains global head and tail pointers. These are initialised to represent the empty FIFO as follows:\n\n    struct fifo_entry *head_ptr = 0;\n    struct fifo_entry **tail_ptr = &head_ptr;\n\nThe entries in the FIFO use a union to store either an integer or a double-precision floating point number. A further field records which is stored. Give syntactically-accurate C code that defines fifo_entry and either a function enqueue_int or a function enqueue_double enqueuing a new value into the FIFO.",
-            "marks": 5,
-            "topics": [
-              "pcc-pointers",
-              "pcc-memory"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "To avoid repetitive reallocation of memory, suppose now that FIFO entries that are no longer in use are to be saved in an auxiliary linked list. Give syntactically-accurate code that implements this approach and then discuss two other approaches for store management.",
-            "marks": 5,
-            "topics": [
-              "pcc-memory",
-              "pcc-pointers"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "The C code in part (a) suffers from a lack of encapsulation \u2013 variables like head_ptr are visible to the the rest of the program. Write C++ defining a class FIFO which maintains a single FIFO implemented using elements fifo_entry as defined in your answer above, but which only exports member functions enqueue_int, enqueue_double, isempty and\n\n    void dequeue(void do_I(int), void do_D(double));\n\nIt should not be possible to create an instance of class FIFO and storage allocation/deallocation should use C++ mechanisms rather than those of C. Your C++ is not required to be syntactically accurate, but should capture the main concepts. It is not necessary to give full code for the above four member functions \u2013 focusing on allocation and deallocation of fifo_entry elements suffices. [Note: do_I and do_D are user-provided processing functions to be applied to the dequeued value.]",
-            "marks": 6,
-            "topics": [
-              "pcc-cpp-basics",
-              "pcc-memory"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "The following lines approximate (e.g. omitting access qualifiers) analogous generic/templated class definitions in Java and C++. Explain which types X are valid for use in Gen<X> and Tem<X>.\n\n[ Java ]: class    Gen<T>             { T v; Gen() { v = 1; } };\n[C++]: template<typename T> class Tem { T v; Tem() { v = 1; } };",
-            "marks": 4,
-            "topics": [
-              "pcc-cpp-advanced"
-            ]
-          }
-        ]
-      },
-      {
         "year": 2021,
         "paper": 4,
         "question": 1,
@@ -4681,63 +3863,17 @@
     ]
   },
   "prolog": {
-    "total_questions": 8,
+    "total_questions": 6,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-Prolog.html",
     "topic_frequencies": {
-      "pl-arithmetic-lists": 19,
-      "pl-backtracking": 5,
-      "pl-intro": 21,
-      "pl-difference": 2,
-      "pl-search": 7,
+      "pl-arithmetic-lists": 13,
+      "pl-intro": 18,
+      "pl-difference": 1,
+      "pl-search": 4,
+      "pl-backtracking": 2,
       "pl-advanced": 1
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 4,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p4q4.pdf",
-        "topics": [
-          "pl-arithmetic-lists",
-          "pl-backtracking"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Write a relation set/4 which, if given a board, square location and a piece, will place that piece on that square. For example set(Board1,sq(3,2),Piece,Board2) will succeed with Board2 having the same contents as Board1 except that the square on the 3rd column from left and 2nd row from bottom contains the given piece.",
-            "marks": 4,
-            "topics": [
-              "pl-arithmetic-lists"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Write a relation contains(Board,sq(Column,Row),S) which, if given a board and square position, will succeed with S being the content of that square.",
-            "marks": 5,
-            "topics": [
-              "pl-arithmetic-lists"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Write a relation white_move(sq(Column,Row),sq(Column1,Row1)) which given a starting position for a white piece at sq(Column,Row) will generate in sq(Column1,Row1) each position that could be reached on an empty board by moving diagonally up and to the right from the starting position.",
-            "marks": 4,
-            "topics": [
-              "pl-arithmetic-lists",
-              "pl-backtracking"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Assuming a board populated with pieces from both sides, write a relation white_attack(Board,sq(Col,Row),sq(Col1,Row1)) which, given the current board state and sq(Col,Row) containing a white piece, will succeed with sq(Col1,Row1) containing the location of an enemy piece that can be successfully attacked, if one exists. An attack on an enemy piece would be blocked by a piece of either colour earlier on the same diagonal.",
-            "marks": 7,
-            "topics": [
-              "pl-backtracking",
-              "pl-arithmetic-lists"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 4,
@@ -4840,80 +3976,6 @@
         ],
         "_text_extracted": true,
         "total_marks": 20
-      },
-      {
-        "year": 2022,
-        "paper": 7,
-        "question": 10,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p7q10.pdf",
-        "topics": [
-          "pl-intro",
-          "pl-difference",
-          "pl-arithmetic-lists",
-          "pl-search",
-          "pl-backtracking"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Assume the built-in operator \\= meaning not unifiable with, and a relation notmember(+A,+L) defined thus:\n\n     notmember(_,[]).\n     notmember(A,[H|T]) :- A \\= H, notmember(A,T).\n\nExplain where facts, rules, atoms, compound terms have been used. Why does notmember(A,[a,b,c]) fail?",
-            "marks": 2,
-            "topics": [
-              "pl-intro"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Write a reverse(+A,?B) relation suitable for last call optimisation. What makes it suitable for LCO?",
-            "marks": 3,
-            "topics": [
-              "pl-difference",
-              "pl-arithmetic-lists"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "This small diagram represents our world map,           house \u2212\u2192 lane\nwith the arrows representing downhill lanes               \u2193        \u2193\nbetween places on the map.                              field \u2212\u2192 forest\n                                                          \u2193        \u2193\n                                                        lake \u2212\u2192 cave\n\nRepresent these downhill lanes with a downhill(?A,?B) relation.",
-            "marks": 2,
-            "topics": [
-              "pl-intro"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Assuming downhill(?A,?B) is acyclic, define a relation downhill_path(?A,?B) which succeeds if place B can be reached from place A along downhill lanes.",
-            "marks": 2,
-            "topics": [
-              "pl-search"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Define a relation linked(?A,?B) which succeeds if a lane directly connects places A and B downhill or the reverse, e.g. :- linked(cave,forest) should succeed.",
-            "marks": 2,
-            "topics": [
-              "pl-intro"
-            ]
-          },
-          {
-            "label": "f",
-            "text": "Define a relation linked_path(+A,+B,?Path) which finds a linked path between places A and B, reporting the ordered list of places visited from A to B in the Path argument.",
-            "marks": 6,
-            "topics": [
-              "pl-search",
-              "pl-backtracking"
-            ]
-          },
-          {
-            "label": "g",
-            "text": "Assume a relation danger(?A,?D) where D gives a numerical value for the danger at each place A, for example :- danger(forest,X) might succeed with X=4. Extend your linked_path relation so that it also returns the sum of the danger values along the path, i.e. linked_path(+A,+B,?Path,?Danger)",
-            "marks": 3,
-            "topics": [
-              "pl-search",
-              "pl-arithmetic-lists"
-            ]
-          }
-        ]
       },
       {
         "year": 2021,
@@ -5147,93 +4209,17 @@
     ]
   },
   "cybersecurity": {
-    "total_questions": 6,
+    "total_questions": 4,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-Cybersecurity.html",
     "topic_frequencies": {
-      "cy-injection": 7,
-      "cy-web": 2,
-      "cy-software": 10,
       "cy-auth": 5,
+      "cy-software": 8,
+      "cy-injection": 2,
       "cy-human": 1,
       "cy-access": 4,
       "cy-malware": 1
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 4,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p4q7.pdf",
-        "topics": [
-          "cy-injection",
-          "cy-web"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "A web form of that application has input fields for id and password. On submission, it displays the corresponding studentGrade, obtained by running the following SQL query, where the items inside the single quotes are replaced by the content of the corresponding form fields. Describe an attack that displays the grade of student abc78, whose password you do not know. First write out the SQL resulting from your attack, then what to type in the fields.\n\nSELECT studentGrade\nFROM student\nWHERE id = 'id' AND pwdHash = b32enc(sha256('password'));",
-            "marks": 3,
-            "topics": [
-              "cy-injection"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Another web form of the same application lets you change your own display name and password: you must supply fields studentID, newStudentName, oldPassword, newPassword. On submission, the form sends the following SQL statement to the database, with the items inside the single quotes replaced by the content of the corresponding form fields. Describe an attack to change the grade of existing student zzz666 to 100 but without changing this student's name or password, neither of which you know. First explain your strategy, then write out the resulting SQL, then what to type in the fields. Assume the database is configured to parse only one SQL statement per supplied string.\n\nUPDATE student\nSET studentName = 'newStudentName',\n    pwdHash = b32enc(sha256('newPassword'))\nWHERE id = 'id' AND pwdHash = b32enc(sha256('oldPassword'));",
-            "marks": 10,
-            "topics": [
-              "cy-injection"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "The developer augments all forms with code that removes every non-alphanumeric character from the fields before inserting them in the SQL statement. Describe the main advantages and drawbacks of this approach.",
-            "marks": 4,
-            "topics": [
-              "cy-injection",
-              "cy-web"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Describe a better approach than the one in Part (c) and justify why it is better.",
-            "marks": 3,
-            "topics": [
-              "cy-injection",
-              "cy-web"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 4,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p4q8.pdf",
-        "topics": [
-          "cy-software",
-          "cy-injection"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "You discovered a buffer overflow vulnerability in a program. You wish to execute some shellcode you prepared, which is 48 bytes long. During the execution of the vulnerable function, the ebp is at 0xbffff3e4 and the 32-byte vulnerable buffer starts at 0xbffff3c0. The badstuff you supply gets copied into the vulnerable buffer via strcpy(), provided it does not exceed 512 bytes in length.\n\nYou prepare the following badstuff input. . .\n 16 copies of 0xbffff400 ; 32 bytes of nop sled ; 48 bytes of shellcode\n. . . but your shellcode does not get executed.\n\n(i) Assuming badstuff has just been copied into the buffer, give hex addresses for: the start of the nop sled; the start of the shellcode; the location of the return address; the first location not overwritten by badstuff. [4 marks]\n\n(ii) Clearly explain why your shellcode did not run. [2 marks]\n\n(iii) Fix the attack by changing some of the numbers, with clear justification, but without altering the structure or length of badstuff. [4 marks]\n\n(iv) Construct, with explanation, the shortest possible badstuff that still executes your shellcode payload. Give the lengths of your new badstuff and of the original one. [4 marks]",
-            "marks": 14,
-            "topics": [
-              "cy-software"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "The host system has been strengthened by making the stack not executable. Nonetheless, you wish to exploit a buffer overflow vulnerability you discovered in another program. Your input gets copied via strcpy() into a vulnerable buffer in the stack frame of print(), at absolute memory position &buf. The return address, during the execution of print(), is at &ret. With your attack, you wish to invoke unlock(0), whose entry point is at &unlock. You may use library function clear(p) (entry point &clear), which writes 0 into the word at address p. You may not skip the functions' prologues. You may crash the program after exiting unlock(0).\n\nClearly explain how to construct the input, describing the evolution of the stack throughout the attack. Your answer must provide the exact content of your input, byte by byte, as in the example provided in Part (a), parametric in the symbolic addresses above.",
-            "marks": 6,
-            "topics": [
-              "cy-software",
-              "cy-injection"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 4,
@@ -5446,168 +4432,18 @@
     ]
   },
   "intro-comp-arch": {
-    "total_questions": 12,
+    "total_questions": 6,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-IntroductiontoComputerArchitecture.html",
     "topic_frequencies": {
-      "ica-memory": 20,
-      "ica-riscv": 7,
-      "ica-pipeline": 14,
-      "ica-soc": 13,
-      "ica-digital": 13,
-      "ica-trends": 4,
-      "ica-gpu": 3,
-      "ica-os-support": 3
+      "ica-pipeline": 9,
+      "ica-riscv": 5,
+      "ica-digital": 7,
+      "ica-memory": 9,
+      "ica-soc": 6,
+      "ica-os-support": 1,
+      "ica-trends": 2
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p5q6.pdf",
-        "topics": [
-          "ica-memory",
-          "ica-riscv",
-          "ica-pipeline",
-          "ica-soc"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "You have designed a simple processor together with private instruction and data caches. You are asked to improve its performance for a particular application. You try each of the changes listed below individually but in each case the performance does not improve significantly. Describe why this might occur.\n\n(i) You change the Instruction Set Architecture (ISA) and processor design to provide more registers for the compiler to use. Each instruction is now encoded using more bits. [4 marks]\n\n(ii) You add a custom instruction that performs a sequence of instructions in fewer clock cycles than was previously possible. [4 marks]\n\n(iii) You replace your current DRAM with a special low-latency DRAM. [3 marks]\n\n(iv) You increase the associativity of the data cache from 2-way to 4-way. [3 marks]",
-            "marks": 14,
-            "topics": [
-              "ica-memory",
-              "ica-riscv",
-              "ica-pipeline"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "You add a second processor core on the same chip with its own private caches, but the speedup you achieve for a new multithreaded application is only 1.2\u00d7. What different factors could explain this limited speedup? [6 marks]",
-            "marks": 6,
-            "topics": [
-              "ica-soc",
-              "ica-memory"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 5,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p5q7.pdf",
-        "topics": [
-          "ica-riscv",
-          "ica-pipeline",
-          "ica-digital",
-          "ica-soc"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Why might having a formal description of an Instruction-Set Architecture (ISA), for example, for the RISC-V ISA, be useful?",
-            "marks": 4,
-            "topics": [
-              "ica-riscv"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "In order to achieve the benefits of pipelining it is necessary to balance the delay of logic in different stages. What might make this difficult or expensive to achieve?",
-            "marks": 4,
-            "topics": [
-              "ica-pipeline"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Why are FPGAs not commonly used for high-volume markets?",
-            "marks": 4,
-            "topics": [
-              "ica-digital",
-              "ica-soc"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "We run timing analysis after logic synthesis and a particular critical path is reported. We now place and route our design and a different critical path is identified. Why might this happen?",
-            "marks": 4,
-            "topics": [
-              "ica-digital"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "After manufacturing our design, we discover that it experiences significant clock skew, meaning the clock signal reaches different flip-flops at different times due to an issue in the clock tree's design. What are the two potential problems this skew could cause? In each case, describe any steps that can be taken to mitigate the issues in the manufactured chips even if they result in reduced performance.",
-            "marks": 4,
-            "topics": [
-              "ica-digital",
-              "ica-pipeline"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 5,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p5q8.pdf",
-        "topics": [
-          "ica-soc",
-          "ica-trends",
-          "ica-memory",
-          "ica-gpu",
-          "ica-os-support"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Why might high-performance system-on-chip (SoC) designs, for example, those that power mobile phones, typically contain many processors, and domain-specific hardware accelerators?",
-            "marks": 6,
-            "topics": [
-              "ica-soc",
-              "ica-trends"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "If we simply wanted to run independent programs on the different cores of a multicore processor, would we need a cache coherency mechanism, a memory consistency model, both, or neither?",
-            "marks": 4,
-            "topics": [
-              "ica-memory",
-              "ica-soc"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "What does the term \"side-channel\" refer to in the context of hardware security? Provide an example of a side channel that could be present in a processor.",
-            "marks": 4,
-            "topics": [
-              "ica-soc",
-              "ica-trends"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Why do GPUs typically require high-bandwidth access to main memory?",
-            "marks": 3,
-            "topics": [
-              "ica-gpu",
-              "ica-memory"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Why do we need to keep Translation Lookaside Buffers (TLBs) coherent in a multi-core system?",
-            "marks": 3,
-            "topics": [
-              "ica-os-support",
-              "ica-memory"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 5,
@@ -5980,255 +4816,23 @@
         ],
         "_text_extracted": true,
         "total_marks": 20
-      },
-      {
-        "year": 2022,
-        "paper": 5,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p5q6.pdf",
-        "topics": [
-          "ica-digital"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "What is the minimum number of LEs required to implement the counter module in Fig. 2 on a Thruppenny Bit FPGA? Provide a detailed rationale.",
-            "marks": 8,
-            "topics": [
-              "ica-digital"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Produce a circuit diagram of your implementation showing how the LEs are wired together.",
-            "marks": 6,
-            "topics": [
-              "ica-digital"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Tabulate the contents of the LUTs for each LE used (i.e. provide a state transition table for each LUT).",
-            "marks": 6,
-            "topics": [
-              "ica-digital"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 5,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p5q7.pdf",
-        "topics": [
-          "ica-memory",
-          "ica-pipeline"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "The following code is written in C, where elements within the same row are stored contiguously. Assume each element of the two dimensional arrays A and B is a 64-bit integer. Assume that each cache line is 16-bytes.\n\n        for(i=0; i<1024; i++)\n          for(j=0; j<1024; j++)\n            A[i][j] = B[i][0] + A[j][i];\n\n        (i) Which variable references exhibit temporal locality? Explain your answer including a definition of temporal locality. [4 marks]\n\n        (ii) Which variable references exhibit spatial locality? Explain your answer including a definition of spatial locality. [4 marks]",
-            "marks": 8,
-            "topics": [
-              "ica-memory"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Imagine we have a tiny 256-byte direct-mapped data cache with 16-byte cache lines. The cache is initially empty. Below is a sequence of 32-bit memory load accesses. For each load identify the tag, index, offset and hit/miss status.\n    0x003, 0x0b4, 0x001, 0x102, 0x001, 0x2c2, 0x004, 0x2c0",
-            "marks": 4,
-            "topics": [
-              "ica-memory"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Data hazards can impact the performance of a pipelined processor. What is a data hazard and how can load and arithmetic instructions be reordered to minimise data hazards arising?",
-            "marks": 4,
-            "topics": [
-              "ica-pipeline"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "For a write-back L1 cache that is full of dirty cache lines, how is a write-miss handled?",
-            "marks": 4,
-            "topics": [
-              "ica-memory"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 5,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p5q8.pdf",
-        "topics": [
-          "ica-soc",
-          "ica-memory",
-          "ica-os-support",
-          "ica-gpu",
-          "ica-pipeline"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Why are modern systems-on-chip (SoC) heterogeneous (i.e. contain a range of different processor cores)?",
-            "marks": 4,
-            "topics": [
-              "ica-soc"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "What is the von Neumann bottleneck and to what extent do modern SoCs suffer from it?",
-            "marks": 4,
-            "topics": [
-              "ica-soc",
-              "ica-memory"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "How is virtual memory used to provide isolation between applications?",
-            "marks": 4,
-            "topics": [
-              "ica-os-support",
-              "ica-memory"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "How do GPUs hide memory access latency?",
-            "marks": 4,
-            "topics": [
-              "ica-gpu",
-              "ica-memory"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Why is conditional program flow control managed differently on GPUs and CPUs?",
-            "marks": 4,
-            "topics": [
-              "ica-gpu",
-              "ica-pipeline"
-            ]
-          }
-        ]
       }
     ]
   },
   "econ-law-ethics": {
-    "total_questions": 15,
+    "total_questions": 11,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-EconomicsLawandEthics.html",
     "topic_frequencies": {
-      "ele-info-econ": 11,
-      "ele-auctions-games": 6,
-      "ele-law": 6,
-      "ele-internet-law": 14,
-      "ele-contemporary": 5,
-      "ele-ethics": 7,
-      "ele-market-failure": 11,
-      "ele-consumer": 8
+      "ele-internet-law": 9,
+      "ele-ethics": 6,
+      "ele-contemporary": 3,
+      "ele-info-econ": 5,
+      "ele-auctions-games": 5,
+      "ele-market-failure": 9,
+      "ele-consumer": 5,
+      "ele-law": 3
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 7,
-        "question": 3,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p7q3.pdf",
-        "topics": [
-          "ele-info-econ",
-          "ele-auctions-games"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Provide examples to illustrate (i) adverse selection and (ii) moral hazard, defining relevant terms.",
-            "marks": 5,
-            "topics": [
-              "ele-info-econ"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Ouchbridge hospital handles sensitive medical data from patients. If there is any data breach, Ouchbridge hospital may face large fines. Ouchbridge hospital is considering buying antivirus software. How does adverse selection affect the process of selecting which software to buy?",
-            "marks": 5,
-            "topics": [
-              "ele-info-econ"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Painbridge hospital has cybersecurity insurance. How does this affect moral hazard?",
-            "marks": 5,
-            "topics": [
-              "ele-info-econ"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "King's Ache & Break hospital has limited financial capacity and must choose to secure either financial data only or medical data only, but not both. A malicious actor will try to get unauthorised access to either financial only or medical data only. Which game does the interaction between the King's Ache & Break hospital and the malicious actor look like? Use relevant game theory terms and discuss what the optimal strategy would be.",
-            "marks": 5,
-            "topics": [
-              "ele-auctions-games"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 7,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p7q4.pdf",
-        "topics": [
-          "ele-law",
-          "ele-internet-law",
-          "ele-contemporary"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "There is ongoing debate about the role of law and regulation for digital technologies. Briefly explain different perspectives on this issue and discuss the relationship between the law and technology's development and use.",
-            "marks": 6,
-            "topics": [
-              "ele-law",
-              "ele-internet-law"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Automated decision-making (ADM) is a purported feature of some AI applications.\n\n(i) Discuss two risks that ADM presents. [3 marks]\n\n(ii) Explain a regulatory challenge for governing ADM systems. [2 marks]",
-            "marks": 5,
-            "topics": [
-              "ele-internet-law",
-              "ele-law",
-              "ele-contemporary"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Data used to train models can raise data protection concerns.\n\n(i) Explain when the General Data Protection Regulation (GDPR) applies to training data. [1 mark]\n\n(ii) Describe two rights given to individuals by the GDPR, discussing how an organisation might implement them in relation to training datasets. [4 marks]",
-            "marks": 5,
-            "topics": [
-              "ele-internet-law",
-              "ele-law"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "The EU AI Act classifies AI systems based on risk, imposing stricter rules on higher-risk uses of AI. Briefly describe two advantages and two concerns of an application-specific, risk-based approach to AI regulation.",
-            "marks": 4,
-            "topics": [
-              "ele-internet-law",
-              "ele-contemporary"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 7,
@@ -6367,78 +4971,6 @@
         ],
         "_text_extracted": true,
         "total_marks": 20
-      },
-      {
-        "year": 2022,
-        "paper": 7,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p7q2.pdf",
-        "topics": [
-          "ele-consumer",
-          "ele-info-econ",
-          "ele-market-failure"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "How does the market for mobile phone handsets differ from the market for mobile phone applications?",
-            "marks": 4,
-            "topics": [
-              "ele-consumer",
-              "ele-info-econ"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Why might a company providing hardware also start distributing applications?",
-            "marks": 6,
-            "topics": [
-              "ele-consumer",
-              "ele-market-failure"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "How might the company price the mobile phone handsets and applications? Provide arguments for and against the available options.",
-            "marks": 10,
-            "topics": [
-              "ele-consumer",
-              "ele-info-econ"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 7,
-        "question": 3,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p7q3.pdf",
-        "topics": [
-          "ele-info-econ",
-          "ele-market-failure",
-          "ele-internet-law",
-          "ele-ethics"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "You are seeking additional resources to boost your team's capabilities. How might you frame your request for an increased budget to increase the likelihood it will be approved?",
-            "marks": 8,
-            "topics": [
-              "ele-info-econ",
-              "ele-market-failure"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A crime group is using accounts with the webmail provider to organise the importation of firearms into the UK. The police would like to know more about their operations.\n\n(i) How might the police discover more about the plans?\n\n(ii) Apply ethical philosophies to argue for and against your suggested approach.",
-            "marks": 12,
-            "topics": [
-              "ele-internet-law",
-              "ele-ethics"
-            ]
-          }
-        ]
       },
       {
         "year": 2021,
@@ -6744,132 +5276,15 @@
     ]
   },
   "formal-models-language": {
-    "total_questions": 15,
+    "total_questions": 11,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-FormalModelsofLanguage.html",
     "topic_frequencies": {
-      "fml-parsing": 34,
-      "fml-chomsky": 18,
-      "fml-induction": 9,
-      "fml-information": 23
+      "fml-chomsky": 13,
+      "fml-information": 19,
+      "fml-parsing": 25,
+      "fml-induction": 2
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 7,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p7q5.pdf",
-        "topics": [
-          "fml-parsing",
-          "fml-chomsky",
-          "fml-induction"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Provide valid unlabelled dependency parses for both of the sentences. Provide motivation for the dependencies and their direction.",
-            "marks": 5,
-            "topics": [
-              "fml-parsing"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Provide a dependency grammar that is consistent with both of your dependency parses.",
-            "marks": 5,
-            "topics": [
-              "fml-parsing"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Can you write a context-free grammar that is weakly equivalent to your grammar? Explain your answer.",
-            "marks": 1,
-            "topics": [
-              "fml-chomsky",
-              "fml-parsing"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Demonstrate how a modified LR shift-reduce parser could yield your dependencies for the first example sentence, \"a toast to the queen was raised tonight\". Show the state of the parser, the actions taken and the dependencies recorded. You may finish the demonstration when \"was\" has been shifted onto the stack.",
-            "marks": 6,
-            "topics": [
-              "fml-parsing"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Explain why data driven dependency parsing is described as grammarless.",
-            "marks": 3,
-            "topics": [
-              "fml-parsing",
-              "fml-induction"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 7,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p7q6.pdf",
-        "topics": [
-          "fml-chomsky",
-          "fml-parsing"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Provide a definition of a formal language and a natural language. With respect to each, what does it mean for a string to be grammatical?",
-            "marks": 3,
-            "topics": [
-              "fml-chomsky"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "With reference to both formal and natural languages, what is meant by complexity?",
-            "marks": 3,
-            "topics": [
-              "fml-chomsky",
-              "fml-parsing"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Consider the following natural language sentences:\n\n   i) A student worked hard succeeds.\n\n   ii) A student that is worked hard succeeds.\n\nYou are debating with a friend whether sentence i) or ii) is more difficult for a human to process. Which do you think is more difficult and why?",
-            "marks": 2,
-            "topics": [
-              "fml-parsing"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "You are now considering the following natural language sentences:\n\n  iii) The notes the supervisor the students like wrote are useful.\n\n  iv) The notes that were written by the supervisor that the students like are useful.\n\nWhich sentence, iii) or iv), do you think is more difficult for a human to process and why?",
-            "marks": 2,
-            "topics": [
-              "fml-parsing"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Your deliberations on processing language have made you concerned about the language in your upcoming dissertation. You decide to make a tool to: 1) identify sentences that are difficult to process; 2) label the sentences with the reason they are difficult. Describe how your tool works. Explain any theoretical assumptions you are making and describe at least two methods by which you will identify the sentences.",
-            "marks": 6,
-            "topics": [
-              "fml-parsing",
-              "fml-chomsky"
-            ]
-          },
-          {
-            "label": "f",
-            "text": "Your friend suggests that, rather than building your tool, you could reduce the processing difficulty of your dissertation by writing it in a language that can be defined by a finite-state machine. Do you agree? Explain your answer.",
-            "marks": 4,
-            "topics": [
-              "fml-chomsky"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 7,
@@ -7121,108 +5536,6 @@
         ],
         "_text_extracted": true,
         "total_marks": 20
-      },
-      {
-        "year": 2022,
-        "paper": 7,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p7q4.pdf",
-        "topics": [
-          "fml-induction"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Complete the table of language patterns exhibited by all possible parameter combinations. Denote S-optionality with (S). When the order of S and O is ambiguous, place O closest to the verb. The first two rows are given:\n\n Sright   Oright   Sdrop   language pattern\n   0        0       0      SOV\n   0        0       1      (S)OV",
-            "marks": 3,
-            "topics": [
-              "fml-induction"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A learning algorithm attempts to identify the parameter settings which characterise a target language. The algorithm records the learner state (the current hypothesised parameter settings). It proceeds by checking the compatibility of an input sentence with the learner state. If they are not compatible, the algorithm flips one bit in the learner state. Draw a diagram to represent the possible transitions between learner states.",
-            "marks": 2,
-            "topics": [
-              "fml-induction"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "The target language is represented by the parameters [011] (Sright = 0, Oright = 1, Sdrop = 1). Sentences in a language may contain 0, 1 or 2 objects and therefore sentences in the target language are in one of the following forms:\n\n1. SV    2. SVO       3. SVOO       4. V     5. VO     6. VOO\n\nWhen presented to the learning algorithm, the probability distribution over sentence forms is uniform. Each bit has an equal probability of being selected for flipping when the input is not compatible. Provide a transition matrix showing transition probabilities between learner states.",
-            "marks": 4,
-            "topics": [
-              "fml-induction"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "If the algorithm is initialised with state [100], give an equation for the expected number of steps to converge on the target language parameters.",
-            "marks": 3,
-            "topics": [
-              "fml-induction"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Given equal probability of any given state being used to initialise the algorithm, write an equation for the overall expected number of steps before convergence on the target language parameters.",
-            "marks": 2,
-            "topics": [
-              "fml-induction"
-            ]
-          },
-          {
-            "label": "f",
-            "text": "Suggest an alternative learning algorithm within the same learning paradigm and discuss the assumptions of the learning paradigm with respect to human language learning.",
-            "marks": 6,
-            "topics": [
-              "fml-induction"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 7,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p7q5.pdf",
-        "topics": [
-          "fml-information"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "You have the following sentences translated from English into Triposi.\n\n English                       Triposi\n she drinks water              mwamni sileng\n the rain soaks the teacher    sileng mworob sesesrakan\n the teacher drinks here       sesesrakan mwamni mwabma\n the teacher keeps drinking    sesesrakan mwatbo mwamni\n\n(i) Translate the following English sentences into Triposi:\n    the rain keeps soaking the teacher\n    she keeps drinking water here  [2 marks]\n\n(ii) Describe how we can calculate the likelihood of a translation using the noisy channel framework: you will need to give and explain the equation for decoding from one language into another, and explain how you can obtain the information needed to carry out the calculations. [4 marks]\n\n(iii) What problem do the following underlined English words present, given the training data we have so far, and how can you still translate them into Triposi with a machine?\n    the teachers drink Perrier  [3 marks]",
-            "marks": 9,
-            "topics": [
-              "fml-information"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "You know that your optical character recognition model has made errors on every predicted instance of 'e'. Explain what information you need in order to automatically correct the errors with a noisy channel approach.",
-            "marks": 3,
-            "topics": [
-              "fml-information"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "A signaller sends you Morse code messages, but you know that they send a dot when they should send a dash two times in five, and a dash instead of a dot three times in ten. You also know that they use the character M (\u2013 \u2013) 3 times in 100, N (\u2013 \u00b7) and I (\u00b7 \u00b7) 7/100, and A (\u00b7 \u2013) 8/100.\n\nYou receive the message \" \u00b7 \u00b7 \u2013 \u00b7 \u00b7 \u2013 \". What is the likelihood that it represents MIN, MAN, NAN or AIM?",
-            "marks": 4,
-            "topics": [
-              "fml-information"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Discuss the similarities and differences between the noisy channel and human processing of spoken English.",
-            "marks": 4,
-            "topics": [
-              "fml-information"
-            ]
-          }
-        ]
       },
       {
         "year": 2021,
@@ -7577,109 +5890,13 @@
     ]
   },
   "data-science": {
-    "total_questions": 10,
+    "total_questions": 2,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-DataScience.html",
     "topic_frequencies": {
-      "ds-inference": 25,
-      "ds-distributions": 13,
-      "ds-feature-spaces": 5,
-      "ds-probability": 10,
-      "ds-random-processes": 4
+      "ds-inference": 6,
+      "ds-probability": 2
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q5.pdf",
-        "topics": [
-          "ds-inference",
-          "ds-distributions",
-          "ds-feature-spaces",
-          "ds-probability"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "We have two groups of paired data, $(a_j, b_j)$ for $j \\in \\{1, ..., m\\}$ and $(a'_k, b'_k)$ for $k \\in \\{1, ..., m'\\}$. Consider the probability model\n\n$$B_j \\sim \\text{Poisson}(\\lambda a_j), \\quad B'_k \\sim \\text{Poisson}(\\mu a'_k)$$\n\nwhere $\\lambda$ and $\\mu$ are unknown parameters.\n\n(i) Find maximum likelihood estimates for $\\lambda$ and $\\mu$. (ii) Describe how to test the hypothesis that $\\lambda = \\mu$.",
-            "marks": 5,
-            "topics": [
-              "ds-inference",
-              "ds-distributions"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "We have a dataset in which each datapoint $i \\in \\{1, ..., n\\}$ consists of an integer response $y_i$ and a collection of $m$ non-negative features $(e_{1,i}, ..., e_{m,i})$. A Poisson-linear model is a model for this dataset of the form\n\n$$Y_i \\sim \\text{Poisson}\\!\\left(\\sum_{k=1}^{m} \\beta_k e_{k,i}\\right)$$\n\nwhere $\\beta_1, ..., \\beta_m$ are unknown parameters, assumed to be strictly positive.\n\n(i) Give pseudocode for fitting a Poisson-linear model. (ii) Express the model from part (a) as a Poisson-linear model.",
-            "marks": 4,
-            "topics": [
-              "ds-feature-spaces",
-              "ds-distributions",
-              "ds-inference"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "In a factory, the workers suspect that one particular manager is incompetent, since there tend to be more safety incidents on days when that manager is present. They have assembled a dataset spanning several months, giving for each day the number of safety incidents and the names of the managers present. They believe that each manager has a competence level, and the number of incidents on a given day is related to the mean competence level among the managers present.\n\n(i) Suggest a probability model for this data, in the form of a Poisson-linear model. (ii) Explain how to test whether the suspect manager is indeed worse than the others.",
-            "marks": 11,
-            "topics": [
-              "ds-feature-spaces",
-              "ds-inference",
-              "ds-probability"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q6.pdf",
-        "topics": [
-          "ds-inference",
-          "ds-distributions",
-          "ds-probability"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "You sample n widgets, and find that x are defective. Find a posterior confidence interval for \u0398, given the prior belief that \u0398 \u223c Beta(\u03b1, \u03b2).",
-            "marks": 4,
-            "topics": [
-              "ds-inference",
-              "ds-distributions"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "An alternative sampling strategy is to keep sampling widgets until you find the first defective widget. Let x be the number of widgets you end up sampling. Find a posterior confidence interval for \u0398, given the prior belief that \u0398 \u223c Beta(\u03b1, \u03b2).",
-            "marks": 3,
-            "topics": [
-              "ds-inference",
-              "ds-distributions"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "For the sampling strategy in part (b), find the expected number of samples needed. Assume that \u03b1 and \u03b2 are positive integers with \u03b1 > 1; your answer should be a function of \u03b1 and \u03b2.",
-            "marks": 4,
-            "topics": [
-              "ds-probability",
-              "ds-distributions"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "An engineer tells you that on a given day, the machine is either healthy or cranky, each equally likely, and that \u0398 \u223c Beta(\u03b1m , \u03b2m ) where m \u2208 {h, c} indicates whether the machine is healthy or cranky. Find the posterior probability that the machine is cranky, for each of the two sampling strategies above.",
-            "marks": 9,
-            "topics": [
-              "ds-inference",
-              "ds-probability",
-              "ds-distributions"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 6,
@@ -7763,318 +5980,26 @@
         ],
         "_text_extracted": true,
         "total_marks": 20
-      },
-      {
-        "year": 2023,
-        "paper": 6,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q5.pdf",
-        "topics": [
-          "ds-probability",
-          "ds-feature-spaces",
-          "ds-inference",
-          "ds-distributions"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Describe a probability model and a fitting procedure that might be behind the \"Quadratic\" plot. Give pseudocode for the fitting procedure. Explain briefly how the plot is produced. [Note: When describing your model, remember to state any relevant probability distributions.]",
-            "marks": 7,
-            "topics": [
-              "ds-probability",
-              "ds-feature-spaces"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Repeat part (a) for the \"Piecewise\" plot.",
-            "marks": 5,
-            "topics": [
-              "ds-probability",
-              "ds-feature-spaces"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Repeat part (a) for the \"Confidence interval\" plot. In your answer, explain carefully the basis for your confidence interval calculation.",
-            "marks": 8,
-            "topics": [
-              "ds-inference",
-              "ds-probability",
-              "ds-distributions"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2023,
-        "paper": 6,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q6.pdf",
-        "topics": [
-          "ds-distributions",
-          "ds-inference",
-          "ds-random-processes"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Consider a model in which each element of x is an independent Bernoulli random variable, Bin(1, p). Estimate p, and give a formula for the log likelihood of the x sequence. Repeat for y. Explain why the log likelihoods are the same for the two sequences.",
-            "marks": 4,
-            "topics": [
-              "ds-distributions",
-              "ds-inference"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "The model from part (a) might seem a poor choice for y. Explain how to conduct a hypothesis test to determine whether this is so. In your answer you should define the test statistic you have invented for the test, and you should explain your choice of one-sided or two-sided testing.",
-            "marks": 8,
-            "topics": [
-              "ds-inference"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Consider an alternative model, in which y is generated from a two-state Markov chain, with the first item of y drawn from the chain's stationary distribution. Give a formula for the log likelihood of y, and explain how to fit the model.",
-            "marks": 8,
-            "topics": [
-              "ds-random-processes",
-              "ds-inference"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 6,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q7.pdf",
-        "topics": [
-          "ds-inference",
-          "ds-distributions"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "We may decide to model the datapoints as independent samples from the Pareto(1, \u03b1) distribution. Then, the 99th percentile is the value q such that P(Pareto(1, \u03b1) \u2264 q) = 0.99.\n\n(i) Find the maximum likelihood estimator for \u03b1. [3 marks]\n\n(ii) Find q as a function of \u03b1. [2 marks]\n\n(iii) Explain how to use parametric resampling to find a confidence interval for q. Give pseudocode. [4 marks]",
-            "marks": 9,
-            "topics": [
-              "ds-inference",
-              "ds-distributions"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "We may decide to estimate the 99th percentile by simply sorting the dataset and reading off the value in position int(0.99n).\n\nExplain how to use nonparametric resampling to find a confidence interval for it. Give pseudocode. Under what circumstances would you expect the result to be unreliable?",
-            "marks": 6,
-            "topics": [
-              "ds-inference"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "We may decide to use computational Bayesian methods to find the confidence interval. Explain how, stating your model precisely. Give pseudocode.",
-            "marks": 5,
-            "topics": [
-              "ds-inference",
-              "ds-distributions"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 6,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p6q8.pdf",
-        "topics": [
-          "ds-random-processes",
-          "ds-distributions",
-          "ds-inference",
-          "ds-feature-spaces"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "What is meant by \"stationary distribution\"? Show that Normal(0, \u03c3 2 ) is a stationary distribution for this Markov chain.",
-            "marks": 3,
-            "topics": [
-              "ds-random-processes",
-              "ds-distributions"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "What is meant by \"memorylessness\"? Give an expression for the log likelihood of a sequence of values (e1 , . . . , en ), given the value for E0 .",
-            "marks": 4,
-            "topics": [
-              "ds-random-processes",
-              "ds-inference"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Give an expression for the log likelihood of (y1 , . . . , yn ), given the value for Y0 . [Hint: First find the distribution of Yt+1 given Yt .]",
-            "marks": 6,
-            "topics": [
-              "ds-random-processes",
-              "ds-inference"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "What is meant by a \"linear model\"? Write out a linear model that can be used to estimate the unknown parameters \u03b1, \u03b2, and \u03b3 (treating all other parameters as known). Identify the feature vectors.",
-            "marks": 7,
-            "topics": [
-              "ds-feature-spaces"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2021,
-        "paper": 6,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p6q7.pdf",
-        "topics": [
-          "ds-inference",
-          "ds-distributions",
-          "ds-probability"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Let xt be the number of new COVID infections on date t. We anticipate approximately exponential growth or decay, xt+1 \u2248 (1 + \u03bb)xt , and we would like to estimate \u03bb from a dataset (x1 , . . . , xT ).\n\n(i) Find the maximum likelihood estimator for \u03bb for the model\n$$X_{t+1} \\sim \\text{Poisson}\\left((1 + \\lambda)x_t\\right)$$\n[2 marks]\n\n(ii) Find the maximum likelihood estimator for \u03bb for the model\n$$X_{t+1} \\sim \\text{Normal}\\left((1 + \\lambda)x_t,\\, (\\sigma x_t)^2\\right)$$\n[3 marks]\n\n(iii) For the latter model, explain how to compute a 95% confidence interval for \u03bb. Explain the resampling step carefully. [4 marks]",
-            "marks": 9,
-            "topics": [
-              "ds-inference",
-              "ds-distributions"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "We don't actually know the number of new infections xt on date t: we only know the number of new positive test results, yt . We anticipate yt \u2248 \u03b2dow(t) xt , where dow(t) gives the day of the week for date t. We would like to estimate not only \u03bb but also \u03b2Mon , ..., \u03b2Sun from the dataset (y1 , . . . , yT ).\n\n(i) Propose a probability model for Yt+1 in terms of yt . [5 marks]\n\n(ii) Explain briefly how to estimate the parameters of your model. In your answer, you should consider whether or not the parameters are identifiable. [6 marks]",
-            "marks": 11,
-            "topics": [
-              "ds-probability",
-              "ds-inference"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2021,
-        "paper": 6,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p6q8.pdf",
-        "topics": [
-          "ds-inference",
-          "ds-distributions",
-          "ds-probability"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "In a COVID vaccine trial, n0 subjects were given a placebo and n1 were given the vaccine; x0 of the placebo subjects developed the disease and x1 of the vaccinated subjects. Considering the probability model Xk \u223c Binomial(nk , pk ), the vaccine efficacy is defined to be e = 1 \u2212 p1 /p0 .\n\n(i) State the maximum likelihood estimators for p0 and p1 . Give a formula for the maximum likelihood estimator for e. [2 marks]\n\n(ii) Explain how to compute a 95% confidence interval for e. Also explain how to test whether e > 0.5. [7 marks]",
-            "marks": 9,
-            "topics": [
-              "ds-inference",
-              "ds-distributions"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Further data about the trial has been made available, and we learn that subjects weren't all enrolled for the same length of time. We are given a full dataset consisting of three features, the predictor variable di and the response variables (ti , ci ) for subject i. Here di = 1 if the subject received the vaccine and di = 0 otherwise; ci = 1 if the subject developed the disease and ci = 0 otherwise; and ti is the day on which the subject developed the disease if ci = 1, and the number of days enrolled in the trial otherwise.\n\nConsider the following probability model. Among vaccinated subjects, the vaccine is effective with probability f and ineffective otherwise. Effectively vaccinated subjects never get the disease. For ineffectively vaccinated subjects, and for subjects on placebo, each day there is a probability q of developing the disease. The parameters f and q are unknown.\n\n(i) For a subject i who received placebo, give an expression for the likelihood of the pair (ti , ci ). [4 marks]\n\n(ii) For a subject i who received the vaccine, give an expression for the likelihood of the pair (ti , ci ). [4 marks]\n\n(iii) Give an expression for the log likelihood of the entire dataset. [3 marks]",
-            "marks": 11,
-            "topics": [
-              "ds-probability",
-              "ds-inference"
-            ]
-          }
-        ]
       }
     ]
   },
   "logic-proof": {
-    "total_questions": 16,
+    "total_questions": 14,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-LogicandProof.html",
     "_paper_note": "Logic and Proof: Paper 6, Q9+Q10 (2018-2022); Paper 6, Q7+Q8 (2023 onwards).",
     "topic_frequencies": {
-      "lp-tableaux": 4,
-      "lp-fol": 12,
-      "lp-clausal": 17,
-      "lp-resolution": 13,
-      "lp-sequent": 6,
-      "lp-bdd": 5,
       "lp-modal": 7,
+      "lp-sequent": 5,
+      "lp-clausal": 16,
+      "lp-resolution": 12,
       "lp-prop": 9,
+      "lp-fol": 10,
+      "lp-tableaux": 3,
       "lp-skolem": 5,
+      "lp-bdd": 4,
       "lp-smt": 1
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q7.pdf",
-        "topics": [
-          "lp-tableaux",
-          "lp-fol",
-          "lp-clausal",
-          "lp-resolution"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Present either a proof in tableaux or a falsifying interpretation for:\n\n$$\\forall x(P(x) \\to Q(x)) \\to (\\forall y P(y) \\to \\forall z Q(z))$$",
-            "marks": 11,
-            "topics": [
-              "lp-tableaux",
-              "lp-fol"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Convert the following formulae (where $a$ and $b$ are constants, and $x$, $y$ and $z$ are variables) into clauses, and exhibit a model or show that none exists using resolution.\n\n$$P(x, x) \\to R(a, x) \\tag{i}$$\n$$P(x, y) \\land P(y, x) \\to Q(x) \\tag{ii}$$\n$$Q(y) \\to \\neg Q(a) \\tag{iii}$$\n$$R(b, y) \\to P(y, y) \\tag{iv}$$\n$$\\neg R(x, y) \\to R(z, a) \\tag{v}$$",
-            "marks": 9,
-            "topics": [
-              "lp-clausal",
-              "lp-resolution"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q8.pdf",
-        "topics": [
-          "lp-sequent",
-          "lp-fol",
-          "lp-bdd"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Present either a proof in sequent calculus or a falsifying interpretation for:\n\n$$\\forall x(P(x) \\to Q(x)) \\to (\\exists y(P(y) \\land R(y)) \\to \\exists z(Q(z) \\land R(z)))$$",
-            "marks": 11,
-            "topics": [
-              "lp-sequent",
-              "lp-fol"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Draw alphabetically ordered Binary Decision Diagrams (BDDs) for:\n\n$$F_1 = (P \\land Q) \\lor \\lnot T \\text{ and } F_2 = (\\lnot R \\lor \\lnot S) \\land (R \\lor \\lnot T).$$\n\nThen draw a BDD for $F_1 \\lor F_2$.",
-            "marks": 9,
-            "topics": [
-              "lp-bdd"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 6,
@@ -8658,99 +6583,19 @@
     ]
   },
   "semantics": {
-    "total_questions": 16,
+    "total_questions": 5,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-SemanticsofProgrammingLanguages.html",
     "_paper_note": "Semantics of Programming Languages appears in Paper 6, Q9 (2024 onwards).",
     "topic_frequencies": {
-      "sem-intro": 22,
-      "sem-types": 19,
-      "sem-subtyping": 10,
+      "sem-subtyping": 1,
       "sem-concurrency": 1,
-      "sem-equivalence": 4,
-      "sem-functions": 4,
-      "sem-induction": 14
+      "sem-equivalence": 1,
+      "sem-functions": 2,
+      "sem-induction": 5,
+      "sem-intro": 9,
+      "sem-types": 3
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 4,
-        "question": 3,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p4q3.pdf",
-        "topics": [
-          "sem-intro",
-          "sem-types"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Give operational semantics rules for the other instructions. Comment briefly on any choices you had to make.",
-            "marks": 8,
-            "topics": [
-              "sem-intro"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Define a judgement $\\Gamma \\vdash \\langle R, M \\rangle$ that checks that the register state $R$ and memory state $M$ are consistent with $\\Gamma$, with every pointer-typed value being dereferenceable with a value of the appropriate type. Explain your definition briefly.",
-            "marks": 4,
-            "topics": [
-              "sem-types"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Define a typing judgement $\\Gamma \\vdash i \\dashv \\Gamma'$ for instructions $i$ where $\\Gamma$ is the type environment before $i$ executes and $\\Gamma'$ is the type environment that can be assumed by the following instruction. Explain your definition briefly.\n\nYour definition should be sound with respect to the operational semantics: if $\\Gamma \\vdash i \\dashv \\Gamma'$, assuming $\\Gamma \\vdash \\langle R, M \\rangle$ for some $\\Gamma$ before the instruction executes, with $M(pc)$ defined and $\\mathrm{decode}(M(pc)) = i$, then (1) there should exist some transition $\\langle pc, R, M \\rangle \\to \\langle pc', R', M' \\rangle$, and (2) for any such transition, $\\Gamma' \\vdash \\langle R', M' \\rangle$. You should not prove this.",
-            "marks": 8,
-            "topics": [
-              "sem-types",
-              "sem-intro"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 6,
-        "question": 9,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p6q9.pdf",
-        "topics": [
-          "sem-intro"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Define the lookup function.",
-            "marks": 4,
-            "topics": [
-              "sem-intro"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Give the transition sequence, with the configuration and rule name for each transition, of \u27e8{ int x;x = 1} ;y, \u27e8 , emp\u27e9 :: nil, emp\u27e9. Include a brief explanation alongside each transition.",
-            "marks": 10,
-            "topics": [
-              "sem-intro"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Explain, with examples and reference to the rules, but without giving transition sequences, how this language treats variable shadowing.",
-            "marks": 4,
-            "topics": [
-              "sem-intro"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Explain what changes would be needed to add global variables.",
-            "marks": 2,
-            "topics": [
-              "sem-intro"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 6,
@@ -8810,201 +6655,6 @@
         "total_marks": 20
       },
       {
-        "year": 2024,
-        "paper": 6,
-        "question": 10,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2024p6q10.pdf",
-        "topics": [
-          "sem-intro",
-          "sem-induction",
-          "sem-equivalence"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Give a set of inference rules defining a relation for when a word w is matched by a regular expression r. Use the notation w \u00b7 w0 to denote concatenation.",
-            "marks": 8,
-            "topics": [
-              "sem-intro",
-              "sem-induction"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "(i) Using the matching relation defined above, define a suitable notion of semantic equivalence r1 \u2243 r2 for regular expressions. [4 marks]\n\n(ii) Use this definition to prove that (r + r0) \u2243 (r0 + r). You may use inversion lemmas without proof, as long as they are explicitly indicated. [4 marks]",
-            "marks": 8,
-            "topics": [
-              "sem-equivalence",
-              "sem-induction"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Define an inductive relation r null characterizing the regular expressions r for which  \u2208 r.",
-            "marks": 4,
-            "topics": [
-              "sem-induction",
-              "sem-intro"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2023,
-        "paper": 6,
-        "question": 9,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q9.pdf",
-        "topics": [
-          "sem-types",
-          "sem-intro"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "State the form of the typing judgements for this language, and give typing rules for this programming language ascribing to each category of terms its corresponding types.",
-            "marks": 8,
-            "topics": [
-              "sem-types"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Define a deterministic small-step operational semantics for this language, defining any auxiliary functions you need as well.",
-            "marks": 10,
-            "topics": [
-              "sem-intro"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Give a precise statement of the progress and preservation properties for this language. You do not need to give a proof.",
-            "marks": 2,
-            "topics": [
-              "sem-types",
-              "sem-intro"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2023,
-        "paper": 6,
-        "question": 10,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p6q10.pdf",
-        "topics": [
-          "sem-intro",
-          "sem-functions",
-          "sem-types",
-          "sem-induction"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Define a small-step, call-by-value operational semantics for this language. Clearly explain what the components of the machine configuration are, and how it identifies what is printed. [10 marks]",
-            "marks": 10,
-            "topics": [
-              "sem-intro",
-              "sem-functions"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "State a progress theorem for this language, and explain what it says about the evolution of the machine state. [4 marks]",
-            "marks": 4,
-            "topics": [
-              "sem-types",
-              "sem-induction"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Prove progress for the print(e) case, giving the names of any of the standard properties (such as substitution) that you needed to use in the proof. [6 marks]",
-            "marks": 6,
-            "topics": [
-              "sem-induction",
-              "sem-types"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 4,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p4q8.pdf",
-        "topics": [
-          "sem-subtyping",
-          "sem-induction"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Prove that for each type A, a subtyping derivation A \u2264 A can be constructed.",
-            "marks": 5,
-            "topics": [
-              "sem-subtyping",
-              "sem-induction"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Prove that for all A, B, C, if A \u2264 B and B \u2264 C are derivable, then A \u2264 C is derivable.",
-            "marks": 15,
-            "topics": [
-              "sem-subtyping",
-              "sem-induction"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 4,
-        "question": 9,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p4q9.pdf",
-        "topics": [
-          "sem-types",
-          "sem-intro",
-          "sem-induction"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Give a set of typing rules for this language.",
-            "marks": 4,
-            "topics": [
-              "sem-types"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Find an example expression which exhibits an anomalous execution behaviour, and briefly explain what the problem with the semantics is.",
-            "marks": 5,
-            "topics": [
-              "sem-intro",
-              "sem-types"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Modify the semantics to repair the problem, and briefly explain how your solution works.",
-            "marks": 5,
-            "topics": [
-              "sem-intro"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Formulate progress and type preservation lemmas for the repaired language. (A proof is not necessary.)",
-            "marks": 6,
-            "topics": [
-              "sem-types",
-              "sem-induction"
-            ]
-          }
-        ]
-      },
-      {
         "year": 2021,
         "paper": 4,
         "question": 8,
@@ -9045,37 +6695,6 @@
         "_text_extracted": true
       },
       {
-        "year": 2021,
-        "paper": 4,
-        "question": 9,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p4q9.pdf",
-        "topics": [
-          "sem-equivalence",
-          "sem-induction",
-          "sem-types"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Suppose that l : intref \u2208 \u0393. Now, consider the following program equivalence for L1:\n\n(if !l \u2264 0 then e1 else e2 ); e3 \u2243\u0393unit (if !l \u2264 0 then e1 ; e3 else e2 ; e3 )\n\n(i) Explain informally but carefully why this equivalence holds. [3 marks]\n\n(ii) Using the definition of semantic equivalence, prove that this equivalence holds. [7 marks]",
-            "marks": 10,
-            "topics": [
-              "sem-equivalence",
-              "sem-induction"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Now, consider the following non-equivalence:\n\ne3 ; (if !l \u2264 0 then e1 else e2 ) 6\u2243\u0393unit (if !l \u2264 0 then e3 ; e1 else e3 ; e2 )\n\n(i) Give a well-typed example exhibiting a counterexample of this equivalence. [5 marks]\n\n(ii) Give a statically decidable condition under which the transformation is valid. [5 marks]",
-            "marks": 10,
-            "topics": [
-              "sem-equivalence",
-              "sem-types"
-            ]
-          }
-        ]
-      },
-      {
         "year": 2020,
         "paper": 4,
         "question": 8,
@@ -9108,52 +6727,6 @@
         "_text_extracted": true
       },
       {
-        "year": 2020,
-        "paper": 4,
-        "question": 9,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p4q9.pdf",
-        "topics": [
-          "sem-subtyping",
-          "sem-types"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Assuming the existence of functions bool to string, int to string, and bool to int, adapt the relation above to define a new relation T \u2264 T 0 ; e, where e is a coercion, a closed function of type T \u2192 T 0 . (You may use ML or lambda-calculus notation to define the coercions e.)",
-            "marks": 10,
-            "topics": [
-              "sem-subtyping",
-              "sem-types"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Explain what this relation could be used for in a language implementation.",
-            "marks": 2,
-            "topics": [
-              "sem-subtyping"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Give definitions of bool to string and bool to int, and then use the relation you defined to give two subtyping derivations bool \u2264 string ; e1 and bool \u2264 string ; e2 such that e1 and e2 have different behaviour.",
-            "marks": 5,
-            "topics": [
-              "sem-subtyping",
-              "sem-types"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "What problem would this lead to in a language implementation?",
-            "marks": 3,
-            "topics": [
-              "sem-subtyping"
-            ]
-          }
-        ]
-      },
-      {
         "year": 2019,
         "paper": 4,
         "question": 8,
@@ -9181,36 +6754,6 @@
         ],
         "total_marks": 20,
         "_text_extracted": true
-      },
-      {
-        "year": 2019,
-        "paper": 4,
-        "question": 9,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p4q9.pdf",
-        "topics": [
-          "sem-subtyping",
-          "sem-types"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Define a subtype relation T <: T 0 and type relation \u0393 ` e : T for this syntax and operational semantics that will permit flexible use of integers in the appropriate ranges. You can omit the standard type relation rules for the expressions (e, e 0 ), #1 e, #2 e, inlT e, inrT e, and case.",
-            "marks": 14,
-            "topics": [
-              "sem-subtyping",
-              "sem-types"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Explain three main aspects of your definitions, with reference to the programming idioms they permit and the runtime errors they exclude, with examples.",
-            "marks": 6,
-            "topics": [
-              "sem-subtyping",
-              "sem-types"
-            ]
-          }
-        ]
       },
       {
         "year": 2018,
@@ -9269,158 +6812,23 @@
         ],
         "total_marks": 20,
         "_text_extracted": true
-      },
-      {
-        "year": 2018,
-        "paper": 4,
-        "question": 9,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p4q9.pdf",
-        "topics": [
-          "sem-types",
-          "sem-functions",
-          "sem-subtyping"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "There are three flaws in the above rules, which make them either not sound or an unnecessarily coarse approximation. Explain each flaw, giving a corrected rule for each and an example that shows the problem (assuming the other flaws are fixed). [15 marks]",
-            "marks": 15,
-            "topics": [
-              "sem-types",
-              "sem-functions"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "In the system above, functions have to be applied to arguments of exactly the expected type. Define a subtype relation T <: T 0 and subsumption rule that would let function arguments be used even if they have fewer (latent) effects than those anticipated by the function. [5 marks]",
-            "marks": 5,
-            "topics": [
-              "sem-subtyping",
-              "sem-types"
-            ]
-          }
-        ]
       }
     ]
   },
   "computer-networking": {
-    "total_questions": 24,
+    "total_questions": 21,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ComputerNetworking.html",
     "topic_frequencies": {
-      "cn-link": 18,
-      "cn-multimedia": 2,
-      "cn-transport": 36,
-      "cn-ip": 10,
-      "cn-routing": 15,
       "cn-wireless": 5,
+      "cn-link": 14,
+      "cn-ip": 9,
+      "cn-transport": 32,
       "cn-application": 8,
-      "cn-intro": 13
+      "cn-intro": 13,
+      "cn-routing": 14,
+      "cn-multimedia": 1
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 5,
-        "question": 1,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p5q1.pdf",
-        "topics": [
-          "cn-link",
-          "cn-multimedia",
-          "cn-transport"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Describe, compare, and contrast Forward Error Correction (FEC) and Error Detection and Retransmission (ED&R) in terms of their bandwidth utilisation and delay characteristics.",
-            "marks": 6,
-            "topics": [
-              "cn-link"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A streaming video service needs to implement error control mechanisms. Explain how the channel properties, latency, reliability, and available bandwidth, would influence the choice between FEC and ED&R.",
-            "marks": 8,
-            "topics": [
-              "cn-multimedia",
-              "cn-link"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "(i) Consider a CRC polynomial used for error detection: outline the design capability, implementation, and limitations.\n\n(ii) Compare and contrast two retransmission strategies for a system implementing ED&R.",
-            "marks": 6,
-            "topics": [
-              "cn-link",
-              "cn-transport"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 5,
-        "question": 2,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p5q2.pdf",
-        "topics": [
-          "cn-transport",
-          "cn-link"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Describe how window-based congestion control differs from rate-based congestion control in terms of buffer management and throughput optimization.",
-            "marks": 4,
-            "topics": [
-              "cn-transport"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Consider a communication link with propagation delay \u03c4 and bandwidth b. For a packet size p, derive expressions for the maximum achievable throughput under:\n\n(i) A simple stop-and-wait protocol [4 marks]\n\n(ii) A window protocol with window size 2 [4 marks]",
-            "marks": 8,
-            "topics": [
-              "cn-transport",
-              "cn-link"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Explain how buffer overflow conditions are managed in:\n\n(i) On-off flow control [4 marks]\n\n(ii) Window-based congestion control with Selective Acknowledgments (SACK) [4 marks]",
-            "marks": 8,
-            "topics": [
-              "cn-transport"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 5,
-        "question": 3,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p5q3.pdf",
-        "topics": [
-          "cn-ip",
-          "cn-routing"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Explain hierarchical and flat addressing schemes, including a comparison of each scheme in terms of table size and address space efficiency.",
-            "marks": 6,
-            "topics": [
-              "cn-ip"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Analyze how the following choices affect route selection:\n\n(i) Choice of algorithm: Link state versus distance vector approaches\n\n(ii) Operational choice: Link cost metrics",
-            "marks": 14,
-            "topics": [
-              "cn-routing"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 5,
@@ -10392,106 +7800,16 @@
     ]
   },
   "further-graphics": {
-    "total_questions": 16,
+    "total_questions": 2,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-FurtherGraphics.html",
     "topic_frequencies": {
-      "fg-diff-geom": 16,
-      "fg-animation": 5,
-      "fg-rendering": 13,
-      "fg-raytracing": 6,
-      "fg-geometry": 22,
-      "fg-inverse": 4
+      "fg-animation": 1,
+      "fg-geometry": 1,
+      "fg-raytracing": 2,
+      "fg-rendering": 3,
+      "fg-inverse": 1
     },
     "tagged_questions": [
-      {
-        "year": 2025,
-        "paper": 7,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p7q7.pdf",
-        "topics": [
-          "fg-diff-geom"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Write an implicit function for the height field.",
-            "marks": 2,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "What is the surface normal at x = 0, y = 0?",
-            "marks": 2,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Write an implicit function for the tangent plane at x = 0, y = 0.",
-            "marks": 2,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Recall that normal curvature at a surface point for a direction is defined as the curvature of the curve formed by intersecting the surface with a particular plane. The plane intersects the surface at x = 0, y = 0, and is given in the direction d = [dx , dy , dz ], where d lies on the plane tangent to the surface. Write an explicit equation for the points on the plane used to compute the curvature.",
-            "marks": 6,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Write an expression for the curve given by the intersection of the above plane with the surface.",
-            "marks": 4,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "f",
-            "text": "For d = [1, 0, 0], derive the condition on the height-field such that we can use the expression \\frac{\\partial^2 c(t)}{\\partial t^2} = \\kappa(t)n(t) to derive the curvature \\kappa(t) of the curve c in the previous question.",
-            "marks": 4,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2025,
-        "paper": 7,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2025p7q8.pdf",
-        "topics": [
-          "fg-animation",
-          "fg-rendering",
-          "fg-raytracing"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "(i) Show that quaternions that represent rotation around the same axis commute, that is q1 q2 = q2 q1. [2 marks]\n(ii) Derive the general condition on the rotation axes of two quaternions representing rotations in order for them to commute. [3 marks]\n(iii) Prove that linear blending of quaternions with normalisation satisfies coordinate invariance. (Hints: recall that this means if we first transform all quaternions with the same rotation and then blend the resulting quaternions, we get the same result as first blending them and then applying the rotation, and (q1 q2)\u2217 = q\u22172 q\u22171 for quaternions q1 and q2.) [5 marks]",
-            "marks": 10,
-            "topics": [
-              "fg-animation"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "You are given a point light source at p that emits light with constant radiance L in all directions. There is an ideal planar mirror that reflects all light received if the angle between incoming light direction and surface normal is equal to that between reflected light direction and surface normal, and reflects no light otherwise.\n\n(i) Write the expression for the BRDF of the mirror, show that it satisfies the perfect mirror property by deriving the reflected light radiance. [4 marks]\n(ii) How much light is received at x in the figure? [2 marks]\n(iii) Assume an imperfect mirror where the BRDF fr of a perfect mirror is convolved with a Gaussian kernel. Explain the deformation of the image we will see as our reflection in the resulting mirror. [2 marks]\n(iv) For some mirrors, the image we see in the mirror might have slightly different colours, explain why. [2 marks]",
-            "marks": 10,
-            "topics": [
-              "fg-rendering",
-              "fg-raytracing"
-            ]
-          }
-        ]
-      },
       {
         "year": 2024,
         "paper": 7,
@@ -10563,464 +7881,6 @@
         ],
         "_text_extracted": true,
         "total_marks": 20
-      },
-      {
-        "year": 2023,
-        "paper": 7,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p7q7.pdf",
-        "topics": [
-          "fg-geometry",
-          "fg-diff-geom"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "State the best geometry representation for the following tasks. Briefly explain.\n(i) Testing if a line segment intersects a surface. [1 mark]\n(ii) Tracking the surface of a fluid undergoing geometry and topology (connectivity) changes. [1 mark]\n(iii) Aligning and merging surfaces acquired from different views. [1 mark]\n(iv) Rendering the surface of a cube. [1 mark]\n(v) Look up the colour of each point on a surface from a texture. [1 mark]",
-            "marks": 5,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Assume constant minimum $\\kappa_{\\min}$ and maximum $\\kappa_{\\max}$ curvature for a surface. Which of the following could be a closed surface?\n(i) $\\kappa_{\\min} = \\kappa_{\\max}$. [1 mark]\n(ii) $2H^2 - K = 0$ for mean curvature $H$ and Gaussian curvature $K$. [2 marks]",
-            "marks": 3,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "A heightfield is a surface in 3D defined by a function $h(x, y)$ over the $xy$-plane. Assuming we define points with $z > h(x, y)$ as outside this surface, provide an expression for the surface normal in terms of the derivatives of $h$ without using the cross product. [4 marks]",
-            "marks": 4,
-            "topics": [
-              "fg-geometry",
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Given a surface in both parametric $\\mathbf{p}(u, v)$ and implicit $f(\\mathbf{p}) = 0$ forms,\n(i) prove that the surface normal of the parametric form is parallel to the normal of the implicit form.\n[Hint: Chain rule: $\\frac{\\partial f(a(x),b(x),c(x))}{\\partial x} = \\frac{\\partial f}{\\partial a}\\frac{\\partial a}{\\partial x} + \\frac{\\partial f}{\\partial b}\\frac{\\partial b}{\\partial x} + \\frac{\\partial f}{\\partial c}\\frac{\\partial c}{\\partial x}$] [6 marks]\n(ii) Will the normals remain parallel if the implicit function is also a signed distance function? [1 mark]\n(iii) Why is the sign ambiguous? [1 mark]",
-            "marks": 8,
-            "topics": [
-              "fg-geometry",
-              "fg-diff-geom"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2023,
-        "paper": 7,
-        "question": 8,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2023p7q8.pdf",
-        "topics": [
-          "fg-raytracing",
-          "fg-rendering",
-          "fg-animation",
-          "fg-geometry"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "We are given a scene with a point light source at a point p that emits light of radiance L in all directions, and a plane with equation nT (x \u2212 c) = 0 and BRDF fr . We send a ray from the camera sensor with origin o and direction d such that each point on the ray is r(t) = o + td for t > 0.\n(i) What is the intersection point of the ray and the plane? [2 marks]\n(ii) What is the incoming light direction? [1 mark]\n(iii) What is the direction of the outgoing reflected light towards the sensor origin o? [1 mark]\n(iv) What is the radiance of the light reflected towards the sensor origin o? [2 marks]",
-            "marks": 6,
-            "topics": [
-              "fg-raytracing",
-              "fg-rendering"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A surface represented by an implicit function f (x) is transformed by linear blend skinning such that each point x is mapped to x0 . There are two bones with transformation matrices T1 and T2 and corresponding blending weights w1 (x) and w2 (x) = 1 \u2212 w1 (x). In addition, we are given s1 (x0 ) = w1 (x) and s2 (x0 ) = w2 (x).\n(i) Write the expression for x0 . [1 mark]\n(ii) Simplify the expression for x0 assuming no rotations are stored on the bones. Modify the expression further for the case where the weights are not summing up to 1. [2 marks]\n(iii) What is the implicit function of the transformed surface assuming all blended rotations are invertible? Simplify as much as possible. [3 marks]\n(iv) What is the implicit function of the transformed surface if there are no rotations stored on the bones? Simplify as much as possible. [2 marks]",
-            "marks": 8,
-            "topics": [
-              "fg-animation",
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "In this question, we will think about how quaternions represent spatial rotations.\n(i) Write the form of a general quaternion and the form of a quaternion representing rotations. [2 marks]\n(ii) Prove that a quaternion q and \u2212q represents the same rotation. [2 marks]\n(iii) Given a quaternion q with no real part, what is qq? [2 marks]",
-            "marks": 6,
-            "topics": [
-              "fg-animation"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 7,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p7q6.pdf",
-        "topics": [
-          "fg-geometry"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Which of the following is an implicit function for a closed curve? Briefly explain.\n(i) x^2 + (xy)^2, x, y > 0 [1 mark]\n(ii) e^{f(x,y)} - 1, where f(x, y) is an implicit function for a closed curve. [1 mark]\n(iii) f(x, y) = 1 if g(x, y) > 1 and f(x, y) = g(x, y) otherwise, where g(x, y) is an implicit function for a closed curve. [1 mark]\n(iv) f(x, y)g(x, y), where f and g are implicit functions for circles of radius 2, one centered at (0, 0) and the other at (1, 0). [2 marks]",
-            "marks": 5,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "In this question, we will derive an implicit representation for a triangle.",
-            "marks": 0,
-            "topics": [
-              "fg-geometry"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2022,
-        "paper": 7,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2022p7q7.pdf",
-        "topics": [
-          "fg-rendering",
-          "fg-inverse",
-          "fg-diff-geom"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Recall that the (local) rendering equation is $L_o(x, \\vec{\\omega}_o) = L_e(x, \\vec{\\omega}_o) + \\int_{H^2} f(x, \\vec{\\omega}_i, \\vec{\\omega}_o) L_i(x, \\vec{\\omega}_i) \\cos\\theta_i \\, d\\vec{\\omega}_i$. Assume we can importance sample according to a single function. For each of the following cases, explain what is the best function from the rendering equation to use for importance sampling of the incoming light directions.\n\n(i) Diffuse reflection, single light source with a small area, no occluders. [1 mark]\n\n(ii) Diffuse reflection, incoming light is the same for all directions, occluders with complex geometry. [2 marks]\n\n(iii) Diffuse reflection, incoming light is the same for all direction, no occluders. [1 mark]",
-            "marks": 4,
-            "topics": [
-              "fg-rendering"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "We are given a scene with a single plane and light sources. The plane does not emit light, has the same BRDF at all points, and light is reflected equally for all outgoing directions.\n\n(i) Why can we use the local rendering equation even if we assume global illumination? [2 marks]\n\n(ii) Write the simplest expression for the outgoing light at a point on the plane. [2 marks]\n\n(iii) Write the expression that approximates the integral with n direction samples that are importance sampled according to the cosine term. You may ignore constants. [2 marks]\n\n(iv) We know the incoming light radiance at each geometry point for each direction. We can take n outgoing radiance measurements on the plane. We use the same set of n direction samples at each geometry point to approximate the integral with importance sampling as above (ignoring constants). Compute a discrete approximation of the BRDF sampled at the same direction samples. [Hint: For Ax = b, assume $A^{-1}$ is known.] [5 marks]",
-            "marks": 11,
-            "topics": [
-              "fg-rendering",
-              "fg-inverse"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "We are given a scene where we know that the surface of the only object in the scene has positive Gaussian and mean curvature everywhere and that the surface is diffuse and does not emit light.\n\n(i) Derive lower bounds for the minimum and maximum curvatures of the surface at each point. [2 marks]\n\n(ii) Assuming smooth BRDF and lighting functions, can we use differentiable rendering directly to estimate scene properties? Briefly explain. [3 marks]",
-            "marks": 5,
-            "topics": [
-              "fg-diff-geom",
-              "fg-inverse"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2021,
-        "paper": 7,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p7q6.pdf",
-        "topics": [
-          "fg-geometry",
-          "fg-diff-geom",
-          "fg-animation"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "An implicit function based on a kernel regressor can be defined as f(x) = \\sum_i \\alpha_i k_i(x), where \\alpha_i are scalar coefficients, k_i(x_i) = e^{-||x-x_i||^2/\\sigma^2} are kernels, and x_i are sample points.\n\n(i) Can \\alpha_i > 0 define a valid implicit function, why/why not? [1 mark]\n\n(ii) For a point x on the surface, compute the surface normal, simplify as much as possible. [2 marks]\n\n(iii) Assume the points x_i are sampled from a plane passing through the origin. Will the regressor based implicit function preserve the plane normal? Show it mathematically. If not, explain a solution to better approximate the plane with the kernel regressor in 1-2 sentences. [3 marks]",
-            "marks": 6,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "We have two surfaces A and B, both of which are represented continuously. We would like to compute if they intersect. How would you represent A and B (parametric and/or implicit) and why? Explain in 1-2 sentences. [2 marks]",
-            "marks": 2,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "(i) Prove that a plane has zero mean curvature by utilizing \\nabla_M p = -2Hn. [2 marks]\n\n(ii) Given a triangular mesh with equilateral triangles and a vertex with non-negative discrete minimum and maximum curvatures, what is the maximum number of neighbours it can have? [3 marks]",
-            "marks": 5,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Assume we embed a number of bones inside the sphere of radius 1 and with center at the origin and start trying to deform the sphere by only having rotations at the bones.\n\n(i) If we use linear blend skinning, show whether the transformed points can be off the sphere. [1 mark]\n\n(ii) If we use linear quaternion blending with normalization, show whether the transformed points can be off the sphere. [2 marks]\n\n(iii) If we use linear quaternion blending with normalization, will the sphere stay intact? Briefly explain. [2 marks]\n\n(iv) If we use linear quaternion blending with normalization, but this time the sphere we are deforming is centered at [1, 1, 1]^T, show whether the transformed points can be off the sphere. [2 marks]",
-            "marks": 7,
-            "topics": [
-              "fg-animation"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2021,
-        "paper": 7,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2021p7q7.pdf",
-        "topics": [
-          "fg-rendering",
-          "fg-inverse",
-          "fg-raytracing"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Recall that the (local) rendering equation is given as $L_o(x, \\vec{\\omega}_o) = L_e(x, \\vec{\\omega}_o) + \\int_{H^2} f(x, \\vec{\\omega}_i, \\vec{\\omega}_o) L_i(x, \\vec{\\omega}_i) \\cos\\theta_i \\, d\\vec{\\omega}_i$. Simplify this expression progressively as much as possible after each of the following assumptions.\n(i) There is no light emitted from this surface point x.\n(ii) Diffuse reflection.\n(iii) Reflection is constant at all surface points.\n(iv) The incoming light is the same for all incident angles but there can be occluders.\n(v) There is a single object and we ignore self-occlusions.",
-            "marks": 5,
-            "topics": [
-              "fg-rendering"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Under certain assumptions, we can simplify the rendering equation to the following: $L_o(x, \\vec{\\omega}_o) = f_r \\int_{H^2} L_i(\\vec{\\omega}_i) \\cos\\theta_i \\, d\\vec{\\omega}_i$. Assume we have a single known geometry for which we can compute surface normals $n(x)$. Given three measurements from the surface $c_k = L_o(x_k, \\vec{\\omega}_o)$ at known points $x_k$, compute the reflected radiance $L_o(x, \\vec{\\omega}_o)$ at an arbitrary point $x$ on the surface. [Hint: If you encounter a linear system $Ax = b$, assume $A^{-1}$ is known.]",
-            "marks": 4,
-            "topics": [
-              "fg-rendering",
-              "fg-inverse"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Recall that for direct illumination, we have the following form for the reflection equation: $L_r(x, z) = \\int_A f_r(x, y, z) L_i(x, y) G(x, y) \\, dA(y)$. Starting from this form, provide answers to the following in terms of the provided parameters.",
-            "marks": 0,
-            "topics": [
-              "fg-rendering",
-              "fg-raytracing"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2020,
-        "paper": 7,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p7q6.pdf",
-        "topics": [
-          "fg-geometry",
-          "fg-diff-geom"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Consider the b-spline curve P (t) with knot vector [ 0, 1, 2, 3, 3, 3 ] and k = 3.\n\n(i) In a single sentence, explain the effect on P (t) of repeating a knot value k times. [1 mark]\n\n(ii) State the equations that define P (t). [3 marks]\n\n(iii) State the equation and sketch the graph for each of the three quadratic basis functions Ni,3 (t) of P (t). [8 marks]\n\n(iv) Plot the path of P (t) for control points P0 = (0, 0), P1 = (4, 0), P2 = (4, 4). [4 marks]",
-            "marks": 16,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Consider an embedded closed manifold surface with 48 vertices, 48 faces, and 100 edges.\n\n(i) What is the genus of this surface, and what is the formula to find it? [2 marks]\n\n(ii) What is the total angle deficit of this surface, and what is the formula to find it? [2 marks]",
-            "marks": 4,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2020,
-        "paper": 7,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p7q7.pdf",
-        "topics": [
-          "fg-geometry"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Consider the set C of 2D control points:\nC = { (0, 0), (0, 2), (2, 1), (2, \u22121), (\u22122, \u22121), (\u22122, 1) }\n\nOn 3 separate 2D graph plots, each ranging from (\u22123, \u22123) to (3, 3),\n\n(i) Draw the Voronoi diagram of C [2 marks]\n\n(ii) Draw the Delaunay triangulation of C [2 marks]\n\n(iii) Draw the empty circles of the Voronoi points of C [2 marks]\n\n(iv) What is the first value in the equiangularity of C? [3 marks]\n\n(v) What is the (X, Y) position of the Voronoi point of C with the most negative Y coordinate? [3 marks]",
-            "marks": 12,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Using pseudocode, give an algorithm for finding the Delaunay triangulation of a set of 2D points S.",
-            "marks": 4,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Explain why the empty circles around the Voronoi points of a Voronoi diagram are, in fact, empty.",
-            "marks": 4,
-            "topics": [
-              "fg-geometry"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2019,
-        "paper": 7,
-        "question": 6,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p7q6.pdf",
-        "topics": [
-          "fg-rendering",
-          "fg-geometry",
-          "fg-diff-geom",
-          "fg-raytracing"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "The challenge of simulation sickness (sim sickness) in Virtual Reality is a crucial hurdle in creating engaging virtual content.\n(i) When it comes to avoiding sim sickness, what is the cardinal rule of VR? [1 mark]\n(ii) Succinctly explain the triggers and effects of sim sickness. [2 marks]\n(iii) List the constraints that sim sickness imposes on user interface design in VR. For each constraint give a one-sentence explanation of how developers must adapt to compensate. [5 marks]",
-            "marks": 8,
-            "topics": [
-              "fg-rendering"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "A mathematician tells you that a mystery shape is composed of polygons forming a closed, connected, manifold mesh without border. They claim that the mesh has 832 vertices, 1,648 edges, and 600 faces. The mathematician wants to know if it is possible that there is a loop of connected polygon edges in the mesh which, if all of those edges were cut apart, would not split the mesh into disconnected parts.\n(i) If you say no, they will want to know why. If you say that you cannot answer, they will want to know why not. If you say yes, they will ask you why; and then they will ask you to find the greatest possible number of such loops that could simultaneously be cut in the mesh. What do you tell them? [5 marks]\n(ii) If the mathematician had instead said that the mesh had 832 vertices, 1,648 edges, and 900 faces, would your answer to their question have been different? If so, how? [2 marks]",
-            "marks": 7,
-            "topics": [
-              "fg-geometry",
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Implement a Signed Distance Field method cylinder() which returns the signed distance from point p to a finite cylinder segment. The cylinder should go from point a to point b with flat ends and radius r.\n\nfloat cylinder(vec3 p, vec3 a, vec3 b, float r) {\n   // ...\n}",
-            "marks": 5,
-            "topics": [
-              "fg-geometry",
-              "fg-raytracing"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2019,
-        "paper": 7,
-        "question": 7,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p7q7.pdf",
-        "topics": [
-          "fg-rendering",
-          "fg-geometry",
-          "fg-diff-geom"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "List at least five different visual cues which our brains use to infer depth. Give a one-sentence explanation of each.",
-            "marks": 5,
-            "topics": [
-              "fg-rendering"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Consider the following signed distance field function:\n\n         #define min3(a, b, c) min(a, min(b, c))\n         #define max3(a, b, c) max(a, max(b, c))\n\n         float getSdf(vec3 p) {\n           vec3 q = vec3(abs(p.x), abs(p.y), abs(p.z));\n           return min3(\n               max3(q.x / 3.0, q.y, q.z),\n               max3(q.x, q.y / 3.0, q.z),\n               max3(q.x, q.y, q.z / 3.0)) - 1.0;\n         }\n\n(i) Draw the surface, including its dimensions [4 marks]\n\n(ii) What is the Gaussian curvature of this surface at (3, 0, 0)? [1 mark]\n\n(iii) What is the Gaussian curvature of this surface at (1, 1, 1)? [1 mark]\n\n(iv) What is the total angle deficit of this surface? [2 marks]\n\n(v) What is the angle deficit of this surface at (1, 1, 1)? [2 marks]\n\n(vi) What is the normal of this surface at (1, 1, 1)? [2 marks]\n\n(vii) By inserting a single line of code, how would you modify getSdf() so that the figure is repeated infinitely along the X axis, with each repetition exactly touching the previous instance? [3 marks]",
-            "marks": 15,
-            "topics": [
-              "fg-geometry",
-              "fg-diff-geom"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2018,
-        "paper": 7,
-        "question": 4,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p7q4.pdf",
-        "topics": [
-          "fg-geometry"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Here are two methods for implementing a cube using signed distance fields:\n\n        float methodOne(vec3 p) {\n          return max(max(abs(p.x), abs(p.y)), abs(p.z)) - 1;\n        }\n\n        float methodTwo(vec3 p) {\n          vec3 d = abs(p) - vec3(1);\n          return min(max(d.x, max(d.y, d.z)), 0.0)\n              + length(max(d, 0.0));\n        }\n\n        One is preferable to the other for producing better images faster. Which one, and why?",
-            "marks": 4,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "Complete the code below to implement the signed distance field function for a finite line segment with hemispherical end-caps (Figure 1) of arbitrary start point, end point, and radius.\n\n        float lineSegment(vec3 p, vec3 start, vec3 end, float radius) {\n          // [YOUR CODE HERE]\n        }\n\n        float getSdf(vec3 p) {\n          return lineSegment(\n              p, vec3(-PI, 0, 0), vec3(PI, 0, 0), 0.5);\n        }",
-            "marks": 4,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Implement a version of getSdf() that doubles the height of your line segment and translates it by \u22120.5 along the Z axis, to be centred at (0, 0, \u22120.5) (Figure 2).",
-            "marks": 4,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "d",
-            "text": "Implement a version of getSdf() that warps the original line segment into a sine wave sin(X) (Figure 3).",
-            "marks": 4,
-            "topics": [
-              "fg-geometry"
-            ]
-          },
-          {
-            "label": "e",
-            "text": "Modify getSdf() to render the sine wave model subtracted from the taller model (Figure 4).",
-            "marks": 4,
-            "topics": [
-              "fg-geometry"
-            ]
-          }
-        ]
-      },
-      {
-        "year": 2018,
-        "paper": 7,
-        "question": 5,
-        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p7q5.pdf",
-        "topics": [
-          "fg-rendering",
-          "fg-diff-geom",
-          "fg-geometry"
-        ],
-        "parts": [
-          {
-            "label": "a",
-            "text": "Write a GLSL function dartboard() which takes as input a texture co-ordinate texCoord which ranges from (0, 0) \u2192 (1, 1), and returns the colours of the procedural texture for a black-and-white dartboard pattern of 16 squares around and 8 squares in radius (see figure below). The background behind the dartboard is gray.\n\n vec3 dartboard(vec2 texCoord) {\n   // [YOUR CODE HERE]\n }",
-            "marks": 6,
-            "topics": [
-              "fg-rendering"
-            ]
-          },
-          {
-            "label": "b",
-            "text": "What is . . .\n\n(i) the formula for the face angle \u03b1(F, vi) of face F at vertex vi of a closed manifold? [2 marks]\n\n(ii) the formula for the angle deficit AD(v) of vertex v and its surrounding set of faces {F}? [2 marks]\n\n(iii) the formula for the Poincar\u00e9 Formula of a surface with genus g and Euler characteristic \u03c7? [2 marks]\n\n(iv) the formula for Descartes' Theorem of Total Angle Deficit? [2 marks]",
-            "marks": 8,
-            "topics": [
-              "fg-diff-geom"
-            ]
-          },
-          {
-            "label": "c",
-            "text": "Consider a closed manifold surface with total angle deficit \u22124\u03c0.\n\n(i) If your hypothetical surface has 20 vertices and 20 faces then how many edges must it have? [2 marks]\n\n(ii) Sketch a picture of your surface. [4 marks]",
-            "marks": 6,
-            "topics": [
-              "fg-diff-geom",
-              "fg-geometry"
-            ]
-          }
-        ]
       }
     ]
   },
@@ -11028,14 +7888,14 @@
     "total_questions": 16,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-FurtherHuman-ComputerInteraction.html",
     "topic_frequencies": {
-      "fhci-complex": 18,
-      "fhci-efficient": 9,
-      "fhci-theory": 20,
-      "fhci-evaluation": 23,
-      "fhci-smart": 13,
-      "fhci-visual": 12,
-      "fhci-meaningful": 5,
-      "fhci-goal": 8
+      "fhci-complex": 9,
+      "fhci-efficient": 6,
+      "fhci-theory": 13,
+      "fhci-evaluation": 10,
+      "fhci-smart": 9,
+      "fhci-visual": 7,
+      "fhci-meaningful": 4,
+      "fhci-goal": 4
     },
     "tagged_questions": [
       {
