@@ -172,14 +172,23 @@ def main():
                 time.sleep(0.25)
 
     if not args.dry_run:
-        # Recompute per-course topic frequency counts.
+        # Recompute per-course topic frequency counts (per part) and
+        # per-question primary-topic frequencies. The per-question map counts
+        # each whole question once against the first topic in q['topics']
+        # (the primary), so its totals sum to ~total_questions.
         for course_id, data in pp.items():
             freq = {}
+            qfreq = {}
             for q in data.get('tagged_questions', []):
+                qtopics = q.get('topics') or []
+                if qtopics:
+                    primary = qtopics[0]
+                    qfreq[primary] = qfreq.get(primary, 0) + 1
                 for p in q.get('parts', []):
                     for t in p.get('topics', []):
                         freq[t] = freq.get(t, 0) + 1
             data['topic_frequencies'] = freq
+            data['topic_question_frequencies'] = qfreq
         save_json(PP_FILE, pp)
 
     print(f'\nDone. {total_questions} question(s) checked, '

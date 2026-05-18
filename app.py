@@ -552,6 +552,7 @@ def api_pastpapers_all():
             'course_id': course_id,
             'course_name': course_names.get(course_id, course_id),
             'topic_frequencies': data.get('topic_frequencies', {}),
+            'topic_question_frequencies': data.get('topic_question_frequencies', {}),
             'topic_names': course_topic_names.get(course_id, {}),
             'questions': questions,
         })
@@ -570,6 +571,7 @@ def api_pastpapers(course_id):
             'total_questions': data.get('total_questions', 0),
             'past_paper_url': data.get('past_paper_url'),
             'topic_frequencies': data.get('topic_frequencies', {}),
+            'topic_question_frequencies': data.get('topic_question_frequencies', {}),
             'tagged_questions': data.get('tagged_questions', []),
             'note': data.get('_note'),
         })

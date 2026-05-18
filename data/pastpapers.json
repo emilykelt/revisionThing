@@ -853,7 +853,17 @@
         "_text_extracted": true,
         "total_marks": 20
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "cds-replication": 1,
+      "cds-threads": 1,
+      "cds-deadlock": 6,
+      "cds-rpc": 1,
+      "cds-consistency-models": 1,
+      "cds-faults": 2,
+      "cds-consensus": 3,
+      "cds-time": 1
+    }
   },
   "compiler-construction": {
     "total_questions": 16,
@@ -1682,7 +1692,15 @@
         "total_marks": 20,
         "_text_extracted": true
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "cc-lexing": 2,
+      "cc-advanced": 3,
+      "cc-correctness": 4,
+      "cc-data-procs": 5,
+      "LR-parsing": 1,
+      "cc-parsing": 1
+    }
   },
   "computation-theory": {
     "total_questions": 16,
@@ -2507,7 +2525,13 @@
         "total_marks": 20,
         "_text_extracted": true
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "ct-lambda": 7,
+      "ct-recursive": 1,
+      "ct-register": 3,
+      "ct-halting": 5
+    }
   },
   "complexity-theory": {
     "total_questions": 16,
@@ -3286,7 +3310,14 @@
         "total_marks": 20,
         "_text_extracted": true
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "cx-np": 7,
+      "cx-randomised": 1,
+      "cx-conp": 6,
+      "cx-time": 1,
+      "cx-space": 1
+    }
   },
   "artificial-intelligence": {
     "total_questions": 16,
@@ -4036,7 +4067,14 @@
         "_text_extracted": true,
         "total_marks": 20
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "ai-search-heuristic": 1,
+      "ai-planning": 4,
+      "ai-neural": 6,
+      "ai-csp": 4,
+      "ai-knowledge": 1
+    }
   },
   "prog-c-cpp": {
     "total_questions": 12,
@@ -4678,7 +4716,13 @@
         "total_marks": 20,
         "_text_extracted": true
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "pcc-intro": 3,
+      "pcc-pointers": 2,
+      "pcc-cpp-advanced": 6,
+      "pcc-debugging": 1
+    }
   },
   "prolog": {
     "total_questions": 8,
@@ -5144,7 +5188,12 @@
         "total_marks": 20,
         "_text_extracted": true
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "pl-arithmetic-lists": 6,
+      "pl-intro": 1,
+      "pl-advanced": 1
+    }
   },
   "cybersecurity": {
     "total_questions": 6,
@@ -5443,7 +5492,14 @@
         "_text_extracted": true,
         "total_marks": 20
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "cy-injection": 1,
+      "cy-software": 2,
+      "cy-auth": 1,
+      "cy-human": 1,
+      "cy-access": 1
+    }
   },
   "intro-comp-arch": {
     "total_questions": 12,
@@ -6119,7 +6175,13 @@
           }
         ]
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "ica-memory": 4,
+      "ica-riscv": 1,
+      "ica-soc": 2,
+      "ica-digital": 5
+    }
   },
   "econ-law-ethics": {
     "total_questions": 15,
@@ -6741,7 +6803,16 @@
         "total_marks": 20,
         "_text_extracted": true
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "ele-info-econ": 3,
+      "ele-law": 1,
+      "ele-contemporary": 2,
+      "ele-auctions-games": 2,
+      "ele-consumer": 5,
+      "ele-internet-law": 1,
+      "ele-market-failure": 1
+    }
   },
   "formal-models-language": {
     "total_questions": 15,
@@ -7574,7 +7645,13 @@
         "total_marks": 20,
         "_text_extracted": true
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "fml-parsing": 3,
+      "fml-chomsky": 7,
+      "fml-information": 3,
+      "fml-induction": 2
+    }
   },
   "data-science": {
     "total_questions": 10,
@@ -7994,7 +8071,13 @@
           }
         ]
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "ds-inference": 7,
+      "ds-probability": 1,
+      "ds-distributions": 1,
+      "ds-random-processes": 1
+    }
   },
   "logic-proof": {
     "total_questions": 16,
@@ -8655,7 +8738,15 @@
         "_text_extracted": true,
         "total_marks": 20
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "lp-tableaux": 1,
+      "lp-sequent": 1,
+      "lp-modal": 2,
+      "lp-clausal": 6,
+      "lp-fol": 2,
+      "lp-bdd": 4
+    }
   },
   "semantics": {
     "total_questions": 16,
@@ -9301,7 +9392,16 @@
           }
         ]
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "sem-intro": 5,
+      "sem-concurrency": 1,
+      "sem-types": 3,
+      "sem-subtyping": 3,
+      "sem-induction": 2,
+      "sem-equivalence": 1,
+      "sem-functions": 1
+    }
   },
   "computer-networking": {
     "total_questions": 24,
@@ -10389,7 +10489,15 @@
         "_text_extracted": true,
         "total_marks": 20
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "cn-link": 3,
+      "cn-transport": 5,
+      "cn-ip": 4,
+      "cn-application": 4,
+      "cn-intro": 7,
+      "cn-routing": 1
+    }
   },
   "further-graphics": {
     "total_questions": 16,
@@ -11022,7 +11130,15 @@
           }
         ]
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "fg-diff-geom": 1,
+      "fg-animation": 2,
+      "fg-inverse": 1,
+      "fg-geometry": 6,
+      "fg-raytracing": 1,
+      "fg-rendering": 5
+    }
   },
   "further-hci": {
     "total_questions": 16,
@@ -11897,6 +12013,14 @@
           }
         ]
       }
-    ]
+    ],
+    "topic_question_frequencies": {
+      "fhci-complex": 5,
+      "fhci-smart": 4,
+      "fhci-visual": 2,
+      "fhci-evaluation": 1,
+      "fhci-theory": 3,
+      "fhci-goal": 1
+    }
   }
 }

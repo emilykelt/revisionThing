@@ -204,12 +204,20 @@ def main():
         # Count topic frequencies PER PART (not per question) — a 4-part
         # question that touches the same topic in 3 parts deserves a count
         # of 3, since each part is a separate exam item.
+        # qfreqs counts each whole question once against its PRIMARY topic
+        # (the first entry in `q['topics']`). Sum of qfreqs ≈ total_questions.
         freqs = {}
+        qfreqs = {}
         for q in course['tagged_questions']:
+            qtopics = q.get('topics') or []
+            if qtopics:
+                primary = qtopics[0]
+                qfreqs[primary] = qfreqs.get(primary, 0) + 1
             for p in q.get('parts', []):
                 for t in p.get('topics', []) or []:
                     freqs[t] = freqs.get(t, 0) + 1
         course['topic_frequencies'] = freqs
+        course['topic_question_frequencies'] = qfreqs
         total_added += added
 
         # Write after each course so a crash mid-run doesn't lose progress

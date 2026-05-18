@@ -163,15 +163,24 @@ def main():
     # Sort newest-first like the rest of the file
     new_tagged.sort(key=lambda q: (-q['year'], q['paper'], q['question']))
 
-    # Rebuild topic_frequencies
+    # topic_frequencies counts every (topic, part) hit.
+    # topic_question_frequencies counts each whole question once against its
+    # PRIMARY topic (first entry in q['topics']) so the totals sum to ~n_questions.
     freqs = {}
+    qfreqs = {}
     for q in new_tagged:
-        for t in q.get('topics', []):
-            freqs[t] = freqs.get(t, 0) + 1
+        qtopics = q.get('topics') or []
+        if qtopics:
+            primary = qtopics[0]
+            qfreqs[primary] = qfreqs.get(primary, 0) + 1
+        for p in q.get('parts', []):
+            for t in p.get('topics', []) or []:
+                freqs[t] = freqs.get(t, 0) + 1
 
     course['tagged_questions'] = new_tagged
     course['total_questions']  = len(new_tagged)
     course['topic_frequencies'] = freqs
+    course['topic_question_frequencies'] = qfreqs
     course['past_paper_url'] = course.get('past_paper_url',
         'https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-FurtherHuman-ComputerInteraction.html')
 
