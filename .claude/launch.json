@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "revision-app",
+      "runtimeExecutable": "/Users/emilykelt/Library/Mobile Documents/com~apple~CloudDocs/Coding/revisionThing/venv/bin/python",
+      "runtimeArgs": ["app.py"],
+      "port": 5000,
+      "autoPort": true
+    }
+  ]
+}

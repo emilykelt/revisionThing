@@ -1,0 +1,496 @@
+{
+  "id": "20260512-183108-artificial-intelligence-exerci",
+  "title": "Artificial Intelligence \u2014 Exercises",
+  "course_name": "Artificial Intelligence",
+  "student_name": "Emily Kelt",
+  "college": "Pembroke College",
+  "questions": [
+    {
+      "answer": "Have watched a while ago and didn't have time to watch again, so I just watched a summary ",
+      "flags": null,
+      "id": "q0-1778607068902",
+      "images": [],
+      "label": "2.1",
+      "parts": [],
+      "selected": true,
+      "text": "If you haven't seen it already, watch the film A.I. Artificial Intelligence paying particular attention to the character \"Teddy\"."
+    },
+    {
+      "answer": "Philosophy \nHe has goal directed behaviour and loyalty, which was not explicitly programmed in the first place. David in the film seems more 'human-like', physically, and the fact that he desperately wants to be human and loved. Teddy doesn't seem to have the same motivation, the same consciousness, he doesn't appear to 'want' to be human. He doesn't show any apparent suffering or longing. He doesn't want something the same way david does. Descartes asks if animals are complex machines, if their behaviour was explainable purely mechanically, with no inner life. Humans are different because of 'res cogitans', the thinking physical mind. Teddy leans more to the former, a complex automata, whereas David is displayed as having more of a 'res cogitans'. \nThe turing test tests if you can make an AI system pass as a human. You interact with a terminal, can you tell if the thing on the other side of the terminal is human or not? You probably could with David, and to some extent with teddy. But passing the Turing test in this film would not be sufficient enough for 'humanness'\nMathematics/ Logic \nTeddy behaves in ways that are very functional, protect David, including by preserving the hair, respond. In an AI sense, he is a 'rational agent', acting to maximise some objective. David is irrational.\nEconomics\nRational agents with preferences can be used in economics, to maximise their goal, given its preferences and beliefs about the world. Teddy's goal is to help david and he shows this through the Flesh market and taking the hair. \nLinguistics\nHe communicates naturally and understands context. he processes everything that is said to him. ",
+      "flags": null,
+      "id": "q1-1778607068902",
+      "images": [],
+      "label": "2.2",
+      "parts": [],
+      "selected": true,
+      "text": "A large number of subjects are mentioned in the initial lectures in terms of how they've influenced AI: for example philosophy, mathematics, economics and so on. How do these show up in Teddy's design?"
+    },
+    {
+      "answer": "For 2001, the NLP techniques were not where they are now. So they would probably not be feasible then, but you can talk to an 'AI chatbot' pretty naturally now (eleven labs makes the voice sound realistic). It was context-free grammar at that point in time, wheres now we have developed more grammars (such as in Formal models of language), that can parse ambiguities, we've now developed transformers which handle the ambiguities and context in different sentences very well. But he may not actually understand what he is hearing and saying. \nBack then, emotional conversations weren't really possible, whereas now we can do sentiment analysis, analyse facial expressions, and there is the context we can take into account. Teddy can respond to the emotions it can detect in voice, even though it cannot feel emotions itself. \nBack then robots couldn't move in the same way, then Boston Dynamics robots now can do a lot of different movements. Integrating all of the different things we can do well is really hard. ",
+      "flags": null,
+      "id": "q2-1778607068902",
+      "images": [],
+      "label": "2.3",
+      "parts": [],
+      "selected": true,
+      "text": "What aspects of Teddy were not feasible when the film was made, but have become feasible since?"
+    },
+    {
+      "answer": "Open ended natural language understanding \npersistent memory \nemotional sensing \n- facial expression \n- voice analysis \nyou could build an expressive face, and be able to move around, but more complicated movement is stil quite complicated ",
+      "flags": null,
+      "id": "q3-1778607068902",
+      "images": [],
+      "label": "2.4",
+      "parts": [],
+      "selected": true,
+      "text": "What aspects of Teddy are within our current capabilities to design?"
+    },
+    {
+      "answer": "Real-time is a challenge for systems today. I can see it working within the next ten years. It's quite slow and power hungry, and hopefully in the next ten years we can run really fast models locally. Memory systems could be improved significantly, they aren't as great as they could be, and I imagine this can be done to have a more realistic effect. \nEnergy can be more efficient.\nin the next fifty years we can probably have everything integrated and working perfectly. Although if the innovation cycle continues as it is now it could be here sooner. By that time as well, the models will probably be more socially intelligent as well, and be able to pass the turing test more convincingly. ",
+      "flags": null,
+      "id": "q4-1778607068902",
+      "images": [],
+      "label": "2.5",
+      "parts": [],
+      "selected": true,
+      "text": "What aspects of Teddy would you expect to be able to implement within the next ten years. How about the next fifty years?"
+    },
+    {
+      "answer": "Consciousness , more of a philosophical problem. Means we would have to have solved consciousness in ourselves in order to replicate it in machines \nGenuine understanding vs pattern matching. When will the AI system fully properly understand? vs just pattern matching . Like the example of going into a room with a book on chinese translation and being able to respond to the answers without actually understanding the deeper meaning behind. ",
+      "flags": null,
+      "id": "q5-1778607068902",
+      "images": [],
+      "label": "2.6",
+      "parts": [],
+      "selected": true,
+      "text": "Are there aspects of Teddy that you would expect to elude us for one hundred years or more?"
+    },
+    {
+      "answer": "Perceptors: vision, audio, physical state balance etc. \nEnvironment : people around him, physical space, position and capabilities in that space \nWorking memory: presumably \nGoals: ensure david's safety and wellbeing, respond appropriately for family memories \nNot completely comprehensive goals, he is more complex than a basic agent. He does some planning (hair), but he doesn't seem to explicitly do any searching. Teddy can't know everything about the environment. His environment is also non-deterministic and dynamic which doesn't match what usually agents interact with ",
+      "flags": null,
+      "id": "q6-1778607068902",
+      "images": [],
+      "label": "2.7",
+      "parts": [],
+      "selected": true,
+      "text": "To what extent does the \"natural basic structure\" for an agent, as described in the lectures, form a useful basis for implementing Teddy's internals? What is missing?"
+    },
+    {
+      "answer": "Explores nodes in order of depth. An algorithm is optimal if it returns the lowest cost solution, not just any solution. \nNon decreasing function of depth - if node B is deeper than node A, then the path cost to B is at least as large as the path cost to A \ndepth (n_1) <= depth (n_2_ -> cost(n_1) <= cost (n_2)\nyou want to rule out the possibility that going deeper can make a path cheaper. any negative edge costs could violate this, and any situation where a longer path is cheaper than a shorter one. \nif BFS finds the shallowest goal first, then it explores all nodes at one depth before exploring at that depth + 1. when it encounters the goal, then it is at the minimum possible depth to which any goal exists. \nIf the shallowest goal has the lowest cost, then any node at least depth d, has path cost greater than at the previous level, and so on. the shallowest goal must then be the cheapest goal.\nif there are multiple goals at the same depth then BFS only finds one of them. so condition is necessary but not sufficient as could have a greater cost at the same level??? ",
+      "flags": null,
+      "id": "q7-1778607068902",
+      "images": [],
+      "label": "3.1",
+      "parts": [],
+      "selected": true,
+      "text": "Explain why breadth-first search is optimal if path-cost is a non-decreasing function of node-depth."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q8-1778607068902",
+      "label": "3.2",
+      "parts": [
+        {
+          "answer": "",
+          "id": "p8-0",
+          "images": [],
+          "label": "a",
+          "text": "Denote by $f_1(b, d)$ the total number of nodes appearing in a tree with branching factor $b$ and depth $d$. Find a closed-form expression for $f_1(b, d)$."
+        },
+        {
+          "answer": "",
+          "id": "p8-1",
+          "images": [],
+          "label": "b",
+          "text": "Denote by $f_2(b, d)$ the total number of nodes generated in a complete iterative deepening search to depth $d$ of a tree having branching factor $b$. Find a closed-form expression for $f_2(b, d)$ in terms of $f_1(b, d)$."
+        },
+        {
+          "answer": "",
+          "id": "p8-2",
+          "images": [],
+          "label": "c",
+          "text": "How do $f_1(b, d)$ and $f_2(b, d)$ compare when $b$ is large?"
+        }
+      ],
+      "selected": true,
+      "text": "Iterative deepening depends on the fact that the vast majority of the nodes in a tree are in the bottom level."
+    },
+    {
+      "answer": "It selects them for expansion in order of f(n) = g(n) + h(n), where g(n) is the actual cost to reach n and h(n) is the heuristic estimate of the remaining cost. It only performs a goal test when a node is selected for expansion (i.e. popped). Being generated doesn't; mean optimally reached. \nYou might not have found the optimal path to a goal. \ne.g. \nS with children A and B, both with child G in order \ncost 2, cost 1\n\nig n is generated but not yet selected for expansion, we only know the cost of the path we used to reach it, rather than if a cheaper one exists. We could return a suboptimal solution. Early goal checking prevents this. \n\n2 \nyou use h(n) to focus the search., and you dont want to expand nodes that wont lead to cheap solutions. If you check every expanded node's descendants, then you need to generate large portions of the tree that A* wouldn't visit. \nearly descendent checking could undermine the reason for heuristics in the first place ",
+      "flags": null,
+      "id": "q9-1778607068902",
+      "images": [],
+      "label": "3.3",
+      "parts": [],
+      "selected": true,
+      "text": "The A$^\\star$ tree-search algorithm does not perform a goal test on any state until it has selected it for expansion. We might consider a slightly different approach: namely, each time a node is expanded check all of its descendants to see if they include a goal. Give two reasons why this is a misguided idea, where possible illustrating your answer using a specific example of a search tree for which it would be problematic."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q10-1778607068902",
+      "label": "3.4",
+      "parts": [
+        {
+          "answer": "Direct distance from n to G is at most the distance from n to n', plus n' to goal. (no side can exceed some of other 2 triangle sides) \n",
+          "id": "p10-0",
+          "images": [],
+          "label": "a",
+          "text": "Prove that $h$ is monotonic if and only if it obeys the triangle inequality, which states that for any consecutive nodes $n$ and $n'$\n$$h(n) \\leq c_{n \\to n'} + h(n')$$\nwhere $c_{n \\to n'}$ is the cost of moving from $n$ to $n'$."
+        },
+        {
+          "answer": "",
+          "id": "p10-1",
+          "images": [],
+          "label": "b",
+          "text": "Prove that if a heuristic is monotonic then it is also admissible."
+        },
+        {
+          "answer": "no. S->A->G where c_s->a = 1, c_a->G=1 so h'(S) = 2, h'(A)=1\nh(S) = 2, h(A) = 0, h(G)=0\nadmissible \n\nis f(A) >= f(s)? f(S) = p(S) + h(S) = 0 + 2 = 2, f(A) = p(A) + h(A) = 1 + 0 = 1 so false ",
+          "id": "p10-2",
+          "images": [],
+          "label": "c",
+          "text": "Is the converse true? (That is, are all admissible heuristics also monotonic?) Either prove that this is the case or provide a counterexample."
+        }
+      ],
+      "selected": true,
+      "text": "The $f$-cost is defined in the usual way as\n$$f(n) = p(n) + h(n)$$\nwhere $n$ is any node, $p$ denotes path cost and $h$ denotes the heuristic. An admissible heuristic is one for which, for any $n$\n$$h(n) \\leq \\text{actual distance from } n \\text{ to the goal}$$\nand a heuristic is monotonic if for consecutive nodes $n$ and $n'$ it is always the case that\n$$f(n') \\geq f(n).$$"
+    },
+    {
+      "answer": "Does a depth first traversal, but at each point it tracks the best alternative path from any ancestor node (best path its not exploring), aka the limit. \nAt each node it if f(n) > limit, backtrack, otherwise expand n, generating children, and find best and second best (lowest f's), recurse on the best child, passing the min of limit, second best, as the new limit. when you return the recursion, update the f value to the best f value we find. \nwhen we abandon a subtree, we remember the best f value from that subtree\nso it discards all nodes on that path except one value, the updated f-value stored at the node where it backtracks to. subtree is deallocated. ",
+      "flags": null,
+      "id": "q11-1778607068902",
+      "images": [],
+      "label": "3.5",
+      "parts": [],
+      "selected": true,
+      "text": "In RBFS we are replacing $f$ values every time we backtrack to explore the current best alternative. This seems to imply a need to remember the new $f$ values for all the nodes in the path we're discarding, and this in turn suggests a potentially exponential memory requirement. Why is this not the case?"
+    },
+    {
+      "answer": "Goal state may be implicit or large, backwards search may be impossible to define. \nPredecessor operations may not exist, backwards search not possible.\nMeeting point \u2260 optimal path, so the naive termination means that it is not optimal.\nAsymmetric branching factors mean that exponential saving may not materialise. \nBoth frontiers must be stored, the memory cost is O(b^(d/2)) each \nMultiple goals might be an issue ",
+      "flags": null,
+      "id": "q12-1778607068902",
+      "images": [],
+      "label": "3.6",
+      "parts": [],
+      "selected": true,
+      "text": "In some problems we can simultaneously search:\n- forward from the start state\n- backward from the goal state\n\nuntil the searches meet. This seems like it might be a very good idea:\n- If the search methods have complexity $O(b^d)$ then\u2026\n- \u2026we are converting this to $O(2b^{d/2}) = O(b^{d/2})$.\n\n(Here, we are assuming the branching factor is $b$ in both directions.) Why might this not be as effective as it seems?"
+    },
+    {
+      "answer": "Use iterative deepening. Never stores a frontier, only the current path, and you can regenerate any discard nodes if you need. You never want to hold more than one root to current node path simultaneously. you want to impose a depth limit so that you don't store infinitely deep DFS ",
+      "flags": null,
+      "id": "q13-1778607068902",
+      "images": [],
+      "label": "3.7",
+      "parts": [],
+      "selected": true,
+      "text": "Suggest a method for performing depth-first search using only $O(d)$ space."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q14-1778607068902",
+      "label": "3.8",
+      "parts": [
+        {
+          "answer": "Yes. Otherwise you could get stuck at local optimums. if you persist even though it keeps getting worse, you can find the global maximum. If sometimes you accept a worse step, then you can escape the local maximum. You want to control the probability of accepting the worse steps, exploration vs exploitation. If you're early in the search you should explore more, and later on you should exploit more. \nsimulated annealing, the probability of accepting a worse step is P(accept) = e^(\u0394f/T) where \u0394f <0 is the change in f (and negative since it is worse), and T is temperature that decreases over time (T->0 means that you go purely searching for the positives later on)",
+          "id": "p14-0",
+          "images": [],
+          "label": "a",
+          "text": "Would it be a good idea to also allow steps that move to a state with a worse value for $f$?"
+        },
+        {
+          "answer": "Use the probability I mentioned above. if there's a large T then the exponent is close to 0 so the term is close to 1, you almost always accept worse steps (explore) at the start with a high temperature, and then when it is small you almost never accept worse steps. if you have a large |\u0394f| then you are less likely accepted as it is a big worsening. You can decrease the temperature either geometrically T<-\u03b1T for some \u03b1<1, or linearly, T<-T-\u03b4. But you have to find the right temperature ",
+          "id": "p14-1",
+          "images": [],
+          "label": "b",
+          "text": "Suggest an algorithm for achieving this, such that you have some control over the balance between steps that increase or decrease $f$."
+        }
+      ],
+      "selected": true,
+      "text": "One modification to the basic local search algorithm suggested in the lectures was to make steps probabilistically, but only if the value of $f$ is improved."
+    },
+    {
+      "answer": "Max is the root: \nL subtree: Min node sees two Max children returning 2 and 18, takes min 2\nMiddle subtree: Min node sees two Max children returning 7 and 9, takes min  7\nRight subtree: Min node sees two Max children returning 4 and 20, takes min  4\nRoot (Max): takes max(2, 7, 4) \u2192 7\nso should take the middle one \n\nMin is the root : \nL subtree : max nodes sees two Min children returning 1 and 4, takes max 4 \nMiddle subtree: max sees Min return 2 & 5, take max 5\nright subtree : max sees 2 min children return -1 and -1 and takes max -1\nroot (min) takes (4,5,-1) -> -1\nso min should choose the right branch ",
+      "flags": null,
+      "id": "q15-1778607068902",
+      "images": [],
+      "label": "4.1",
+      "parts": [],
+      "selected": true,
+      "text": "Consider the following game tree (leaf values from left to right at the bottom level): 1, 15, 2, 19, 18, 23, 4, 3, 2, 1, 7, 8, 9, 10, 2, 5, 1, 30, 4, 7, 20, 1, 1, 5. Large outcomes are beneficial for Max. How is this tree pruned by $\\alpha - \\beta$ minimax if Max moves first? (That is, Max is the root.) How is it pruned if Min is the root, and therefore moves first?"
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q16-1778607068902",
+      "images": [],
+      "label": "4.2",
+      "parts": [],
+      "selected": true,
+      "text": "Implement the $\\alpha - \\beta$ pruning algorithm and use it to verify your answer to the previous problem."
+    },
+    {
+      "answer": "It operates with the assumption that both players play optimally. Assumes that opponent will play the move that hurts you most, but if the opponent chooses randomly for example it can miss oppurtunities that a perfect opponent would punish but an imperfect one won't. You can model the opponent with a bayesian model if you know vaugely what their tactics are in which case it could be better, but you'd have to learn your opponent i think and not sure exactly how this would work ",
+      "flags": null,
+      "id": "q17-1778607068902",
+      "images": [],
+      "label": "4.3",
+      "parts": [],
+      "selected": true,
+      "text": "Is the minimax approach to playing games optimal against an imperfect opponent? Either prove this is the case or give a counterexample."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q18-1778607068902",
+      "label": "5.1",
+      "parts": [
+        {
+          "answer": "each time a variable is assigned, forward checking removes it from the domains of all unassigned neighbours, if any neighbours domain becomes empty, backtrack immediately. \nI'll use notation (node:domain) rather than write it out in a table, as this formatting is weird. Assign 1=R : (2,3,4:CB), (5,6,7,8:RCB). Then assign 4=C (2,3:B), (5:R,B), then 5=R (6,7:CB), then 8=C, (6,7:B), 6=B, empty domain so backtrack. Forward checking detects that node 2 has an empty domain so you backtrack. ",
+          "id": "p18-0",
+          "images": [],
+          "label": "a",
+          "text": "Assume we attempt the assignments $1 = R$, $4 = C$, $5 = R$, $8 = C$, $6 = B$. Explain how forward checking operates in this example, and how it detects the need to backtrack."
+        },
+        {
+          "answer": "enforces arc consistency across the whole graph, not just an assigned variable. X->Y is consistent if for every value in X, there exists at least one compatible value in Y's domain, if not, values are pruned from X. Propagates further. \nRuns on original domains before any assignment. \nPotentially will detect problem earlier, constraining globally. ",
+          "id": "p18-1",
+          "images": [],
+          "label": "b",
+          "text": "Will the AC-3 algorithm detect a problem earlier in this case? Explain the operation of the algorithm in this example."
+        },
+        {
+          "answer": "I need some help with AC-3 I think I don't quite understand it ",
+          "id": "p18-2",
+          "images": [],
+          "label": "c",
+          "text": "Implement the AC-3 algorithm and use it to verify your answer to the preceding problem."
+        }
+      ],
+      "selected": true,
+      "text": "Consider the following constraint satisfaction problem: nodes 1, 2, 3, 4, 5, 6, 7, 8 connected by edges (see the graph in the sheet). We want to colour the nodes using the colours red (R), cyan (C) and black (B) in such a way that connected nodes have different colours."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q19-1778607068902",
+      "images": [],
+      "label": "6.1",
+      "parts": [],
+      "selected": false,
+      "text": "There were in fact two queries suggested in the notes for obtaining a sequence of actions. The details for\n$$\\exists a \\, \\exists s . \\, Sequence(a, s_0, s) \\wedge Goal(s)$$\nwere provided, but earlier in the notes the format\n$$\\exists actionList . \\, Goal(\\ldots actionList \\ldots)$$\nwas suggested. Explain how this alternative form of query might be made to work."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q20-1778607068902",
+      "images": [],
+      "label": "6.2",
+      "parts": [],
+      "selected": false,
+      "text": "Making correct use of the situation calculus, write the sentences in FOL required to implement the Shoot action in Wumpus World. Write further sentences in FOL to allow movement and change of orientation."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q21-1778607068902",
+      "images": [],
+      "label": "6.3",
+      "parts": [],
+      "selected": false,
+      "text": "Download and install a copy of Prover9 from www.cs.unm.edu/~mccune/mace4/. (If you're Linux-based then you'll probably find it's already packaged. Under OS X it appears to be available through HomeBrew. As for Windows, I have no idea. It's just too awful to contemplate!)\n\nReferring to exam question 2003, paper 9, question 8 assume that initially both owner and cat are in the living room. The cat can make its owner move to the kitchen by going to its food bowl in the kitchen and meeowing. It can then of course return to the living room and scratch something valuable.\n\nImplement sufficient knowledge in the situation calculus to allow an action sequence to be derived allowing the cat to achieve this, and use Prover9 to derive such an action sequence.\n\nIn order to do this you need to know how to extract an answer from the theorem prover. Taking an easy example:\n\n```\nformulas(assumptions).\n\nwife(x,y) <-> (female(x) & married(x,y)).\nfemale(Violet).\nmarried(Violet,Bill).\n\nendoflist.\n\nformulas(goals).\n\nexists x wife(Violet,x).\n\nendoflist.\n```\n\nExtracting the value of x requires two things: we need to move the goal into the assumptions (remember how in Logic and Proof you converted $\\neg(A \\to B)$ to $A \\wedge \\neg B$ when negating and converting to clauses) and we need to add a command to the knowledge base to get:\n\n```\nformulas(assumptions).\n\nwife(x,y) <-> (female(x) & married(x,y)).\nfemale(Violet).\nmarried(Violet,Bill).\n\n-wife(Violet,x) # answer(x).\n\nendoflist.\n\nformulas(goals).\nendoflist.\n```\n\nHere, the addition of `# answer(x)` causes the prover to output the value of x as part of the solution."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q22-1778607068902",
+      "images": [],
+      "label": "7.1",
+      "parts": [],
+      "selected": false,
+      "text": "We've seen how heuristics can be used to speed up the process of searching. Planning has much in common with search. Can you devise any general heuristics that you might expect to speed up the planning process?"
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q23-1778607068902",
+      "label": "7.2",
+      "parts": [
+        {
+          "answer": "",
+          "id": "p23-0",
+          "images": [],
+          "label": "a",
+          "text": "Construct a solution to the problem using the partial order planning algorithm."
+        },
+        {
+          "answer": "",
+          "id": "p23-1",
+          "images": [],
+          "label": "b",
+          "text": "Construct the planning graph for this problem (you should probably start by finding a nice big piece of paper) and use the Graphplan algorithm to obtain a plan. If you are feeling keen, implement the algorithm for constructing the planning graph and use it to check your answer."
+        }
+      ],
+      "selected": false,
+      "text": "An undergraduate has turned up at this term's Big Party, only to find that it is in the home of her arch rival, who has turned her away. She spies in the driveway a large box and a ladder, and hatches a plan to gatecrash by getting in through a second floor window. Party on!\n\nHere is the planning problem. She needs to move the box to the house, the ladder onto the box, then climb onto the box herself and at that point she can climb the ladder to the window.\n\nUsing the abbreviations:\n- B - Box\n- L - Ladder\n- H - House\n- V - VioletScroot\n- W - Window\n- D - Driveway\n\nThe start state is $\\neg At(B, H)$, $\\neg At(L, B)$, $\\neg At(V, W)$ and $\\neg At(V, B)$. The goal is $At(V, W)$.\n\nThe available actions are:\n\n| Preconditions | Action | Effect |\n|---|---|---|\n| $\\neg At(B,H)$, $\\neg At(L,B)$ | $Move(B,H)$ | $At(B,H)$ |\n| $At(B,H)$, $At(L,B)$, $At(V,B)$ | $Move(V,W)$ | $At(V,W)$ |\n| $\\neg At(L,B)$ | $Move(L,B)$ | $At(L,B)$ |\n| $\\neg At(V,B)$ | $Move(V,B)$ | $At(V,B)$ |\n| $At(L,B)$ | $Move(L,D)$ | $\\neg At(L,B)$ |"
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q24-1778607068902",
+      "label": "7.3",
+      "parts": [
+        {
+          "answer": "",
+          "id": "p24-0",
+          "images": [],
+          "label": "a",
+          "text": "Represent this problem in the STRIPS format so that it could be given as input to the partial order planning algorithm."
+        },
+        {
+          "answer": "",
+          "id": "p24-1",
+          "images": [],
+          "label": "b",
+          "text": "Construct a solution to the problem using the partial order planning algorithm. How many specific plans can be extracted from the result?"
+        }
+      ],
+      "selected": false,
+      "text": "Return of the Evil Cat Robot. Consider the problem involving the situation calculus and Prover9 that you addressed on the previous problem sheet."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q25-1778607068902",
+      "images": [],
+      "label": "7.4",
+      "parts": [],
+      "selected": false,
+      "text": "Beginning with the domains\n$$D_1 = \\{\\text{climber}\\}$$\n$$D_2 = \\{\\text{home, jokeShop, hardwareStore, spire}\\}$$\n$$D_3 = \\{\\text{rope, gorilla, firstAidKit}\\}$$\nand adding whatever actions, relations and so on you feel are appropriate, explain how the problem of purchasing and attaching a gorilla to a famous spire can be encoded as a constraint satisfaction problem (CSP). If you are feeling keen, find a CSP solver and use it to find a plan. The course text book has a code archive including various CSP solvers at: http://aima.cs.berkeley.edu/code.html"
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q26-1778607068902",
+      "label": "8.1",
+      "parts": [
+        {
+          "answer": "",
+          "id": "p26-0",
+          "images": [],
+          "label": "a",
+          "text": "Prove that the weight vector $w$ is perpendicular to the line described by $x' + ay$; that is, the line corresponding to the set $\\{x \\mid x = x' + ay \\text{ where } a \\in \\mathbb{R}\\}$. (Hint: remember that vectors are perpendicular if their inner product is 0.) Note that this tells us that $w$ describes the orientation of the decision boundary."
+        },
+        {
+          "answer": "",
+          "id": "p26-1",
+          "images": [],
+          "label": "b",
+          "text": "Let $v$ be the vector from the origin to the line described by $x' + ay$ and perpendicular to it. Prove that\n$$\\|v\\| = \\frac{|b|}{\\|w\\|}.$$\nNote that this tells us the following: if $\\|w\\| = 1$ then $|b|$ tells us the distance from the origin to the decision boundary."
+        },
+        {
+          "answer": "",
+          "id": "p26-2",
+          "images": [],
+          "label": "c",
+          "text": "Let $x$ be any point not on the line described by $x' + ay$. Let $z$ be the vector from the line to $x$ and perpendicular to the line. Prove that\n$$\\|z\\| = \\frac{|f(x)|}{\\|w\\|}.$$\nThis tells us that points not on the line do not obey $f(x) = 0$ and that the value of $f(x)$ tells us the distance from the decision boundary to $x$."
+        },
+        {
+          "answer": "",
+          "id": "p26-3",
+          "images": [],
+          "label": "d",
+          "text": "Prove that replacing $w$ with $w/\\|w\\|$ and $b$ with $b/\\|w\\|$ does not alter the decision boundary."
+        }
+      ],
+      "selected": false,
+      "text": "The purpose of this exercise is to gain some insight into the way in which the parameters of a basic, linear perceptron affect the position and orientation of its decision boundary. Recall that a linear perceptron is based on the function\n$$f(x) = w^T x + b$$\nwhere $x \\in \\mathbb{R}^n$, $w \\in \\mathbb{R}^n$ and $b \\in \\mathbb{R}$. The perceptron decides that a new input $x$ is in class 1 if $f(x) \\geq 0$ and decides that the input is in class 2 otherwise. The decision boundary is therefore the collection of all points where $f(x) = 0$.\n\nIt's always easy to find $n$ distinct points where $f(x) = 0$ because for any $w$ and $b$ we just need to solve $w^T x' = -b$. Let $x'$ and $x''$ be two points where $f(x') = 0$ and $f(x'') = 0$. Let's concentrate on the case where $n = 2$. Consider the vector $y = x' - x''$.\n\nFor any $a \\in \\mathbb{R}$, evaluating $f(x' + ay)$ gives:\n$$f(x' + ay) = w^T(x' + ay) + b = w^T x' + a w^T y + b = f(x') + a w^T(x' - x'') = a(w^T x' - w^T x'') = a(-b - (-b)) = 0.$$\nThis works for any value $a \\in \\mathbb{R}$, and suggests that the decision boundary is a straight line in $\\mathbb{R}^2$."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q27-1778607068902",
+      "images": [],
+      "label": "8.2",
+      "parts": [],
+      "selected": false,
+      "text": "In the application of neural networks to pattern classification\u2014where we wish to assign any input vector $x$ to membership in a specific class\u2014it makes sense to attempt to interpret network outputs as probabilities of class membership.\n\nFor example, in the medical diagnosis scenario presented in the lectures, where we try to map an input $x$ to either class A (patient has the disease) or class B (patient is free of the disease) it makes sense to use a network with a single output producing values constrained between 0 and 1 such that the output $h(w; x)$ of a network using weights $w$ is interpreted as\n$$h(w; x) = \\Pr(x \\text{ is in class A}).$$\nClearly we also have $\\Pr(x \\text{ is in class B}) = 1 - h(w; x)$ and it follows that training examples should be labelled 1 and 0 for classes A and B respectively.\n\nSay we have a specific training example $(x', 0)$. What does it tell us about how to choose a good $w$? Clearly we might want to choose $w$ to maximise\n$$\\Pr(\\text{We see the example } (x', 0)|w) = \\Pr(\\text{We see the label } 0|w, x') \\times \\Pr(x') = (1 - h(w; x')) \\times \\Pr(x')$$\nwhere the second step incorporates the assumption that $x'$ and $w$ are independent. This quantity is called the likelihood of $w$. Given an entire training sequence\n$$s = ((x_1, c_1), (x_2, c_2), \\ldots, (x_m, c_m))$$\nwhere the labels $c_i$ take values 0 or 1 we can also consider choosing $w$ to maximise the probability that the entire collection of $m$ input vectors is labelled in the specified manner (the likelihood $\\Pr(s|w)$ of $w$).\n\nAssuming that the examples in $s$ are independent, show that in order to achieve this we should choose $w$ to maximise the expression\n$$\\sum_{i=1}^{m} c_i \\log h(w; x_i) + (1 - c_i) \\log(1 - h(w; x_i)).$$\n(Hint: When independence is assumed, $\\Pr(A, B) = \\Pr(A)\\Pr(B)$, and you can maximise an expression equally well by maximising its log.) What does this allow you to conclude about the version of the backpropagation algorithm presented in the lectures?"
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q28-1778607068902",
+      "images": [],
+      "label": "8.3",
+      "parts": [],
+      "selected": false,
+      "text": "In the lecture notes, you are encouraged to derive an expression to minimize for pattern classification with more than two discrete classes. Using the previous question as a guide (and treating the inputs as fixed from the outset) modify the derivation to obtain the expression suggested."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q29-1778607068902",
+      "label": "8.4",
+      "parts": [
+        {
+          "answer": "",
+          "id": "p29-0",
+          "images": [],
+          "label": "a",
+          "text": "Show that the mean of $o_i$ is $f(x_i)$ and the variance of $o_i$ is $\\sigma^2$."
+        },
+        {
+          "answer": "",
+          "id": "p29-1",
+          "images": [],
+          "label": "b",
+          "text": "Show that\n$$p(o_i|h) = \\frac{1}{\\sqrt{2\\pi\\sigma^2}} \\exp\\left(\\frac{-(o_i - h(x_i))^2}{2\\sigma^2}\\right).$$\n(Hint: what happens to data having a Gaussian density if you linearly transform it?)"
+        },
+        {
+          "answer": "",
+          "id": "p29-2",
+          "images": [],
+          "label": "c",
+          "text": "Show that any hypothesis that maximises the likelihood is also one that minimises the quantity\n$$\\sum_{i=1}^{m} (o_i - h(x_i))^2.$$"
+        },
+        {
+          "answer": "",
+          "id": "p29-3",
+          "images": [],
+          "label": "d",
+          "text": "What does this tell you about the specific example of the backpropagation algorithm given in the lectures?"
+        }
+      ],
+      "selected": false,
+      "text": "We now return to the case of regression. As in the previous question, the likelihood of a hypothesis $h$ can be thought of as the probability of obtaining a training sequence $s$ given that $h$ is a perfect mapping from attribute vectors to classifications. Assume that $H$ contains functions $h : X \\to \\mathbb{R}$ and examples are labelled using a specific target function $f \\in H$ but corrupted by noise, so\n$$s = ((x_1, o_1), (x_2, o_2), \\ldots, (x_m, o_m))$$\nand\n$$o_i = f(x_i) + e_i$$\nfor $i = 1, 2, \\ldots, m$ where $e_i$ denotes noise. If the attribute vectors are fixed, and the $e_i$ are independent and identically distributed with the Gaussian distribution\n$$p(e_i) = \\frac{1}{\\sqrt{2\\pi\\sigma^2}} \\exp\\left(\\frac{-(e_i - \\mu)^2}{2\\sigma^2}\\right)$$\nwhere $\\mu$ is the noise mean and $\\sigma^2$ the noise variance, then the likelihood of any hypothesis is\n$$p(s|h) = p((o_1, o_2, \\ldots, o_m)|h) = \\prod_{i=1}^{m} p(o_i|h)$$\nwhere the last step follows because the $e_i$ are independent. Assume in the following that $\\mu = 0$."
+    },
+    {
+      "answer": "",
+      "flags": null,
+      "id": "q30-1778607068902",
+      "label": "8.5",
+      "parts": [
+        {
+          "answer": "",
+          "id": "p30-0",
+          "images": [],
+          "label": "a",
+          "text": "Derive the modification required to the algorithm if the activation function on the output node is changed from $g(x) = x$ to $g(x) = 1/(1 + \\exp(-x))$. (This is a function commonly used to produce probabilities as outputs, as it has range lying between 0 and 1.)"
+        },
+        {
+          "answer": "",
+          "id": "p30-1",
+          "images": [],
+          "label": "b",
+          "text": "Implement the modified algorithm. (Matlab is probably a good language to use.) Apply it to the parity data described in the lectures, and plot the results you obtain."
+        }
+      ],
+      "selected": false,
+      "text": "The demonstration of the backpropagation algorithm given in the lectures can be improved. In solving the parity problem what we really want to know is the probability that an example should be placed in class one, exactly as described above. Probabilities lie in the interval $[0, 1]$, but the output of the network used in the lectures is unbounded."
+    }
+  ],
+  "created_at": "2026-05-12T18:31:08.940486",
+  "updated_at": "2026-05-13T11:04:38.222855"
+}
