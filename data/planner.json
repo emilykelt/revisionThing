@@ -1,0 +1,37 @@
+{
+  "selections": {
+    "p7": {
+      "1": true,
+      "3": true,
+      "4": true,
+      "5": true,
+      "9": true,
+      "10": false
+    },
+    "p4": {
+      "1": true,
+      "2": true,
+      "3": true,
+      "4": true,
+      "5": true,
+      "7": false,
+      "8": false
+    },
+    "p5": {
+      "1": true,
+      "2": true,
+      "4": true,
+      "5": true,
+      "6": true,
+      "7": false
+    },
+    "p6": {
+      "3": true,
+      "4": true,
+      "7": true,
+      "8": true,
+      "9": true
+    }
+  },
+  "updated_at": "2026-05-20T14:57:23.489282"
+}
