@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part IB Revision</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="IB Revision">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <meta name="theme-color" content="#FAF6F0">
+</head>
+<body>
+    <div class="grain-overlay"></div>
+
+    <header class="header">
+        <div class="header-inner">
+            <h1 class="logo" onclick="app.showDashboard()">Part IB Revision</h1>
+            <nav class="nav">
+                <button class="nav-btn active" data-view="dashboard" onclick="app.showDashboard()">
+                    <span class="nav-icon">⊞</span>Dashboard
+                </button>
+                <span class="nav-divider"></span>
+                <button class="nav-btn" data-view="warmup" onclick="app.showWarmup()">
+                    <span class="nav-icon">☀</span>Warm Up
+                </button>
+                <button class="nav-btn" data-view="session" onclick="app.startSessionModal()">
+                    <span class="nav-icon">✎</span>Practice
+                </button>
+                <button class="nav-btn" data-view="pastpapers" onclick="app.showPastPapers()">
+                    <span class="nav-icon">📄</span>Past Papers
+                </button>
+                <span class="nav-divider"></span>
+                <button class="nav-btn" data-view="graph" onclick="app.showGraph()">
+                    <span class="nav-icon">◎</span>Graph
+                </button>
+                <button class="nav-btn" data-view="history" onclick="app.showHistory()">
+                    <span class="nav-icon">↺</span>History
+                </button>
+                <button class="nav-btn" data-view="anki" onclick="app.showAnkiBank()" id="nav-anki">
+                    <span class="nav-icon">🃏</span>Anki
+                </button>
+                <button class="nav-btn" data-view="planner" onclick="app.showPlanner()">
+                    <span class="nav-icon">☑</span>Planner
+                </button>
+                <button class="nav-btn" data-view="supervision" onclick="app.showSupervisions()">
+                    <span class="nav-icon">✦</span>Supervisions
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="view active">
+            <div class="dash-bento">
+                <div class="dash-bento-card dash-countdown" id="dash-countdown"></div>
+                <div class="dash-bento-card dash-todo" id="dash-todo"></div>
+            </div>
+
+            <div class="overall-progress">
+                <div class="overall-label">
+                    <span>Overall Progress</span>
+                    <span class="overall-pct" id="overall-pct">50%</span>
+                </div>
+                <div class="progress-bar-outer large">
+                    <div class="progress-bar-inner" id="overall-bar" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div id="terms-container"></div>
+
+            <div class="dash-bento dash-bento-row2 dash-bento--footer">
+                <div class="dash-bento-card dash-heatmap" id="dash-heatmap"></div>
+                <div class="dash-bento-card dash-retro dash-retro--compact" id="dash-retro"></div>
+            </div>
+        </div>
+
+        <!-- Course Detail View -->
+        <div id="view-course" class="view">
+            <button class="back-btn" onclick="app.showDashboard()">&larr; Back to Dashboard</button>
+            <div id="course-detail"></div>
+        </div>
+
+        <!-- Question View -->
+        <div id="view-question" class="view">
+            <button class="back-btn" id="question-back-btn">&larr; Back</button>
+            <div id="question-container"></div>
+        </div>
+
+        <!-- Warm Up View -->
+        <div id="view-warmup" class="view">
+
+            <!-- Setup phase -->
+            <div id="warmup-setup">
+                <div class="warmup-setup-inner">
+                    <div class="warmup-icon">☀</div>
+                    <h2 class="warmup-title">Warm Up</h2>
+                    <p class="warmup-desc">Quick multiple-choice questions to test key concepts before a full practice session.</p>
+                    <div class="warmup-field">
+                        <label class="warmup-field-label">Mode</label>
+                        <div class="warmup-mode-row">
+                            <button class="warmup-mode-btn active" data-mode="general" onclick="app.setWarmupMode('general')">General</button>
+                            <button class="warmup-mode-btn" data-mode="pastpaper" onclick="app.setWarmupMode('pastpaper')">Past Paper</button>
+                        </div>
+                    </div>
+                    <div id="warmup-general-opts">
+                        <div id="warmup-topic-picker"></div>
+                    </div>
+                    <div id="warmup-pp-opts" style="display:none">
+                        <div class="warmup-field">
+                            <label class="warmup-field-label">Course</label>
+                            <select id="warmup-pp-course-select" class="warmup-course-select" onchange="app.onWarmupPpCourseChange()">
+                                <option value="">Select a course…</option>
+                            </select>
+                        </div>
+                        <div class="warmup-field" id="warmup-pp-q-field" style="display:none">
+                            <label class="warmup-field-label">Question</label>
+                            <select id="warmup-pp-select" class="warmup-course-select">
+                                <option value="">Select a question…</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="warmup-field">
+                        <label class="warmup-field-label">Questions</label>
+                        <div class="warmup-count-row">
+                            <button class="warmup-count-btn" data-count="5" onclick="app.selectWarmupCount(5)">5</button>
+                            <button class="warmup-count-btn active" data-count="8" onclick="app.selectWarmupCount(8)">8</button>
+                            <button class="warmup-count-btn" data-count="12" onclick="app.selectWarmupCount(12)">12</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary warmup-start-btn" onclick="app.startWarmup()">Start Warm Up &rarr;</button>
+                </div>
+            </div>
+
+            <!-- Quiz phase -->
+            <div id="warmup-quiz" style="display:none">
+                <div class="warmup-progress-header">
+                    <button class="back-btn" onclick="app.showWarmup()" style="margin-bottom:0; flex-shrink:0;">&larr; Exit</button>
+                    <div class="warmup-progress-wrap">
+                        <div id="warmup-pp-label" class="warmup-pp-label" style="display:none"></div>
+                        <div class="warmup-progress-track">
+                            <div class="warmup-progress-fill" id="warmup-progress-fill" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <span class="warmup-q-counter" id="warmup-q-counter">1 / 8</span>
+                </div>
+                <div id="warmup-card"></div>
+            </div>
+
+            <!-- Results phase -->
+            <div id="warmup-results" style="display:none">
+                <div class="warmup-results-inner">
+                    <div class="warmup-score-display" id="warmup-score-display">0/8</div>
+                    <div class="warmup-score-pct" id="warmup-score-pct">0%</div>
+                    <div class="warmup-score-emoji" id="warmup-score-emoji">&#x1F4DA;</div>
+                    <div id="warmup-heatmap-results" class="warmup-heatmap-wrap warmup-heatmap-wrap--results"></div>
+                    <div id="warmup-review-section"></div>
+                    <div class="warmup-results-actions">
+                        <button class="btn btn-primary" onclick="app.startWarmup()">Try Again</button>
+                        <button class="btn btn-secondary" onclick="app.showDashboard()">Back to Dashboard</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Past Papers View -->
+        <div id="view-pastpapers" class="view">
+            <h2 class="section-title">Past Papers</h2>
+            <div id="pp-filters">
+                <select id="pp-course-filter" onchange="app.renderPastPapers()">
+                    <option value="">All subjects</option>
+                </select>
+                <select id="pp-year-filter" onchange="app.renderPastPapers()">
+                    <option value="">All years</option>
+                </select>
+            </div>
+            <div id="pp-list"></div>
+        </div>
+
+        <!-- Anki Bank View -->
+        <div id="view-anki" class="view">
+            <div class="anki-header">
+                <h2 class="section-title">Anki Bank</h2>
+                <div class="anki-header-actions">
+                    <button class="btn btn-primary" onclick="app.exportAnki(null)" id="anki-export-all-btn">Export all as .apkg</button>
+                </div>
+            </div>
+            <p class="anki-subtitle">Flashcards are generated automatically when you answer a question poorly. Export them to import into Anki — they'll be cleared from here once exported.</p>
+            <div id="anki-bank-list"></div>
+        </div>
+
+        <!-- History View -->
+        <div id="view-history" class="view">
+            <h2 class="section-title">Revision History</h2>
+            <div id="history-filters">
+                <select id="history-course-filter" onchange="app.loadHistory()">
+                    <option value="">All courses</option>
+                </select>
+            </div>
+            <div id="history-list"></div>
+            <button class="btn btn-secondary" id="history-load-more" onclick="app.loadMoreHistory()" style="display:none">Load more</button>
+        </div>
+
+
+        <!-- Supervision View -->
+        <div id="view-supervision" class="view">
+            <div id="supo-list-page">
+                <div class="supo-list-header">
+                    <h2 class="section-title">Supervisions</h2>
+                    <label class="btn btn-primary supo-upload-btn">
+                        <input type="file" id="supo-pdf-input" accept="application/pdf" style="display:none">
+                        <span>+ New from PDF</span>
+                    </label>
+                </div>
+                <p class="supo-subtitle">Upload a supervision exercise sheet to draft answers. Work is saved automatically and exported as a PDF when you're done.</p>
+                <div id="supo-list"></div>
+            </div>
+
+            <div id="supo-editor-page" style="display:none">
+                <button class="back-btn" onclick="app.showSupervisions()">&larr; Back to all supervisions</button>
+                <div class="supo-editor-meta">
+                    <input id="supo-title" class="supo-title-input" placeholder="Supervision title">
+                    <input id="supo-course" class="supo-course-input" placeholder="Course (e.g. Complexity Theory)">
+                    <span class="supo-save-status" id="supo-save-status">All changes saved</span>
+                </div>
+                <div class="supo-pick-bar" id="supo-pick-bar"></div>
+                <div id="supo-questions"></div>
+                <div class="supo-editor-actions">
+                    <button class="btn btn-secondary" onclick="app.supoCheckAll()">⚐ Provisional check (all selected)</button>
+                    <button class="btn btn-primary" onclick="app.supoGeneratePdf()">↓ Generate PDF</button>
+                </div>
+            </div>
+
+            <div id="supo-parsing-overlay" class="supo-parsing-overlay" style="display:none">
+                <div class="supo-parsing-card">
+                    <span class="spinner"></span>
+                    <p>Reading your supervision sheet…</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exam Planner View -->
+        <div id="view-planner" class="view">
+            <div class="planner-header">
+                <h2 class="section-title">Exam Planner</h2>
+                <p class="planner-subtitle">Tick the questions you plan to answer in each paper. Colours show your confidence.</p>
+            </div>
+            <div id="planner-papers"></div>
+        </div>
+
+        <!-- Graph View -->
+        <div id="view-graph" class="view">
+            <div class="graph-toolbar">
+                <div class="graph-legend" id="graph-legend"></div>
+                <div class="graph-controls">
+                    <button class="btn btn-ghost graph-btn" id="graph-reset-zoom">Reset view</button>
+                    <label class="graph-toggle">
+                        <input type="checkbox" id="graph-show-cross" checked>
+                        Cross-course links
+                    </label>
+                </div>
+            </div>
+            <div class="graph-container" id="graph-container">
+                <div id="graph-loading" class="loading">
+                    <span class="spinner"></span>Loading knowledge graph&hellip;
+                </div>
+            </div>
+            <div class="graph-tooltip" id="graph-tooltip" style="display:none">
+                <div class="graph-tooltip-name" id="graph-tooltip-name"></div>
+                <div class="graph-tooltip-course" id="graph-tooltip-course"></div>
+                <div class="graph-tooltip-conf" id="graph-tooltip-conf"></div>
+                <div class="graph-tooltip-actions">
+                    <button class="btn btn-primary graph-tooltip-btn" id="graph-tooltip-btn">Practice &rarr;</button>
+                    <button class="graph-tooltip-flag" id="graph-tooltip-flag">⚐ Flag</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Modal -->
+        <div id="session-modal" class="modal" style="display:none">
+            <div class="modal-content">
+                <h2>Start a Revision Session</h2>
+                <p class="modal-desc">Choose how to select topics for practice.</p>
+                <div class="session-options">
+                    <button class="session-option" onclick="app.startSession('weak')">
+                        <span class="session-icon">&#9888;</span>
+                        <span class="session-label">Weakest Topics</span>
+                        <span class="session-desc">Focus on your lowest-confidence areas</span>
+                    </button>
+                    <button class="session-option" onclick="app.startSession('random')">
+                        <span class="session-icon">&#9736;</span>
+                        <span class="session-label">Random Mix</span>
+                        <span class="session-desc">A varied selection across all courses</span>
+                    </button>
+                </div>
+                <div class="session-course-pick">
+                    <label>Or pick a specific course:</label>
+                    <select id="session-course-select">
+                        <option value="">Select a course...</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="app.startSessionCourse()">Go</button>
+                </div>
+                <label class="session-toggle">
+                    <input type="checkbox" id="session-ai-only">
+                    AI-generated questions only (skip past papers)
+                </label>
+                <button class="btn btn-ghost modal-close" onclick="app.closeModal()">Cancel</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Chatbot floating button + side panel -->
+    <button class="chat-fab" id="chat-fab" onclick="app.toggleChat()" aria-label="Open chat">
+        <span class="chat-fab-icon">💬</span>
+        <span class="chat-fab-label">Ask</span>
+    </button>
+
+    <aside class="chat-panel" id="chat-panel" aria-hidden="true">
+        <div class="chat-panel-header">
+            <div class="chat-panel-title">
+                <span class="chat-panel-icon">💬</span>
+                <span>Course Q&amp;A</span>
+            </div>
+            <button class="chat-panel-close" onclick="app.toggleChat()" aria-label="Close">×</button>
+        </div>
+        <div class="chat-panel-scope">
+            <label class="chat-scope-label">Scope</label>
+            <select id="chat-course-select" class="chat-course-select" onchange="app.onChatScopeChange()">
+                <option value="">All courses</option>
+            </select>
+            <button class="chat-clear-btn" onclick="app.clearChat()" title="Clear conversation">Clear</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-empty">
+                <p class="chat-empty-title">Ask about your courses</p>
+                <p class="chat-empty-desc">Examples:</p>
+                <button class="chat-suggestion" onclick="app.askChatSuggestion('Is the Boyer–Moore algorithm in any of my courses?')">Is the Boyer–Moore algorithm in any course?</button>
+                <button class="chat-suggestion" onclick="app.askChatSuggestion('Which course covers monitors and condition variables?')">Which course covers monitors?</button>
+                <button class="chat-suggestion" onclick="app.askChatSuggestion('Do I need to know lambda calculus for the exam?')">Do I need lambda calculus?</button>
+            </div>
+        </div>
+        <form class="chat-input-row" id="chat-input-row" onsubmit="app.sendChat(event)">
+            <textarea id="chat-input" class="chat-input" placeholder="Ask anything about the courses…" rows="1"></textarea>
+            <button type="submit" class="chat-send-btn" id="chat-send-btn" aria-label="Send">↑</button>
+        </form>
+    </aside>
+    <div class="chat-backdrop" id="chat-backdrop" onclick="app.toggleChat()"></div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script type="module" src="/static/rich-editor.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
