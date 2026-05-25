@@ -1,0 +1,106 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\newcommand{\sit}[1]{\textit{#1}}
+\newcommand{\pred}[1]{\textsc{#1}}
+
+\title{\vspace{-1.5cm}Planning in Situation Calculus --- Q1 Notes}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1cm}
+
+\section*{The bare minimum vocabulary}
+
+\textbf{Situation calculus} encodes a world that changes over time inside first--order logic.
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Situation} $s$: a snapshot of the world. $s_0$ is the initial situation.
+  \item \textbf{Fluent}: a predicate whose truth value depends on a situation, e.g.\ $\pred{At}(\text{robot}, \text{kitchen}, s)$.
+  \item \textbf{Action}: an object, e.g.\ $\pred{Go}(\text{kitchen},\text{hall})$. Actions are \emph{not} situations.
+  \item \textbf{Result function}: $\pred{Result}(a, s)$ is the situation obtained by performing action $a$ in $s$.
+  \item \textbf{Goal} $\pred{Goal}(s)$: a fluent saying ``the goal holds in situation $s$''.
+  \item \textbf{Sequence / Do}: $\pred{Sequence}(a, s, s')$ (a.k.a.\ $\pred{Do}$) means ``executing the action list $a$ starting in $s$ produces $s'$''. Defined recursively:
+  \begin{align*}
+    \pred{Sequence}([\,],\ s,\ s) &\ \ \text{(empty list leaves $s$ unchanged)}\\
+    \pred{Sequence}([a\,|\,\mathit{rest}],\ s,\ s') &\iff \pred{Sequence}(\mathit{rest},\ \pred{Result}(a,s),\ s')
+  \end{align*}
+\end{itemize}
+
+\textbf{Successor-state axioms} (one per fluent) tell you when a fluent is true in $\pred{Result}(a,s)$ in terms of $a$ and $s$. They are what makes any such query evaluable, and they side-step the frame problem.
+
+\section*{The two query forms}
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50!black,title=Form A --- explicit situation]
+\[
+  \exists a \, \exists s \,.\ \pred{Sequence}(a, s_0, s)\ \wedge\ \pred{Goal}(s)
+\]
+``Is there an action list $a$ and a situation $s$ such that running $a$ from $s_0$ produces $s$, and the goal holds in $s$?'' A constructive proof binds $a$ to a plan.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50!black,title=Form B --- situation hidden]
+\[
+  \exists \mathit{actionList} \,.\ \pred{Goal}(\dots\mathit{actionList}\dots)
+\]
+$\pred{Goal}$ now takes the action list directly, with no explicit situation variable. We have to define what that means.
+\end{tcolorbox}
+
+\section*{How to make Form B work --- the key idea}
+
+We \emph{redefine} $\pred{Goal}$ so it takes an action list and \emph{internally} threads it through $s_0$ using $\pred{Result}$.
+
+\textbf{Construction.} Define an auxiliary
+\[
+  \pred{Do}([\,],\, s) = s, \qquad
+  \pred{Do}([a\,|\,\mathit{rest}],\, s) = \pred{Do}(\mathit{rest},\, \pred{Result}(a, s)).
+\]
+Now write the new goal predicate as
+\[
+  \pred{Goal}(\mathit{actionList}) \ \iff\ \pred{GoalHolds}\!\big(\pred{Do}(\mathit{actionList},\, s_0)\big),
+\]
+where $\pred{GoalHolds}(s)$ is the original situation-based goal fluent. \textbf{The situation argument is folded into the list recursion.}
+
+Equivalently, write $\pred{Goal}$ recursively on the list (no helper):
+\begin{align*}
+  \pred{Goal}([\,]) &\iff \pred{GoalHolds}(s_0)\\
+  \pred{Goal}([a\,|\,\mathit{rest}]) &\iff \pred{Goal}_{\!\sit{after-step}}(a, \mathit{rest})
+\end{align*}
+where $\pred{Goal}_{\!\sit{after-step}}$ peels one action off the list, applies $\pred{Result}$ once, and recurses --- which is exactly the same computation as before, just rolled into the definition of $\pred{Goal}$.
+
+\section*{What to write in the exam answer}
+
+A clean answer has \textbf{three moves}:
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Identify what is missing.} Form B has no situation variable, so $\pred{Goal}$ cannot literally be the situation-based fluent of Form~A. It must be re-defined to operate on the action list.
+  \item \textbf{Re-thread the situation.} Provide the recursive definition that walks the action list from $s_0$, applying $\pred{Result}$ once per action, ending in some situation $s_n$. (Show the base case and recursive case --- two lines.)
+  \item \textbf{State the equivalence.} $\pred{Goal}(\mathit{actionList})$ then unfolds to $\pred{GoalHolds}(\pred{Do}(\mathit{actionList}, s_0))$, which holds iff Form~A would have held with $s = \pred{Do}(\mathit{actionList}, s_0)$. So Form B is solvable by exactly the same successor-state axioms; only the existential over $s$ has been eliminated.
+\end{enumerate}
+
+\textbf{Why bother?} The witness extracted from a constructive proof is now \emph{just} the action list --- which is what the planner actually wanted in the first place. Form A forces you to existentially quantify over situations (a richer, less convenient domain) even though the situation itself is a derived quantity.
+
+\section*{Tiny worked sketch}
+
+Let $s_0 = \{\pred{At}(R,\text{kitchen})\}$, goal $\pred{At}(R,\text{hall})$, action $\pred{Go}(x,y)$ with successor-state axiom giving $\pred{At}(R,y,\pred{Result}(\pred{Go}(x,y),s))$ once preconditions hold.
+
+\textbf{Form B query:} $\exists \mathit{actionList}.\ \pred{Goal}(\mathit{actionList})$.
+
+Try $\mathit{actionList} = [\pred{Go}(k,h)]$. Unfolding:
+\begin{align*}
+\pred{Goal}([\pred{Go}(k,h)])
+&\iff \pred{GoalHolds}\!\big(\pred{Result}(\pred{Go}(k,h),\, s_0)\big)\\
+&\iff \pred{At}(R, h) \text{ in that situation} \ \iff\ \top.
+\end{align*}
+Witness: $\mathit{actionList} = [\pred{Go}(\text{kitchen},\text{hall})]$. \hfill$\Box$
+
+\end{document}

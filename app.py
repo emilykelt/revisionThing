@@ -488,10 +488,30 @@ def api_start_session():
     return jsonify({'topics': topics})
 
 
+def _load_tripos_coverage():
+    """Cross-reference data pulled by `scripts/sync_tripos.py`. Returns an
+    empty dict if the file is missing so the UI degrades gracefully."""
+    path = os.path.join(DATA_DIR, 'tripos_coverage.json')
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {'by_question': {}, 'missing_locally': [], 'missing_on_tripos': []}
+    except Exception:
+        return {'by_question': {}, 'missing_locally': [], 'missing_on_tripos': []}
+
+
+@app.route('/api/tripos/coverage')
+def api_tripos_coverage():
+    return jsonify(_load_tripos_coverage())
+
+
 @app.route('/api/pastpapers/all')
 def api_pastpapers_all():
     pp_file = os.path.join(DATA_DIR, 'pastpapers.json')
     courses_data = load_courses()
+    tripos_cov = _load_tripos_coverage()
+    tripos_by_q = tripos_cov.get('by_question', {})
 
     # Build course_id → name lookup, plus topic_id → name within each course
     course_names = {}
@@ -529,6 +549,8 @@ def api_pastpapers_all():
             # Detect diagram references in any part text
             all_text = ' '.join(p.get('text', '') for p in parts)
             has_diagram = bool(_diagram_keywords.search(all_text))
+            tripos_key = f"{q['year']}-{q['paper']}-{q['question']}"
+            tripos_info = tripos_by_q.get(tripos_key)
             questions.append({
                 'year': q['year'],
                 'paper': q['paper'],
@@ -546,6 +568,7 @@ def api_pastpapers_all():
                 'completed_elsewhere': prog.get('completed_elsewhere', False),
                 'completed_elsewhere_date': prog.get('completed_elsewhere_date'),
                 'completed_confidence': prog.get('completed_confidence'),
+                'tripos': tripos_info,
             })
         questions.sort(key=lambda q: (-q['year'], q['paper'], q['question']))
         result.append({

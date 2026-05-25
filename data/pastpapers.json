@@ -4077,17 +4077,17 @@
     }
   },
   "prog-c-cpp": {
-    "total_questions": 12,
+    "total_questions": 16,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-ProgramminginCandC++.html",
     "topic_frequencies": {
       "pcc-intro": 11,
-      "pcc-memory": 14,
-      "pcc-pointers": 16,
-      "pcc-undefined": 11,
+      "pcc-memory": 23,
+      "pcc-pointers": 30,
+      "pcc-undefined": 13,
       "pcc-cpp-basics": 7,
       "pcc-cpp-advanced": 13,
       "pcc-debugging": 1,
-      "pcc-performance": 2
+      "pcc-performance": 3
     },
     "tagged_questions": [
       {
@@ -4620,6 +4620,53 @@
       {
         "year": 2020,
         "paper": 4,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p4q1.pdf",
+        "topics": [
+          "pcc-pointers",
+          "pcc-performance",
+          "pcc-memory"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Using at least one union, define a type or types in the C language for conveniently storing such expressions.",
+            "marks": 5,
+            "topics": [
+              "pcc-pointers"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Give efficient C code that checks whether two structures represent identical expressions. (Do not consider whether they might evaluate to the same result.) Explain how much of the input expressions is explored when they differ.",
+            "marks": 4,
+            "topics": [
+              "pcc-pointers",
+              "pcc-performance"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Given that a lot of expressions are to be rapidly generated and discarded, what considerations apply to storage management? Define and discuss at least 3 different approaches to storage management.",
+            "marks": 5,
+            "topics": [
+              "pcc-memory"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "The substitution operation for an expression replaces all occurrences of one variable with another variable. Given that sub-expression trees are commonly shared over numerous expressions, explain a problem that could arise in the substitution operation. Explain the details of a solution to the problem by giving code or otherwise.",
+            "marks": 6,
+            "topics": [
+              "pcc-memory",
+              "pcc-pointers"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2020,
+        "paper": 4,
         "question": 2,
         "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p4q2.pdf",
         "topics": [
@@ -4680,6 +4727,71 @@
       {
         "year": 2019,
         "paper": 4,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p4q1.pdf",
+        "topics": [
+          "pcc-pointers",
+          "pcc-memory"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Define a function Node *node(int n, Node **children) which builds a new node from its arguments, taking ownership of the children argument and initializing the flag field to false.",
+            "marks": 2,
+            "topics": [
+              "pcc-pointers",
+              "pcc-memory"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Write a function Node *example(void) which returns a new graph with the following structure, with the return value corresponding to n1. (The graph has nodes n1 and n2 with edges between them as shown in the diagram.)",
+            "marks": 2,
+            "topics": [
+              "pcc-pointers",
+              "pcc-memory"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Define a structure for representing a linked list of Node * pointers, with a Nodelist typedef for the structure.",
+            "marks": 2,
+            "topics": [
+              "pcc-pointers"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Supposing we represent the empty linked list with the NULL pointer, and a cons cell with a pointer to a Nodelist, define a function Nodelist *cons(Node *head, Nodelist *tail) to add an element to this linked list.",
+            "marks": 2,
+            "topics": [
+              "pcc-pointers",
+              "pcc-memory"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "Write a function Nodelist *reachable(Node *node) which returns a list of all the nodes reachable from the argument node, including node itself. This list should contain every reachable node, and have no duplicates. You may assume that the flag field of every reachable node is set to false on entry to this function, and that your routine may modify it as you wish.",
+            "marks": 7,
+            "topics": [
+              "pcc-pointers",
+              "pcc-memory"
+            ]
+          },
+          {
+            "label": "f",
+            "text": "Define a function void free_node(Node *node) which deallocates all the node objects reachable from the argument node. You may assume that the flag field of every reachable node is set to false on entry to this function, and that your routine may modify it as you wish.",
+            "marks": 5,
+            "topics": [
+              "pcc-memory",
+              "pcc-pointers"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2019,
+        "paper": 4,
         "question": 2,
         "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p4q2.pdf",
         "topics": [
@@ -4715,13 +4827,89 @@
         ],
         "total_marks": 20,
         "_text_extracted": true
+      },
+      {
+        "year": 2018,
+        "paper": 4,
+        "question": 1,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p4q1.pdf",
+        "topics": [
+          "pcc-undefined",
+          "pcc-pointers"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "The following function is specified to return the quotient of two integers, returning zero when the answer is undefined.\n\n     #include <stdint.h>\n     #include <limits.h>\n\n     int64_t divide(int64_t x, int64_t y) {\n       return x / y;\n     }\n\n(i) Identify two bugs in this program.\n\n(ii) Write a correct version of this program.",
+            "marks": 6,
+            "topics": [
+              "pcc-undefined"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "The strlen function takes a valid C string as an argument, and returns the length of the string up to and not including the first null character. An (erroneous) implementation is given below:\n\n     #include <stddef.h>\n\n     size_t strlen(const char *s) {\n       size_t i;\n       while (s[i] >= 0)\n         i++;\n       return i;\n     }\n\n(i) Find two errors in this program.\n\n(ii) Give a correct implementation of this function.",
+            "marks": 6,
+            "topics": [
+              "pcc-undefined",
+              "pcc-pointers"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Write a function with the prototype\n\n  void rotate(int len, int *array, int k)\n\nwhich rotates its input k elements to the right. E.g., if the input array is the array [0, 1, 2, 3, 4, 5], then the call rotate(6, array, 2) should result in array being modified to [4, 5, 0, 1, 2, 3]. Assume the array length is passed in the len argument and 0 \u2264 k < len.",
+            "marks": 8,
+            "topics": [
+              "pcc-pointers"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2018,
+        "paper": 4,
+        "question": 2,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p4q2.pdf",
+        "topics": [
+          "pcc-pointers",
+          "pcc-memory"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Write a function to add an element to the head of the list with the following prototype.\n\n    Node *cons(int n, Node *tail);",
+            "marks": 5,
+            "topics": [
+              "pcc-pointers",
+              "pcc-memory"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Write a function to free the memory associated with a linked list, with the following prototype:\n\n    void free_list(Node *list);",
+            "marks": 5,
+            "topics": [
+              "pcc-memory",
+              "pcc-pointers"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Write a function to do an in-place list reversal. It should take a list as an argument, and return a list with the elements reversed. This function may not do any heap allocation, but may modify its input. It should have the following prototype:\n\n    Node *reverse(Node *list);",
+            "marks": 10,
+            "topics": [
+              "pcc-pointers"
+            ]
+          }
+        ]
       }
     ],
     "topic_question_frequencies": {
       "pcc-intro": 3,
-      "pcc-pointers": 2,
+      "pcc-pointers": 5,
       "pcc-cpp-advanced": 6,
-      "pcc-debugging": 1
+      "pcc-debugging": 1,
+      "pcc-undefined": 1
     }
   },
   "prolog": {
@@ -7654,14 +7842,14 @@
     }
   },
   "data-science": {
-    "total_questions": 10,
+    "total_questions": 16,
     "past_paper_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/t-DataScience.html",
     "topic_frequencies": {
-      "ds-inference": 25,
-      "ds-distributions": 13,
-      "ds-feature-spaces": 5,
-      "ds-probability": 10,
-      "ds-random-processes": 4
+      "ds-inference": 46,
+      "ds-distributions": 22,
+      "ds-feature-spaces": 11,
+      "ds-probability": 14,
+      "ds-random-processes": 6
     },
     "tagged_questions": [
       {
@@ -8070,13 +8258,318 @@
             ]
           }
         ]
+      },
+      {
+        "year": 2020,
+        "paper": 6,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p6q7.pdf",
+        "topics": [
+          "ds-random-processes",
+          "ds-probability",
+          "ds-distributions",
+          "ds-inference"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Write out the transition matrix for the Markov chain (X0 , X1 , . . . ). Calculate its stationary distribution.",
+            "marks": 4,
+            "topics": [
+              "ds-random-processes"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Writing $\\tilde{X}$ for $(X_0, X_1, \\ldots, X_n)$, and writing $\\tilde{Y}$ for $(Y_1, \\ldots, Y_n)$, and similarly $\\tilde{x}$ and $\\tilde{y}$, find expressions for $P(\\tilde{X} = \\tilde{x})$ and for $P(\\tilde{Y} = \\tilde{y} | \\tilde{X} = \\tilde{x})$.",
+            "marks": 4,
+            "topics": [
+              "ds-probability",
+              "ds-distributions"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Give pseudocode for a function rx(n) that generates a random $\\tilde{X}$. Give pseudocode to generate a weighted sample from the posterior distribution of $\\tilde{X}$ conditional on the observed data $\\tilde{Y} = \\tilde{y}$.",
+            "marks": 8,
+            "topics": [
+              "ds-inference",
+              "ds-random-processes"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Let $Z = n^{-1} \\sum_{i=1}^{n} X_i$. Give pseudocode to find a 95% confidence interval for $Z$, conditional on the observed data $\\tilde{Y} = \\tilde{y}$.",
+            "marks": 4,
+            "topics": [
+              "ds-inference"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2020,
+        "paper": 6,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2020p6q8.pdf",
+        "topics": [
+          "ds-inference",
+          "ds-distributions",
+          "ds-feature-spaces"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Give expressions for the maximum likelihood estimates $\\hat{p}_{d,k}$. In your answer, you should state what is being maximized, over what variables.",
+            "marks": 3,
+            "topics": [
+              "ds-inference"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Let the null hypothesis $H_0$ be that the probabilities are the same in the 1970s as in the 2010s; call these common probabilities $q_k$. Give expressions for the maximum likelihood estimates $\\hat{q}_k$ under $H_0$.",
+            "marks": 2,
+            "topics": [
+              "ds-inference"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "We wish to test $H_0$, using the test statistic\n$$t = \\sum_{d,k} \\frac{(\\hat{p}_{d,k} - \\hat{q}_k)^2}{\\hat{q}_k}.$$\n\n(i) Explain briefly what is meant by parametric resampling. Explain how to compute the distribution we'd expect to see for $t$, under $H_0$. Give pseudocode.\n\n(ii) Explain what is meant by a one-sided test versus a two-sided test. Which should we use in this case?\n\n(iii) Give pseudocode to compute the p-value of this test.",
+            "marks": 12,
+            "topics": [
+              "ds-inference",
+              "ds-distributions"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "What are some advantages and disadvantages of this count-based test, compared to a test based on linear regression?",
+            "marks": 3,
+            "topics": [
+              "ds-inference",
+              "ds-feature-spaces"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2019,
+        "paper": 6,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p6q7.pdf",
+        "topics": [
+          "ds-inference",
+          "ds-distributions",
+          "ds-probability"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Let X_1, \\ldots, X_n be independent binary random variables, P(X_i = 1) = \\theta, P(X_i = 0) = 1 - \\theta, for some unknown parameter \\theta. Using Uniform[0, 1] as the prior distribution for \\theta, find the posterior distribution. [Note: For your answer, and in answer to parts (b) and (d), give either a named distribution with its parameters, or a normalised density function.]",
+            "marks": 3,
+            "topics": [
+              "ds-inference",
+              "ds-distributions"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Let \\theta be the probability that the worker labels an image incorrectly. Using Beta(0.1, 0.5) as the prior distribution for \\theta, find the posterior.",
+            "marks": 3,
+            "topics": [
+              "ds-inference",
+              "ds-distributions"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "I next ask the worker to label a new test image, and they tell me the image is nice. Let z \\in \\{\\text{nice}, \\text{nasty}\\} be the true label, and let the prior distribution for z be Pr(nice) = 0.1, Pr(nasty) = 0.9. For both z = \\text{nice} and z = \\text{nasty}, find P(\\text{worker says nice} \\mid z, \\theta). Hence find the posterior distribution of (z, \\theta). Your answer may be left as an un-normalised density function.",
+            "marks": 5,
+            "topics": [
+              "ds-inference",
+              "ds-probability"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Find the posterior distribution of z.",
+            "marks": 5,
+            "topics": [
+              "ds-inference",
+              "ds-distributions"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "My colleague has more grant money and she can employ 3 workers to rate each image. On a test set of 30 images, she found that they all agreed on 15 images, worker 1 was the odd one out on 8 of the images, worker 2 was the odd one out on 4, and worker 3 was the odd one out on 3. Let \\theta_i be the probability that worker i labels an image incorrectly. Find the posterior distribution of (\\theta_1, \\theta_2, \\theta_3). Your answer may be left as an un-normalised density function.",
+            "marks": 4,
+            "topics": [
+              "ds-inference",
+              "ds-distributions"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2019,
+        "paper": 6,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2019p6q8.pdf",
+        "topics": [
+          "ds-feature-spaces",
+          "ds-inference",
+          "ds-distributions"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Write this as a linear model, and identify the feature vectors.",
+            "marks": 3,
+            "topics": [
+              "ds-feature-spaces"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Are the feature vectors in your model linearly independent? Justify your answer. If they are not independent, rewrite your model in a form with linearly independent feature vectors. [Hint: You should have 6 linearly independent feature vectors.]",
+            "marks": 5,
+            "topics": [
+              "ds-feature-spaces"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "In order to grade the students fairly, the examiners wish to fill in the blanks in the table using predicted marks. Give pseudocode to find $\\alpha_1 + \\beta_3$, the predicted mark for student 1 on question 3, using your model from Part (b). Describe briefly any standard library routines you use in your answer.",
+            "marks": 4,
+            "topics": [
+              "ds-feature-spaces",
+              "ds-inference"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "What is meant by parametric resampling? Explain how to use parametric resampling to generate a resampled version of this dataset.",
+            "marks": 4,
+            "topics": [
+              "ds-inference",
+              "ds-distributions"
+            ]
+          },
+          {
+            "label": "e",
+            "text": "To find out whether question 3 is indeed harder, the examiners wish to find a confidence interval for $\\beta_3 - (\\beta_1 + \\beta_2)/2$. Suggest a confidence interval, and give pseudocode to find its error probability.",
+            "marks": 4,
+            "topics": [
+              "ds-inference"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2018,
+        "paper": 6,
+        "question": 7,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p6q7.pdf",
+        "topics": [
+          "ds-inference",
+          "ds-distributions",
+          "ds-probability"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Show that the maximum likelihood estimator for \u03bb is \u03bb\u0302 = 100/ \\sum_{i=1}^{100} X_i.",
+            "marks": 3,
+            "topics": [
+              "ds-inference",
+              "ds-distributions"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "Using the central limit theorem, find a and b such that\n\\[\nP\\!\\left(1/\\hat{\\lambda} \\in [a, b]\\right) \\approx 0.95\n\\]\nexplaining your calculations carefully. Hence find real numbers \u03b1 and \u03b2 such that\n\\[\nP\\!\\left(\\lambda \\in [\\alpha\\hat{\\lambda},\\, \\beta\\hat{\\lambda}]\\right) \\approx 0.95.\n\\]",
+            "marks": 6,
+            "topics": [
+              "ds-inference",
+              "ds-probability"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Explain how to use the bootstrap resampling method to approximate the probability\n\\[\nP\\!\\left(\\lambda \\in \\left[\\hat{\\lambda}(1-\\varepsilon),\\, \\hat{\\lambda}(1+\\varepsilon)\\right]\\right)\n\\]\nwhere \u03b5 is given. In your answer, include an explanation of what is meant by 'resampling'.",
+            "marks": 6,
+            "topics": [
+              "ds-inference"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "Using your answer to Part (c), give pseudocode to compute \u03b5 such that\n\\[\nP\\!\\left(\\lambda \\in \\left[\\hat{\\lambda}(1-\\varepsilon),\\, \\hat{\\lambda}(1+\\varepsilon)\\right]\\right) \\approx 0.95.\n\\]\nComment your code appropriately.",
+            "marks": 5,
+            "topics": [
+              "ds-inference"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2018,
+        "paper": 6,
+        "question": 8,
+        "pdf_url": "https://www.cl.cam.ac.uk/teaching/exams/pastpapers/y2018p6q8.pdf",
+        "topics": [
+          "ds-feature-spaces",
+          "ds-inference",
+          "ds-distributions",
+          "ds-probability"
+        ],
+        "parts": [
+          {
+            "label": "a",
+            "text": "Explain what is meant by 'linear model', 'feature', and 'orthogonal projection'. Rewrite the above model as a linear model made up of linearly independent features, and explain why they are linearly independent.",
+            "marks": 7,
+            "topics": [
+              "ds-feature-spaces"
+            ]
+          },
+          {
+            "label": "b",
+            "text": "You are given a library function proj(y, [e1 , . . . , en ]). It returns a list [\u03bb1 , . . . , \u03bbn ] such that \u03bb1 e1 + \u00b7 \u00b7 \u00b7 + \u03bbn en is the orthogonal projection of the vector y onto the subspace spanned by vectors {e1 , . . . , en }. Explain what is meant by the 'least squares method', and give pseudocode using proj to find the least squares estimators for \u03b1s and \u03b2s.",
+            "marks": 2,
+            "topics": [
+              "ds-feature-spaces",
+              "ds-inference"
+            ]
+          },
+          {
+            "label": "c",
+            "text": "Explain how to compute the maximum likelihood estimators of \u03b1s , \u03b2s , and \u03c3. In your answer, you should explain the relationship between the least squares method and maximum likelihood estimation.",
+            "marks": 5,
+            "topics": [
+              "ds-inference",
+              "ds-distributions"
+            ]
+          },
+          {
+            "label": "d",
+            "text": "We wish to know whether the \u03b2s coefficients for the three species are noticeably different. Outline the Bayesian approach to answering this question.",
+            "marks": 6,
+            "topics": [
+              "ds-inference",
+              "ds-probability"
+            ]
+          }
+        ]
       }
     ],
     "topic_question_frequencies": {
-      "ds-inference": 7,
+      "ds-inference": 10,
       "ds-probability": 1,
       "ds-distributions": 1,
-      "ds-random-processes": 1
+      "ds-random-processes": 2,
+      "ds-feature-spaces": 2
     }
   },
   "logic-proof": {

@@ -15,42 +15,46 @@
 <body>
     <div class="grain-overlay"></div>
 
-    <header class="header">
-        <div class="header-inner">
-            <h1 class="logo" onclick="app.showDashboard()">Part IB Revision</h1>
-            <nav class="nav">
-                <button class="nav-btn active" data-view="dashboard" onclick="app.showDashboard()">
-                    <span class="nav-icon">⊞</span>Dashboard
-                </button>
-                <span class="nav-divider"></span>
-                <button class="nav-btn" data-view="warmup" onclick="app.showWarmup()">
-                    <span class="nav-icon">☀</span>Warm Up
-                </button>
-                <button class="nav-btn" data-view="session" onclick="app.startSessionModal()">
-                    <span class="nav-icon">✎</span>Practice
-                </button>
-                <button class="nav-btn" data-view="pastpapers" onclick="app.showPastPapers()">
-                    <span class="nav-icon">📄</span>Past Papers
-                </button>
-                <span class="nav-divider"></span>
-                <button class="nav-btn" data-view="graph" onclick="app.showGraph()">
-                    <span class="nav-icon">◎</span>Graph
-                </button>
-                <button class="nav-btn" data-view="history" onclick="app.showHistory()">
-                    <span class="nav-icon">↺</span>History
-                </button>
-                <button class="nav-btn" data-view="anki" onclick="app.showAnkiBank()" id="nav-anki">
-                    <span class="nav-icon">🃏</span>Anki
-                </button>
-                <button class="nav-btn" data-view="planner" onclick="app.showPlanner()">
-                    <span class="nav-icon">☑</span>Planner
-                </button>
-                <button class="nav-btn" data-view="supervision" onclick="app.showSupervisions()">
-                    <span class="nav-icon">✦</span>Supervisions
-                </button>
-            </nav>
-        </div>
-    </header>
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebar-toggle" onclick="app.toggleSidebar()" aria-label="Expand sidebar" aria-expanded="false">
+            <span class="sidebar-toggle-icon" aria-hidden="true"></span>
+        </button>
+        <h1 class="logo" onclick="app.showDashboard()" title="Part IB Revision">
+            <span class="logo-text">Part IB Revision</span>
+        </h1>
+        <nav class="nav">
+            <button class="nav-btn active" data-view="dashboard" onclick="app.showDashboard()" title="Dashboard">
+                <span class="nav-icon">⊞</span><span class="nav-label">Dashboard</span>
+            </button>
+            <span class="nav-divider"></span>
+            <button class="nav-btn" data-view="warmup" onclick="app.showWarmup()" title="Warm Up">
+                <span class="nav-icon">☀</span><span class="nav-label">Warm Up</span>
+            </button>
+            <button class="nav-btn" data-view="session" onclick="app.startSessionModal()" title="Practice">
+                <span class="nav-icon">✎</span><span class="nav-label">Practice</span>
+            </button>
+            <button class="nav-btn" data-view="pastpapers" onclick="app.showPastPapers()" title="Past Papers">
+                <span class="nav-icon">📄</span><span class="nav-label">Past Papers</span>
+            </button>
+            <span class="nav-divider"></span>
+            <button class="nav-btn" data-view="graph" onclick="app.showGraph()" title="Graph">
+                <span class="nav-icon">◎</span><span class="nav-label">Graph</span>
+            </button>
+            <button class="nav-btn" data-view="history" onclick="app.showHistory()" title="History">
+                <span class="nav-icon">↺</span><span class="nav-label">History</span>
+            </button>
+            <button class="nav-btn" data-view="anki" onclick="app.showAnkiBank()" id="nav-anki" title="Anki">
+                <span class="nav-icon">🃏</span><span class="nav-label">Anki</span>
+            </button>
+            <button class="nav-btn" data-view="planner" onclick="app.showPlanner()" title="Planner">
+                <span class="nav-icon">☑</span><span class="nav-label">Planner</span>
+            </button>
+            <button class="nav-btn" data-view="supervision" onclick="app.showSupervisions()" title="Supervisions">
+                <span class="nav-icon">✦</span><span class="nav-label">Supervisions</span>
+            </button>
+        </nav>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="app.toggleSidebar()"></div>
 
     <main class="main">
         <!-- Dashboard View -->

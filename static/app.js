@@ -41,6 +41,38 @@ const app = {
     warmupPastPapers: null,
     warmupSelectedTopics: new Set(),
 
+    // Cambridge Part IB CS 2026 paper structure (Papers 4-7).
+    // `qs` are the question numbers each course occupies in that paper.
+    // Semantics intentionally appears in both Paper 4 and Paper 6.
+    PAPERS: [
+        { num: 4, total: 8, choose: 5, courses: [
+            { id: 'compiler-construction', name: 'Compiler Construction',              qs: [1, 2] },
+            { id: 'semantics',             name: 'Semantics of Programming Languages', qs: [3] },
+            { id: 'prolog',                name: 'Prolog',                             qs: [4] },
+            { id: 'prog-c-cpp',            name: 'Programming in C and C++',           qs: [5, 6] },
+            { id: 'cybersecurity',         name: 'Cybersecurity',                      qs: [7, 8] },
+        ]},
+        { num: 5, total: 8, choose: 5, courses: [
+            { id: 'computer-networking',    name: 'Computer Networking',                   qs: [1, 2, 3] },
+            { id: 'concurrent-distributed', name: 'Concurrent and Distributed Systems',    qs: [4, 5] },
+            { id: 'intro-comp-arch',        name: 'Introduction to Computer Architecture', qs: [6, 7, 8] },
+        ]},
+        { num: 6, total: 9, choose: 5, courses: [
+            { id: 'complexity-theory',  name: 'Complexity Theory',                  qs: [1, 2] },
+            { id: 'computation-theory', name: 'Computation Theory',                 qs: [3, 4] },
+            { id: 'data-science',       name: 'Data Science',                       qs: [5, 6] },
+            { id: 'logic-proof',        name: 'Logic and Proof',                    qs: [7, 8] },
+            { id: 'semantics',          name: 'Semantics of Programming Languages', qs: [9] },
+        ]},
+        { num: 7, total: 10, choose: 5, courses: [
+            { id: 'artificial-intelligence', name: 'Artificial Intelligence',            qs: [1, 2] },
+            { id: 'econ-law-ethics',         name: 'Economics, Law and Ethics',          qs: [3, 4] },
+            { id: 'formal-models-language',  name: 'Formal Models of Language',          qs: [5, 6] },
+            { id: 'further-graphics',        name: 'Further Graphics',                   qs: [7, 8] },
+            { id: 'further-hci',             name: 'Further Human-Computer Interaction', qs: [9, 10] },
+        ]},
+    ],
+
     // ---- Initialization ----
     async init() {
         await this.loadDashboard();
@@ -53,6 +85,24 @@ const app = {
         document.querySelectorAll('.nav-btn').forEach(b => {
             b.classList.toggle('active', b.dataset.view === viewId);
         });
+        // Auto-collapse sidebar after navigation so the content has full focus.
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('expanded')) {
+            this.toggleSidebar(false);
+        }
+    },
+
+    // ---- Sidebar ----
+    toggleSidebar(force) {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.getElementById('sidebar-toggle');
+        if (!sidebar) return;
+        const willExpand = typeof force === 'boolean' ? force : !sidebar.classList.contains('expanded');
+        sidebar.classList.toggle('expanded', willExpand);
+        if (toggle) {
+            toggle.setAttribute('aria-expanded', willExpand ? 'true' : 'false');
+            toggle.setAttribute('aria-label', willExpand ? 'Collapse sidebar' : 'Expand sidebar');
+        }
     },
 
     // ---- Dashboard ----
@@ -185,25 +235,16 @@ const app = {
         // exam planner. Returns null if nothing is selected (so callers fall
         // back to all courses).
         const sel = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
-        const PAPER_COURSES = {
-            p4: { 1: 'compiler-construction', 2: 'compiler-construction', 3: 'semantics',
-                  4: 'prolog', 5: 'prog-c-cpp', 6: 'prog-c-cpp', 7: 'cybersecurity', 8: 'cybersecurity' },
-            p5: { 1: 'computer-networking', 2: 'computer-networking', 3: 'computer-networking',
-                  4: 'concurrent-distributed', 5: 'concurrent-distributed',
-                  6: 'intro-comp-arch', 7: 'intro-comp-arch', 8: 'intro-comp-arch' },
-            p6: { 1: 'complexity-theory', 2: 'complexity-theory', 3: 'computation-theory',
-                  4: 'computation-theory', 5: 'data-science', 6: 'data-science',
-                  7: 'logic-proof', 8: 'logic-proof', 9: 'semantics' },
-            p7: { 1: 'artificial-intelligence', 2: 'artificial-intelligence',
-                  3: 'econ-law-ethics', 4: 'econ-law-ethics',
-                  5: 'formal-models-language', 6: 'formal-models-language',
-                  7: 'further-graphics', 8: 'further-graphics',
-                  9: 'further-hci', 10: 'further-hci' },
-        };
+        const qToCourse = {};
+        for (const paper of this.PAPERS) {
+            const map = {};
+            for (const c of paper.courses) for (const qn of c.qs) map[qn] = c.id;
+            qToCourse[`p${paper.num}`] = map;
+        }
         const taking = new Set();
         for (const [pKey, qs] of Object.entries(sel)) {
             for (const [qn, on] of Object.entries(qs || {})) {
-                if (on && PAPER_COURSES[pKey]?.[qn]) taking.add(PAPER_COURSES[pKey][qn]);
+                if (on && qToCourse[pKey]?.[qn]) taking.add(qToCourse[pKey][qn]);
             }
         }
         return taking.size ? taking : null;
@@ -729,35 +770,49 @@ const app = {
         bar.style.width = `${pct}%`;
         bar.className = `progress-bar-inner ${this.getConfClass(overallConf)}`;
 
-        // Terms
+        // Papers (replaces the old term-based grouping). Courses are pulled
+        // from every term and re-grouped by exam paper using `this.PAPERS`.
+        // Semantics of Programming Languages appears in both Paper 4 and 6,
+        // and is rendered once under each — driven by the PAPERS mapping.
         const container = document.getElementById('terms-container');
         container.innerHTML = '';
 
-        const termOrder = ['michaelmas', 'lent', 'easter'];
-        const sortedTerms = termOrder
-            .filter(id => data.terms[id])
-            .map(id => [id, data.terms[id]]);
+        const courseById = {};
+        for (const term of Object.values(data.terms || {})) {
+            for (const [cid, course] of Object.entries(term.courses || {})) {
+                courseById[cid] = course;
+            }
+        }
 
-        for (const [termId, term] of sortedTerms) {
+        const takingNow = this._takingCourseIds();
+        for (const paper of this.PAPERS) {
+            const courses = paper.courses
+                .map(c => [c.id, courseById[c.id]])
+                .filter(([, course]) => course);
+
+            const paperConf = courses.length
+                ? courses.reduce((s, [, c]) => s + (c.confidence || 0), 0) / courses.length
+                : 0;
+            const paperPct = Math.round(paperConf * 100);
+
             const section = document.createElement('div');
             section.className = 'term-section';
-
-            const termPct = Math.round(term.confidence * 100);
             section.innerHTML = `
                 <div class="term-header">
-                    <h2 class="term-title">${term.label}</h2>
-                    <span class="term-pct">${termPct}%</span>
+                    <h2 class="term-title">Paper ${paper.num}
+                        <span class="term-title-meta">${paper.total} questions, answer ${paper.choose}</span>
+                    </h2>
+                    <span class="term-pct">${paperPct}%</span>
                 </div>
-                <div class="course-grid" id="grid-${termId}"></div>
+                <div class="course-grid" id="grid-paper-${paper.num}"></div>
             `;
             container.appendChild(section);
 
             const grid = section.querySelector('.course-grid');
-            const taking = this._takingCourseIds();
-            for (const [courseId, course] of Object.entries(term.courses)) {
-                const coursePct = Math.round(course.confidence * 100);
+            for (const [courseId, course] of courses) {
+                const coursePct = Math.round((course.confidence || 0) * 100);
                 const card = document.createElement('div');
-                card.className = 'course-card' + (taking && taking.has(courseId) ? ' course-card--taking' : '');
+                card.className = 'course-card' + (takingNow && takingNow.has(courseId) ? ' course-card--taking' : '');
                 card.onclick = () => this.showCourse(courseId);
                 card.innerHTML = `
                     <div class="course-card-name">${course.name}</div>
@@ -2537,8 +2592,12 @@ const app = {
         this.showView('pastpapers');
         if (!this._ppData) {
             document.getElementById('pp-list').innerHTML = '<div class="loading"><span class="spinner"></span>Loading…</div>';
-            const res = await fetch('/api/pastpapers/all');
-            this._ppData = await res.json();
+            const [ppRes, covRes] = await Promise.all([
+                fetch('/api/pastpapers/all'),
+                fetch('/api/tripos/coverage'),
+            ]);
+            this._ppData = await ppRes.json();
+            this._triposCoverage = await covRes.json().catch(() => null);
             // Populate course filter
             const courseSel = document.getElementById('pp-course-filter');
             this._ppData.courses.forEach(c => {
@@ -2565,12 +2624,17 @@ const app = {
         if (!this._ppData) return;
         const yearFilter = document.getElementById('pp-year-filter').value;
         const courseFilter = document.getElementById('pp-course-filter').value;
+        const topicFilter = this._ppTopicFilter; // {courseId, topicId, label} or null
         const container = document.getElementById('pp-list');
         const html = this._ppData.courses.map(course => {
             if (courseFilter && course.course_id !== courseFilter) return '';
-            const qs = yearFilter
+            if (topicFilter && course.course_id !== topicFilter.courseId) return '';
+            let qs = yearFilter
                 ? course.questions.filter(q => String(q.year) === yearFilter)
                 : course.questions;
+            if (topicFilter) {
+                qs = qs.filter(q => (q.topic_ids || []).includes(topicFilter.topicId));
+            }
             if (!qs.length) return '';
             const rows = qs.map(q => {
                 const attempted = q.attempts > 0;
@@ -2593,12 +2657,31 @@ const app = {
                     ? `Marked done elsewhere${q.completed_elsewhere_date ? ' on ' + q.completed_elsewhere_date : ''}`
                     : 'Mark as completed elsewhere (e.g. on paper)';
                 const elsewhereLabel = q.completed_elsewhere ? '✓ Done elsewhere' : '⌂ Done elsewhere';
+                // tripos.pro enrichment: community attempt count, mark median,
+                // examiners' solution PDF. Only renders when sync data exists.
+                const tp = q.tripos;
+                let triposHtml = '';
+                if (tp) {
+                    const median = tp.marks?.median;
+                    const attemptsLabel = tp.attempts != null ? `${tp.attempts} attempt${tp.attempts !== 1 ? 's' : ''}` : '';
+                    const tooltipParts = [
+                        `tripos.pro #${tp.tripos_id}`,
+                        attemptsLabel,
+                        median != null ? `median ${median}/${q.total_marks}` : '',
+                        tp.examiner_comment ? '— hover for examiner notes' : '',
+                    ].filter(Boolean).join(' · ');
+                    const stat = median != null ? `▤ ${median}` : '▤';
+                    triposHtml += `<span class="pp-tripos-badge" title="${this.escapeAttr(tooltipParts)}${tp.examiner_comment ? '\n\n' + this.escapeAttr(tp.examiner_comment) : ''}">${stat}</span>`;
+                    if (tp.solution_url) {
+                        triposHtml += `<a class="pp-pdf-link pp-tripos-sol" href="${tp.solution_url}" target="_blank" rel="noopener" title="Examiner's solutions (via tripos.pro)">Soln ↗</a>`;
+                    }
+                }
                 return `<div class="pp-row${attempted ? ' pp-row--attempted' : ''}${elsewhereCls}">
                     <div class="pp-row-ref">${this.escapeHtml(q.ref)} ${completionHtml}</div>
                     <div class="pp-row-meta">
                         <span class="pp-marks">${q.total_marks} marks</span>
                         <span class="pp-parts">${q.parts.length} parts</span>
-                        ${diagHtml}${hardHtml}
+                        ${diagHtml}${hardHtml}${triposHtml}
                         ${q.pdf_url ? `<a class="pp-pdf-link" href="${q.pdf_url}" target="_blank" rel="noopener">PDF ↗</a>` : ''}
                         ${this._solutionsUrl(q.pdf_url) ? `<a class="pp-pdf-link pp-sol-link" href="${this._solutionsUrl(q.pdf_url)}" target="_blank" rel="noopener">Solutions ↗</a>` : ''}
                         ${this._reportUrl(q.year) ? `<a class="pp-pdf-link pp-rep-link" href="${this._reportUrl(q.year)}" target="_blank" rel="noopener">Report ↗</a>` : ''}
@@ -2622,7 +2705,22 @@ const app = {
                 <div class="pp-course-rows">${rows}</div>
             </div>`;
         }).join('');
-        container.innerHTML = html || '<div class="empty-state">No past papers found.</div>';
+        const banner = this._renderTriposCoverageBanner();
+        container.innerHTML = (banner + html) || '<div class="empty-state">No past papers found.</div>';
+    },
+
+    _renderTriposCoverageBanner() {
+        const cov = this._triposCoverage;
+        if (!cov || !cov.counts) return '';
+        const { enriched } = cov.counts;
+        const synced = cov.synced_at ? this.timeAgo(cov.synced_at) : 'unknown';
+        return `<div class="tripos-cov-banner">
+            <div class="tripos-cov-row">
+                <span class="tripos-cov-dot"></span>
+                <span class="tripos-cov-text"><strong>tripos.pro</strong> · ${enriched} questions enriched with community marks &amp; examiner solutions</span>
+                <span class="tripos-cov-synced" title="${this.escapeAttr(cov.synced_at || '')}">synced ${synced}</span>
+            </div>
+        </div>`;
     },
 
     _renderTopicFrequency(course) {
@@ -2636,23 +2734,44 @@ const app = {
         if (!entries.length) return '';
         entries.sort((a, b) => b[1] - a[1]);
         const max = entries[0][1] || 1;
+        const active = this._ppTopicFilter;
         const cells = entries.map(([tid, n]) => {
             const intensity = Math.min(1, n / max);
-            // Map intensity → 5 buckets matching the dashboard heatmap palette.
             const bucket = intensity >= 0.85 ? 4
                 : intensity >= 0.6 ? 3
                 : intensity >= 0.35 ? 2
                 : intensity >= 0.15 ? 1 : 0;
             const label = names[tid] || tid;
-            return `<span class="pp-freq-cell hm-${bucket}" title="${this.escapeAttr(label)}: ${n} appearance${n !== 1 ? 's' : ''} since 2018">
+            const isActive = active && active.courseId === course.course_id && active.topicId === tid;
+            return `<button type="button" class="pp-freq-cell hm-${bucket}${isActive ? ' pp-freq-cell--active' : ''}"
+                title="${this.escapeAttr(label)}: ${n} appearance${n !== 1 ? 's' : ''} since 2018 · click to filter"
+                onclick="app.toggleTopicFilter('${this.escapeAttr(course.course_id)}', '${this.escapeAttr(tid)}', '${this.escapeAttr(label)}')">
                 <span class="pp-freq-name">${this.escapeHtml(label)}</span>
                 <span class="pp-freq-count">${n}</span>
-            </span>`;
+            </button>`;
         }).join('');
+        const clearHtml = (active && active.courseId === course.course_id)
+            ? `<button type="button" class="pp-freq-clear" onclick="app.clearTopicFilter()">Clear filter ✕</button>`
+            : '';
         return `<div class="pp-freq">
-            <div class="pp-freq-label">Topic frequency in past papers</div>
+            <div class="pp-freq-label">Topic frequency in past papers${clearHtml}</div>
             <div class="pp-freq-cells">${cells}</div>
         </div>`;
+    },
+
+    toggleTopicFilter(courseId, topicId, label) {
+        const cur = this._ppTopicFilter;
+        if (cur && cur.courseId === courseId && cur.topicId === topicId) {
+            this._ppTopicFilter = null;
+        } else {
+            this._ppTopicFilter = { courseId, topicId, label };
+        }
+        this.renderPastPapers();
+    },
+
+    clearTopicFilter() {
+        this._ppTopicFilter = null;
+        this.renderPastPapers();
     },
 
     async toggleCompletedElsewhere(ref) {
@@ -3561,49 +3680,7 @@ const app = {
             const sel = JSON.parse(localStorage.getItem('plannerSelections') || '{}');
             this._syncPlannerToServer(sel);
         } catch (_) { /* ignore */ }
-        // Cambridge Part IB CS 2026 paper structure (Papers 4–7).
-        // Each course entry lists its question NUMBERS in that paper, so the
-        // user can pick any subset (not all-or-nothing per course).
-        const PAPERS = [
-            {
-                num: 4, total: 8, choose: 5,
-                courses: [
-                    { id: 'compiler-construction', name: 'Compiler Construction',           qs: [1, 2] },
-                    { id: 'semantics',             name: 'Semantics of Programming Languages', qs: [3] },
-                    { id: 'prolog',                name: 'Prolog',                          qs: [4] },
-                    { id: 'prog-c-cpp',            name: 'Programming in C and C++',        qs: [5, 6] },
-                    { id: 'cybersecurity',         name: 'Cybersecurity',                   qs: [7, 8] },
-                ],
-            },
-            {
-                num: 5, total: 8, choose: 5,
-                courses: [
-                    { id: 'computer-networking',    name: 'Computer Networking',                qs: [1, 2, 3] },
-                    { id: 'concurrent-distributed', name: 'Concurrent and Distributed Systems', qs: [4, 5] },
-                    { id: 'intro-comp-arch',        name: 'Introduction to Computer Architecture', qs: [6, 7, 8] },
-                ],
-            },
-            {
-                num: 6, total: 9, choose: 5,
-                courses: [
-                    { id: 'complexity-theory',  name: 'Complexity Theory',                  qs: [1, 2] },
-                    { id: 'computation-theory', name: 'Computation Theory',                 qs: [3, 4] },
-                    { id: 'data-science',       name: 'Data Science',                       qs: [5, 6] },
-                    { id: 'logic-proof',        name: 'Logic and Proof',                    qs: [7, 8] },
-                    { id: 'semantics',          name: 'Semantics of Programming Languages', qs: [9] },
-                ],
-            },
-            {
-                num: 7, total: 10, choose: 5,
-                courses: [
-                    { id: 'artificial-intelligence', name: 'Artificial Intelligence',          qs: [1, 2] },
-                    { id: 'econ-law-ethics',         name: 'Economics, Law and Ethics',         qs: [3, 4] },
-                    { id: 'formal-models-language',  name: 'Formal Models of Language',         qs: [5, 6] },
-                    { id: 'further-graphics',        name: 'Further Graphics',                  qs: [7, 8] },
-                    { id: 'further-hci',             name: 'Further Human-Computer Interaction', qs: [9, 10] },
-                ],
-            },
-        ];
+        const PAPERS = this.PAPERS;
 
         // Build confidence map from dashboard data
         const confMap = {};
