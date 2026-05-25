@@ -1,0 +1,151 @@
+{
+  "2022 Paper 5 Q1": {
+    "attempts": 1,
+    "best_score": 0.1392857142857143,
+    "difficult_parts": []
+  },
+  "2022 Paper 5 Q3": {
+    "attempts": 1,
+    "best_score": 0.45,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 9
+  },
+  "2024 Paper 4 Q1": {
+    "attempts": 1,
+    "best_score": 0.6,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 12
+  },
+  "2024 Paper 6 Q3": {
+    "attempts": 1,
+    "best_score": 0.6,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 12
+  },
+  "2024 Paper 6 Q8": {
+    "attempts": 1,
+    "best_score": 0.675,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 14
+  },
+  "2022 Paper 6 Q10": {
+    "attempts": 1,
+    "best_score": 0.45,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 9
+  },
+  "2024 Paper 7 Q3": {
+    "attempts": 1,
+    "best_score": 0.5,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 10
+  },
+  "2023 Paper 5 Q8": {
+    "attempts": 1,
+    "best_score": 0.6,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 12
+  },
+  "2024 Paper 5 Q5": {
+    "attempts": 1,
+    "best_score": 0.5,
+    "difficult_parts": [
+      "b(i)"
+    ],
+    "total_marks": 20,
+    "best_marks": 10
+  },
+  "2024 Paper 6 Q9": {
+    "attempts": 1,
+    "best_score": 0.5,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 10
+  },
+  "2024 Paper 7 Q4": {
+    "attempts": 1,
+    "best_score": 0.6,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 12
+  },
+  "2024 Paper 5 Q4": {
+    "attempts": 1,
+    "best_score": 0.5,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 10
+  },
+  "2023 Paper 6 Q1": {
+    "attempts": 1,
+    "best_score": 0.5,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 10
+  },
+  "2024 Paper 4 Q8": {
+    "attempts": 1,
+    "best_score": 0.4,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 8
+  },
+  "2024 Paper 4 Q7": {
+    "attempts": 1,
+    "best_score": 0.65,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 12
+  },
+  "2025 Paper 7 Q3": {
+    "attempts": 1,
+    "best_score": 0.75,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 15
+  },
+  "2025 Paper 7 Q4": {
+    "attempts": 1,
+    "best_score": 0.8,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 16
+  },
+  "2025 Paper 7 Q9": {
+    "attempts": 0,
+    "best_score": 0,
+    "difficult_parts": []
+  },
+  "2023 Paper 4 Q8": {
+    "attempts": 1,
+    "best_score": 0.5,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 10
+  },
+  "2023 Paper 4 Q1": {
+    "attempts": 1,
+    "best_score": 0.725,
+    "difficult_parts": [
+      "b(i)",
+      "b(ii)",
+      "d(ii)"
+    ],
+    "total_marks": 20,
+    "best_marks": 14.5
+  },
+  "2023 Paper 4 Q2": {
+    "attempts": 1,
+    "best_score": 0.45,
+    "difficult_parts": [],
+    "total_marks": 20,
+    "best_marks": 9
+  }
+}
