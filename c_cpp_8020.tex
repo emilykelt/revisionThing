@@ -1,0 +1,608 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{kw}{HTML}{8B0058}
+\definecolor{cmt}{HTML}{6A8F4B}
+\definecolor{str}{HTML}{B36B00}
+\definecolor{bg}{HTML}{FBFAF7}
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\lstdefinestyle{c}{
+  language=C,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{kw}\bfseries,
+  commentstyle=\color{cmt}\itshape,
+  stringstyle=\color{str},
+  backgroundcolor=\color{bg},
+  frame=single,
+  rulecolor=\color{black!20},
+  framesep=4pt,
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+  morekeywords={size_t,uint8_t,uint16_t,uint32_t,uint64_t,int8_t,int16_t,int32_t,int64_t,bool,true,false,nullptr,NULL,virtual,class,template,typename,public,private,protected,namespace,new,delete,this,override,explicit,friend,operator,using,inline,constexpr}
+}
+\lstset{style=c}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Gotcha,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Programming in C and C++} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+The Cambridge Part IB C/C++ paper (Paper 4) sets two questions per year. Looking at \textbf{eight years of past papers (2018--2025, 16 questions)}, the topic frequencies are:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+Memory allocation \& management (\texttt{malloc}/\texttt{free}, custom arenas) & 9 & 56\% \\
+Pointers \& dereferencing & 6 & 38\% \\
+Linked lists \& self-referential structs in C & 4 & 25\% \\
+Low-level / embedded (\texttt{volatile}, bit fields, hardware) & 3 & 19\% \\
+Templates and generics (C++) & 3 & 19\% \\
+Data types \& bit manipulation & 3 & 19\% \\
+Inheritance \& polymorphism (C++) & 2 & 13\% \\
+Strings & 2 & 13\% \\
+Type casting / safety in C++ & 1 & 6\% \\
+Operator overloading & 1 & 6\% \\
+Function definitions: C vs C++ & 1 & 6\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} \textbf{Memory management + pointers + linked structures account for roughly 75\% of marks.} If you only revise three things, revise those. Templates, inheritance, and bit-level C are the next tier and reliably feature once every other year. Everything else (preprocessor, enums, history, etc.) is supporting material --- worth a paragraph each.
+
+This document is sectioned in that order: \textbf{must-know first, then important, then context}.
+
+\hrulefill
+
+\section{The Big Three (75\% of marks)}
+
+\subsection{Memory: \texttt{malloc}, \texttt{free}, and lifetimes}
+
+\begin{must}
+The single most likely thing to appear is a question that gives you a data structure (often a tree, DAG, or linked list) and asks: (a) write code to construct it; (b) write code to free it; (c) explain what goes wrong if pointers alias / if there's a cycle; (d) propose a better scheme (arena, reference counting, GC).
+\end{must}
+
+\textbf{The C dynamic allocation API} lives in \texttt{<stdlib.h>}:
+
+\begin{lstlisting}
+void *malloc(size_t size);           // uninitialised bytes
+void *calloc(size_t n, size_t size); // zeroed
+void *realloc(void *p, size_t size); // resize
+void  free(void *p);                 // exactly once per allocation
+\end{lstlisting}
+
+The contract is brutal but simple:
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item Every successful \texttt{malloc} must be matched by exactly one \texttt{free}, \textbf{on every execution path}.
+  \item After \texttt{free(p)}, \texttt{p} must not be used (use-after-free) and \texttt{free(p)} must not be called again (double-free).
+  \item Failure to free $\Rightarrow$ memory leak. Free too early $\Rightarrow$ dangling pointer. Free twice $\Rightarrow$ heap corruption.
+\end{itemize}
+
+\begin{gotcha}
+A classic exam trap: \texttt{free} is conditional on a branch, so one path through the program leaks.
+
+\begin{lstlisting}
+int *pi = malloc(sizeof(int));
+scanf("%d", pi);
+if (*pi % 2) {
+    printf("Odd!\n");
+    free(pi);    // WRONG: only freed on odd input
+}
+// Fix: move free(pi) outside the if.
+\end{lstlisting}
+\end{gotcha}
+
+\subsubsection*{Trees: easy. DAGs: hard.}
+
+For a binary tree where every node has at most one parent, recursive free is fine:
+
+\begin{lstlisting}
+void tree_free(Tree *t) {
+    if (t != NULL) {
+        tree_free(t->left);
+        tree_free(t->right);
+        free(t);
+    }
+}
+\end{lstlisting}
+
+But the moment two pointers \textbf{alias} the same node (a DAG), this recursive free will free that node twice. \textbf{This is the canonical lecture example} (2024-4-6, 2020-4-1 ask variants).
+
+\textbf{Three standard solutions} --- know all of them:
+
+\begin{plain}{(1) Visited flag / explicit graph traversal}
+Add a \texttt{visited} field. Walk the graph, collect unique nodes into a list, free each one once.
+\begin{lstlisting}
+TreeList *getNodes(Tree *t, TreeList *acc) {
+    if (t == NULL || t->visited) return acc;
+    t->visited = true;
+    acc = cons(t, acc);
+    acc = getNodes(t->right, acc);
+    acc = getNodes(t->left,  acc);
+    return acc;
+}
+\end{lstlisting}
+\end{plain}
+
+\begin{plain}{(2) Arena allocation}
+Allocate a big block up front; hand out nodes from it; free the whole arena in one go. \textbf{Sidesteps aliasing entirely} because we never free individual nodes.
+
+\begin{lstlisting}
+typedef struct arena {
+    int size, current;
+    Tree *elts;
+} *arena_t;
+
+Tree *node(int v, Tree *l, Tree *r, arena_t a) {
+    if (a->current >= a->size) return NULL;
+    Tree *t = &a->elts[a->current++];
+    t->value = v; t->left = l; t->right = r;
+    return t;
+}
+
+void free_arena(arena_t a) { free(a->elts); free(a); }
+\end{lstlisting}
+\textbf{Trade-off:} can't free individual nodes; arena holds memory until the very end (bigger working set). Best when nodes have a common lifetime.
+\end{plain}
+
+\begin{plain}{(3) Reference counting}
+Each object carries an integer count of incoming pointers. Increment on copy, decrement on drop, free when it hits zero. Recursively decrements counts of children.
+
+\begin{lstlisting}
+typedef struct rc_node {
+    int refcount;
+    int value;
+    struct rc_node *left, *right;
+} RCNode;
+
+void rc_decref(RCNode *n) {
+    if (n == NULL) return;
+    if (--n->refcount == 0) {
+        rc_decref(n->left);
+        rc_decref(n->right);
+        free(n);
+    }
+}
+\end{lstlisting}
+\textbf{Achilles' heel:} reference cycles leak. Use weak references or a cycle collector if cycles are possible.
+\end{plain}
+
+\subsection{Pointers}
+
+\begin{must}
+A pointer is \textbf{a variable whose value is an address}. The pointer itself has a size (typically 8 bytes on 64-bit machines) regardless of what it points to. \textbf{Almost every C exam question hinges on tracking what each pointer aims at, step by step.}
+\end{must}
+
+\subsubsection*{Declaration, dereference, address-of}
+
+\begin{lstlisting}
+int   x   = 5;
+int  *p   = &x;     // p holds the address of x
+int **pp  = &p;     // pp holds the address of p
+*p = 10;            // x is now 10
+**pp = 20;          // x is now 20
+\end{lstlisting}
+
+The asterisk binds to the \emph{name}, not the type --- so \verb|int *a, b;| declares one \verb|int*| and one \verb|int|.
+
+\subsubsection*{Pointers and arrays}
+
+\textbf{An array name decays to a pointer to its first element} in almost every expression. Therefore:
+\begin{lstlisting}
+int  arr[10];
+int *p = arr;     //  equivalent to &arr[0]
+arr[i]  == *(arr + i)  == *(p + i)  == p[i];
+\end{lstlisting}
+But: \texttt{arr} is not a variable, so \verb|arr = p| and \verb|arr++| are \textbf{errors}, while \verb|p = arr| and \verb|p++| are fine.
+
+\subsubsection*{Pointer arithmetic}
+
+\verb|p + n| advances \verb|p| by \verb|n * sizeof(*p)| bytes, not \verb|n| bytes. This means pointer arithmetic is \emph{type-aware}: incrementing an \verb|int*| by 1 on a 32-bit-int machine actually adds 4 to the address. Out-of-bounds pointer arithmetic is undefined.
+
+\subsubsection*{Pass-by-value, pointer trickery}
+
+All function arguments in C are passed by value. To mutate the caller's variable, pass a pointer to it:
+
+\begin{lstlisting}
+void swap_bad(int x, int y)   { int t=x; x=y; y=t; }       // no effect
+void swap_ok (int *x, int *y) { int t=*x; *x=*y; *y=t; }   // works
+// caller: swap_ok(&a, &b);
+\end{lstlisting}
+
+\subsubsection*{Function pointers}
+
+\begin{lstlisting}
+int  cmp(int a, int b) { return a > b ? 1 : 0; }
+void sort(int a[], int n, int (*lt)(int,int));
+sort(arr, n, cmp);     // pass function as argument
+\end{lstlisting}
+The compiler accepts both \verb|(*lt)(x,y)| and \verb|lt(x,y)|. Function pointers underpin polymorphic C (\verb|qsort|, callbacks, vtables).
+
+\subsubsection*{\texttt{void *} --- C's escape hatch}
+
+\verb|void *| holds an address with no type. \verb|malloc| returns one. You need a cast (or implicit conversion in C, not C++) to use it:
+\begin{lstlisting}
+int *p = malloc(n * sizeof(int));   // C: implicit
+int *p = (int *)malloc(n * sizeof(int)); // required in C++
+\end{lstlisting}
+
+\begin{gotcha}
+Returning a pointer to a local variable is undefined --- the stack frame disappears on return:
+\begin{lstlisting}
+char *unary(unsigned short s) {
+    char local[s+1];        // on the stack!
+    /* fill local ... */
+    return local;           // DOOM: dangling pointer
+}
+\end{lstlisting}
+Either \texttt{malloc} the buffer, or have the caller pass one in.
+\end{gotcha}
+
+\subsection{Linked structures in C}
+
+\begin{must}
+Memory questions almost always set themselves on top of a linked list, tree, or graph. Be fluent in defining a self-referential struct, walking it, inserting into it, and freeing it.
+\end{must}
+
+\begin{lstlisting}
+struct node {
+    int value;
+    struct node *next;        // self-referential via pointer
+};
+typedef struct node Node;
+
+Node *push(Node *head, int v) {
+    Node *n = malloc(sizeof(Node));
+    n->value = v;
+    n->next  = head;
+    return n;                 // new head
+}
+
+void list_free(Node *head) {
+    while (head != NULL) {
+        Node *nxt = head->next;
+        free(head);
+        head = nxt;
+    }
+}
+\end{lstlisting}
+
+For trees, use two child pointers (\verb|left|, \verb|right|). The standard idioms are:
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Recursive insert:} compare value, recurse left or right.
+  \item \textbf{Recursive print:} in-/pre-/post-order traversal.
+  \item \textbf{Recursive free:} post-order (free children before parent --- otherwise you lose the pointers).
+\end{itemize}
+
+\subsubsection*{Member access}
+
+\verb|n.value| for a struct, \verb|n->value| for a pointer to a struct. They mean: \verb|n->value == (*n).value|. The arrow is just sugar.
+
+\hrulefill
+
+\section{The Second Tier}
+
+\subsection{C++ Templates and Generics}
+
+\begin{useful}
+Appears in 2020-4-2, 2024-4-6, 2025-4-6 --- roughly every other year. Usually paired with operator overloading or inheritance to make a small generic container or numeric class.
+\end{useful}
+
+A template is a recipe the compiler instantiates per type:
+
+\begin{lstlisting}
+template <typename T>
+class Stack {
+    T *data;
+    int top, capacity;
+public:
+    Stack(int n) : top(0), capacity(n) { data = new T[n]; }
+    ~Stack() { delete[] data; }
+    void push(const T& x)  { data[top++] = x; }
+    T    pop()              { return data[--top]; }
+    bool empty() const     { return top == 0; }
+};
+
+Stack<int> si(100);     // instantiates Stack<int>
+Stack<double> sd(100);  // a separate instantiation
+\end{lstlisting}
+
+\textbf{Key things to know in the exam:}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item Templates are \emph{compile-time} polymorphism --- the compiler generates separate code per type. No runtime overhead, but code bloat.
+  \item Contrast with C: in C you'd use \verb|void *| (no type safety) or macros (no type checking).
+  \item Function templates: \verb|template <typename T> T max(T a, T b) { return a < b ? b : a; }|
+  \item Templates require the type to support the operations used --- e.g.\ a \verb|Stack<T>| needs \verb|T| to be assignable.
+\end{itemize}
+
+\subsection{Classes, RAII, destructors}
+
+\begin{useful}
+The headline difference from C: C++ has constructors and destructors that run automatically. \textbf{RAII} (Resource Acquisition Is Initialisation) is the entire C++ memory story --- objects acquire resources in the constructor and release them in the destructor, tied to scope.
+\end{useful}
+
+\begin{lstlisting}
+class Buffer {
+    char *data;
+    int   size;
+public:
+    Buffer(int n) : size(n) { data = new char[n]; }
+    ~Buffer()               { delete[] data; }      // auto-runs on scope exit
+    // Rule of three: also need copy ctor & copy assignment
+    Buffer(const Buffer& o);
+    Buffer& operator=(const Buffer& o);
+};
+
+void f() {
+    Buffer b(1024);     // constructor runs
+    // ... use b ...
+}                       // destructor runs here, even on exception
+\end{lstlisting}
+
+\textbf{The rule of three:} if you need to write a custom destructor, you probably also need a custom copy constructor and a custom copy assignment operator. Otherwise the compiler's default shallow-copy will double-free your heap data.
+
+\subsubsection*{References vs pointers}
+
+\begin{lstlisting}
+int x = 5;
+int *p = &x;     // pointer: explicit address
+int &r =  x;     // reference: alias for x
+\end{lstlisting}
+A reference must be bound at creation, can never be null, and can never be re-bound. Use references for: function parameters that mustn't be null, return-by-reference, operator overloading. Use pointers when you need null, re-binding, or pointer arithmetic.
+
+\subsection{Inheritance, virtual functions, polymorphism}
+
+\begin{useful}
+Inheritance shows up in 2020-4-2, 2024-4-6. Questions tend to ask: explain what \texttt{virtual} does, what the vtable looks like, why slicing happens, what \texttt{override} buys you.
+\end{useful}
+
+\begin{lstlisting}
+class Shape {
+public:
+    virtual double area() const = 0;   // pure virtual
+    virtual ~Shape() = default;        // virtual dtor required for polymorphic base
+};
+
+class Circle : public Shape {
+    double r;
+public:
+    Circle(double r) : r(r) {}
+    double area() const override { return 3.14159 * r * r; }
+};
+\end{lstlisting}
+
+\textbf{What you must remember:}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{\texttt{virtual}} means: dispatch is decided at runtime via a \textbf{vtable} (a per-class array of function pointers; each object stores a pointer to its class's vtable).
+  \item \textbf{Without \texttt{virtual}}, calls resolve statically based on the declared type --- so \verb|Shape s = c; s.area();| (object slicing!) gives the \emph{Shape} version, not the \emph{Circle} one.
+  \item \textbf{Pure virtual} (\verb|= 0|) makes the class abstract --- you can't instantiate it directly, only derive from it.
+  \item \textbf{Polymorphism only works via pointers or references.} A by-value \verb|Shape| variable is sliced down to the base class.
+  \item Always declare base-class destructors \verb|virtual| --- otherwise \verb|delete base_ptr| won't call the derived destructor.
+\end{itemize}
+
+\subsection{Bit fields, \texttt{volatile}, low-level work}
+
+\begin{useful}
+The ``low-level / embedded'' flavour appears in 2023-4-6, 2024-4-5, 2025-4-5. Often: ``you're driving a hardware register, write the struct.''
+\end{useful}
+
+\textbf{Bit fields} pack named sub-fields of a word:
+
+\begin{lstlisting}
+struct status_reg {
+    unsigned int ready    : 1;   // 1 bit
+    unsigned int error    : 1;
+    unsigned int reserved : 6;
+    unsigned int channel  : 8;   // 8 bits
+};
+\end{lstlisting}
+\textbf{Caveats:} bit-field layout (endianness, padding) is implementation-defined. You can't take the address of a bit field (no \verb|&|).
+
+\textbf{\texttt{volatile}} tells the compiler ``this value may change outside the program's control'' --- e.g.\ a memory-mapped device register, a flag set by a signal handler, or a variable read by another thread. The compiler must not optimise away reads or reorder accesses across it.
+
+\begin{lstlisting}
+volatile uint32_t *uart_status = (uint32_t *)0x4000B000;
+while ((*uart_status & READY_BIT) == 0) { }   // must re-read each iteration
+\end{lstlisting}
+
+\textbf{\texttt{const}} placement is subtle --- read right-to-left:
+\begin{lstlisting}
+const int *p;       // p points to const int  (can't write *p, can re-aim p)
+int *const p;       // const pointer to int   (can write *p, can't re-aim)
+const int *const p; // const pointer to const int (can't do either)
+\end{lstlisting}
+
+\subsection{Data types and bit manipulation}
+
+\begin{useful}
+Bit twiddling appears in 2018-4-1, 2021-4-1, 2023-4-5. Questions: extract a field from a packed int, count set bits, swap nibbles, convert endianness.
+\end{useful}
+
+The basic types: \verb|char| ($\ge$8 bits), \verb|short|, \verb|int| ($\ge$16, usually word-sized), \verb|long|, \verb|long long|, \verb|float|, \verb|double|. Exact widths are architecture-defined --- use \texttt{<stdint.h>} types (\verb|int32_t|, \verb|uint64_t|) when size matters.
+
+\textbf{Bitwise operators:} \verb|&| AND, \verb#|# OR, \verb|^| XOR, \verb|~| NOT, \verb|<<| left shift, \verb|>>| right shift.
+
+\textbf{Standard idioms:}
+\begin{lstlisting}
+x & (1 << n)          // test bit n
+x |  (1 << n)         // set bit n
+x & ~(1 << n)         // clear bit n
+x ^  (1 << n)         // flip bit n
+(x >> n) & MASK       // extract a field
+(x >> 24) | ((x & 0xFF0000) >> 8) | ((x & 0xFF00) << 8) | (x << 24)
+                      // byte-swap a 32-bit value (endianness flip)
+\end{lstlisting}
+
+\textbf{Signed vs unsigned shifts:} right-shifting a signed negative number is implementation-defined (usually arithmetic shift, sign-extending). Right-shifting an unsigned is always logical (zero-fill). Prefer unsigned types for bit work.
+
+\textbf{Integer overflow:} signed overflow is \textbf{undefined behaviour}; unsigned overflow wraps modulo $2^n$. Don't assume \verb|i + 1 > i| for signed \verb|i| --- a compiler can (and does) delete checks that rely on it.
+
+\hrulefill
+
+\section{Cache, performance, undefined behaviour, tooling}
+
+\subsection{Memory hierarchy and data layout}
+
+Code is fast when the cache is happy. Two big levers:
+
+\textbf{Array-of-structs (AoS) vs struct-of-arrays (SoA).}
+\begin{lstlisting}
+struct Particle { float x, y, z; float vx, vy, vz; } p[N];   // AoS
+struct { float x[N], y[N], z[N], vx[N], vy[N], vz[N]; } P;   // SoA
+\end{lstlisting}
+If you stream over only the positions, SoA wins: contiguous, no wasted cache bytes for velocities. If you touch all six per particle in the same loop, AoS wins.
+
+\textbf{Loop blocking (tiling).} For a nested loop that touches a 2D array, process in $B \times B$ tiles that fit in cache, rather than full rows:
+\begin{lstlisting}
+for (int ii = 0; ii < N; ii += B)
+  for (int jj = 0; jj < N; jj += B)
+    for (int i = ii; i < ii+B; i++)
+      for (int j = jj; j < jj+B; j++)
+        A[i][j] = ...;
+\end{lstlisting}
+
+\textbf{Intrusive lists.} Embed the linked-list pointers \emph{inside} the payload struct, rather than allocating a separate list cell holding a pointer to the payload. One allocation per object instead of two; better locality.
+
+\subsection{Undefined behaviour and tooling}
+
+C is unsafe by design. \textbf{Undefined behaviour} (UB) means the compiler may do \emph{anything} --- crash, return garbage, silently delete code. Sources include: signed overflow, dereferencing NULL, out-of-bounds access, use-after-free, double-free, reading uninitialised memory, breaking strict aliasing.
+
+\textbf{Four tools you should be able to name:}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Tool & Catches & Cost \\
+\hline
+ASan  & out-of-bounds, use-after-free, double-free, leaks & 2$\times$ slowdown, recompile \\
+MSan  & reads of uninitialised memory                     & 2--3$\times$, recompile, clang only \\
+UBSan & signed overflow, null deref, bad shifts           & $\sim$20\%, recompile \\
+Valgrind & memory errors via binary instrumentation       & 10--50$\times$, no recompile \\
+\hline
+\end{tabular}
+\end{center}
+
+Use them with the relevant \verb|-fsanitize=address|, \verb|-fsanitize=memory|, \verb|-fsanitize=undefined| flags, or invoke \verb|valgrind ./a.out|.
+
+\subsection{Garbage collection in C}
+
+A type-specific GC for, e.g., trees: track all live root pointers; periodically walk reachable objects (mark phase); free everything not marked (sweep phase). Conservative GCs (e.g.\ Boehm) treat anything word-aligned in memory that looks like a pointer as one. Useful but pessimistic.
+
+\hrulefill
+
+\section{Supporting cast (rarely asked but expected background)}
+
+\subsection{Preprocessor}
+
+\begin{lstlisting}
+#include <stdio.h>           // < > searches system paths
+#include "myheader.h"        // " " searches local first
+#define PI 3.14159
+#define SQUARE(x) ((x)*(x))   // ALWAYS parenthesise macro args!
+#ifdef DEBUG
+  printf("debug...\n");
+#endif
+\end{lstlisting}
+
+Preprocessing is pure text substitution \emph{before} the compiler sees anything --- so type errors in macros show up at the use site, not the definition.
+
+\textbf{Header guards} (or \verb|#pragma once|) prevent double-inclusion:
+\begin{lstlisting}
+#ifndef MYHEADER_H
+#define MYHEADER_H
+/* declarations */
+#endif
+\end{lstlisting}
+
+\subsection{Compilation model}
+
+Each \texttt{.c} file compiles independently to an \texttt{.o} object file. The linker resolves cross-file references. Headers carry declarations; \texttt{.c} files carry definitions. \verb|extern| says ``declared here, defined elsewhere''; \verb|static| at file scope says ``private to this file --- don't export.''
+
+\subsection{Storage classes}
+
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \verb|auto| (default): local variable, lives on the stack, vanishes on return.
+  \item \verb|static| local: persists across calls, single instance even with recursion.
+  \item \verb|static| file-scope global: not exported by the linker.
+  \item \verb|extern|: declared here, defined elsewhere.
+  \item \verb|register|: hint to the compiler --- mostly useless on modern hardware.
+\end{itemize}
+
+\subsection{The classic differences C $\rightarrow$ C++}
+
+\begin{center}
+\begin{tabular}{p{6cm}p{8.5cm}}
+\hline
+\textbf{C} & \textbf{C++} \\
+\hline
+\verb|struct| only groups data & \verb|struct| can have methods (default public); \verb|class| same but default private \\
+\verb|malloc| / \verb|free| & \verb|new| / \verb|delete|; \verb|new[]| / \verb|delete[]| \\
+No function overloading & Yes; name-mangling makes it work at link time \\
+No default arguments & Yes: \verb|void f(int x, int y = 0);| \\
+No references & Yes (\verb|int &r = x;|) \\
+No templates & Yes \\
+No classes, no inheritance, no virtual & Yes, yes, yes \\
+\verb|void *| implicit conversion to other pointers & Requires explicit cast \\
+\verb|int f()| means ``f takes anything'' & \verb|int f()| means ``f takes nothing'' \\
+\hline
+\end{tabular}
+\end{center}
+
+\hrulefill
+
+\section{The one-page exam checklist}
+
+\begin{must}
+If you have one hour to revise, do these in order:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item Be able to define, traverse, and free a linked list and a binary tree from blank paper.
+  \item Be able to explain --- with a diagram --- what goes wrong when two pointers alias the same heap node and you free recursively.
+  \item Be able to write an \textbf{arena allocator} (struct with size/current/elts; \texttt{node()} bumps a pointer; \texttt{free\_arena()} frees once).
+  \item Be able to write \textbf{reference counting} primitives (incref, decref, free-when-zero) and explain the cycle-leak problem.
+  \item Be able to read \texttt{const int * const *p} and similar.
+  \item Be able to write a templated \texttt{Stack<T>} class with a constructor, destructor, push, pop.
+  \item Know what \texttt{virtual} does, why the base destructor must be virtual, and what slicing is.
+  \item Know all four bit-twiddle idioms (set / clear / test / flip / extract).
+  \item Be able to name and describe ASan, MSan, UBSan, Valgrind and what each catches.
+  \item Be able to give two examples of undefined behaviour and explain why the compiler is allowed to do anything.
+\end{enumerate}
+\end{must}
+
+\vspace{0.4cm}
+\begin{center}
+\textit{Good luck.}
+\end{center}
+
+\end{document}

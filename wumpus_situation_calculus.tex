@@ -1,0 +1,133 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\newcommand{\pred}[1]{\textsc{#1}}
+\newcommand{\Result}{\pred{Result}}
+\newcommand{\Poss}{\pred{Poss}}
+
+\title{\vspace{-1.5cm}Wumpus World in Situation Calculus --- Q2 Notes}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1cm}
+
+\section*{The three things every action needs}
+
+For each action $A$ you must give:
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item A \textbf{possibility axiom} $\Poss(A, s) \iff \ldots$ \ \ (when can $A$ be performed?)
+  \item A \textbf{successor-state axiom} for every fluent it can change, of the form
+  \[
+    F(\vec{x}, \Result(a, s)) \iff \underbrace{\Phi^+(\vec{x}, a, s)}_{\text{$a$ made it true}} \ \vee\ \Big( F(\vec{x}, s) \wedge \neg\underbrace{\Phi^-(\vec{x}, a, s)}_{\text{$a$ made it false}}\Big)
+  \]
+  This single schema combines effect axioms \emph{and} frame axioms, solving the frame problem.
+\end{enumerate}
+
+If a fluent has no successor-state axiom, you have implicitly claimed nothing changes it --- often wrong. Write one axiom \emph{per fluent}, not per action.
+
+\section*{Ontology for Wumpus World}
+
+\textbf{Constants \& functions}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item Locations are pairs $[x,y]$. The agent is the constant \pred{Agent}.
+  \item Orientations: $0, 90, 180, 270$ (degrees).
+  \item $\pred{LocationToward}([x,y], d)$: the adjacent cell in direction $d$.
+  \item $\pred{LocationAhead}(s) = \pred{LocationToward}(\pred{loc}(s), \pred{ori}(s))$ \ where $\pred{loc}(s)$, $\pred{ori}(s)$ are the unique location/orientation of \pred{Agent} in $s$.
+  \item $\pred{Adjacent}(p_1, p_2)$, $\pred{Wall}(p)$ --- static map predicates (not fluents).
+\end{itemize}
+
+\textbf{Fluents}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item $\pred{At}(\pred{Agent}, [x,y], s)$ \quad ---\ agent's location
+  \item $\pred{Orientation}(\pred{Agent}, d, s)$ \quad ---\ direction faced
+  \item $\pred{HaveArrow}(s)$
+  \item $\pred{WumpusAlive}(s)$
+\end{itemize}
+
+\textbf{Helper}
+\begin{align*}
+  \pred{FacingWumpus}(s) \iff{}& \exists [x,y].\ \pred{At}(\pred{Wumpus}, [x,y], s)\\
+                              & \wedge\ \pred{InLineOfFire}(\pred{Agent}, [x,y], s)
+\end{align*}
+where $\pred{InLineOfFire}$ says the wumpus shares the row/column ahead of the agent's current orientation. Treat \pred{Wumpus}'s location as constant once placed.
+
+\section*{(a)\ \ Shoot}
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50!black]
+\textbf{Possibility.} Can only shoot if you have an arrow:
+\[
+  \Poss(\pred{Shoot}, s) \iff \pred{HaveArrow}(s)
+\]
+\textbf{Successor-state for \pred{HaveArrow}.} Any \pred{Shoot} consumes the arrow; nothing else affects it:
+\[
+  \pred{HaveArrow}(\Result(a, s)) \iff \pred{HaveArrow}(s) \ \wedge\ a \neq \pred{Shoot}
+\]
+\textbf{Successor-state for \pred{WumpusAlive}.} The wumpus dies iff currently alive and the agent shoots while facing it:
+\begin{align*}
+  \pred{WumpusAlive}(\Result(a, s)) \iff{}&
+  \pred{WumpusAlive}(s)\\
+  & \wedge\ \neg\big(a = \pred{Shoot} \ \wedge\ \pred{FacingWumpus}(s)\big)
+\end{align*}
+\end{tcolorbox}
+
+\section*{(b)\ \ Move (Forward)}
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50!black]
+\textbf{Possibility.} You can move forward iff the square ahead exists and is not a wall:
+\[
+  \Poss(\pred{Forward}, s) \iff \neg\pred{Wall}\!\big(\pred{LocationAhead}(s)\big)
+\]
+\textbf{Successor-state for \pred{At}.} A \pred{Forward} action puts you on the square ahead; any other action leaves the location alone:
+\begin{align*}
+  \pred{At}(\pred{Agent}, p, \Result(a, s)) \iff{}&
+  \big(a = \pred{Forward} \ \wedge\ p = \pred{LocationAhead}(s)\big)\\
+  \vee{}& \big(a \neq \pred{Forward} \ \wedge\ \pred{At}(\pred{Agent}, p, s)\big)
+\end{align*}
+\end{tcolorbox}
+
+The second disjunct is the frame part: every non-\pred{Forward} action preserves location.
+
+\section*{(c)\ \ Orient (TurnLeft / TurnRight)}
+
+Define rotation functions
+\[
+  \pred{LeftTurn}(d) = (d + 90) \bmod 360, \qquad \pred{RightTurn}(d) = (d - 90) \bmod 360.
+\]
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50!black]
+\textbf{Possibility.} Turning is always allowed:
+\[
+  \Poss(\pred{TurnLeft}, s) \iff \top, \qquad \Poss(\pred{TurnRight}, s) \iff \top.
+\]
+\textbf{Successor-state for \pred{Orientation}.} The orientation changes only on a turn:
+\begin{align*}
+\pred{Orientation}(\pred{Agent}, d, \Result(a, s)) \iff{}
+& \big(a = \pred{TurnLeft} \ \wedge\ d = \pred{LeftTurn}(\pred{ori}(s))\big)\\
+\vee{}& \big(a = \pred{TurnRight} \ \wedge\ d = \pred{RightTurn}(\pred{ori}(s))\big)\\
+\vee{}& \big(a \neq \pred{TurnLeft} \ \wedge\ a \neq \pred{TurnRight}\\
+& \quad \wedge\ \pred{Orientation}(\pred{Agent}, d, s)\big)
+\end{align*}
+\end{tcolorbox}
+
+\section*{What examiners want you to demonstrate}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item One \textbf{possibility axiom per action}, one \textbf{successor-state axiom per fluent} --- not the other way round. A common error is to write effect axioms only and leave fluents un-framed.
+  \item The successor-state axiom must close over \emph{all} actions: the positive part lists actions that make $F$ true, the frame part says $F$ persists unless an action listed in the negative part undoes it.
+  \item Quantify universally over $a$ and $s$ at the outermost level (omitted above for clarity, but should be made explicit in a formal answer): each axiom is $\forall a,s,\vec{x}.\ \ldots$
+  \item Re-use static predicates (\pred{Wall}, \pred{Adjacent}, \pred{InLineOfFire}) and treat them as non-fluents --- they need no successor-state axioms.
+  \item Mention briefly that this formulation \textbf{solves the frame problem}: instead of $O(\text{actions} \times \text{fluents})$ frame axioms, you get one axiom per fluent.
+\end{itemize}
+
+\end{document}

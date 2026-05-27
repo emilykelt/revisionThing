@@ -1,10 +1,10 @@
 /* ============================================
    Part IB Revision — Soft Glass Theme
    Frosted glass surfaces on warm off-white with lavender/sage accents.
-   Typography: Bricolage Grotesque + Instrument Serif italic accents.
+   Typography: Instrument Serif headers + Schibsted Grotesk body.
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Schibsted+Grotesk:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
     /* surfaces — warm off-white base, frosted glass on top */
@@ -73,7 +73,7 @@
     --radius-pill: 999px;
 
     /* typography */
-    --font-display: 'Bricolage Grotesque', 'Helvetica Neue', sans-serif;
+    --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
     --font-body: 'Schibsted Grotesk', 'Helvetica Neue', system-ui, sans-serif;
     --font-serif: 'Schibsted Grotesk', 'Helvetica Neue', system-ui, sans-serif;
     --font-italic: 'Instrument Serif', Georgia, serif;
@@ -86,6 +86,10 @@
     box-sizing: border-box;
 }
 
+html {
+    font-size: 14px;
+}
+
 body {
     background-color: var(--bg-cream);
     background-image:
@@ -96,7 +100,7 @@ body {
     background-attachment: fixed;
     font-family: var(--font-body);
     color: var(--text-primary);
-    font-size: 15.5px;
+    font-size: 13.5px;
     line-height: 1.55;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -141,9 +145,9 @@ body::after {
 /* Editorial display headings */
 h1, h2, h3, .display {
     font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.05;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 1.1;
 }
 
 /* Italic serif accent — used inline for numbers, decorative emphasis */
@@ -169,9 +173,9 @@ h1, h2, h3, .display {
 
 /* ---- Sidebar ---- */
 :root {
-    --sidebar-collapsed-w: 68px;
-    --sidebar-expanded-w: 232px;
-    --sidebar-gap: 1rem;
+    --sidebar-collapsed-w: 52px;
+    --sidebar-expanded-w: 200px;
+    --sidebar-gap: 0.75rem;
 }
 
 .sidebar {
@@ -389,9 +393,9 @@ h1, h2, h3, .display {
 
 /* ---- Main ---- */
 .main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 1.5rem 1.5rem 1.5rem calc(var(--sidebar-collapsed-w) + var(--sidebar-gap) + 1.5rem);
+    max-width: none;
+    margin: 0;
+    padding: 1.25rem 1.5rem 1.5rem calc(var(--sidebar-collapsed-w) + var(--sidebar-gap) + 1.25rem);
 }
 
 .view {
@@ -666,16 +670,20 @@ h1, h2, h3, .display {
 .overall-progress::after {
     content: '';
     position: absolute;
-    top: -60px;
-    right: -60px;
-    width: 220px;
-    height: 220px;
+    top: -30px;
+    right: -30px;
+    width: 200px;
+    height: 200px;
     background:
-        radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.7) 0%, var(--accent-lavender) 55%, rgba(191, 182, 226, 0) 80%);
+        radial-gradient(circle at 50% 50%,
+            rgba(255, 255, 255, 0.65) 0%,
+            var(--accent-lavender) 22%,
+            rgba(191, 182, 226, 0.35) 55%,
+            rgba(191, 182, 226, 0) 78%);
     border-radius: 50%;
-    opacity: 0.7;
+    opacity: 0.6;
     z-index: 0;
-    filter: blur(2px);
+    filter: blur(10px);
 }
 
 .overall-label {

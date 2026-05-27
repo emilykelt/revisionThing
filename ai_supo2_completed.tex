@@ -1,0 +1,273 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\definecolor{keybg}{HTML}{FFF3CD}
+\definecolor{keyrule}{HTML}{B08800}
+\definecolor{traybg}{HTML}{EEF4FA}
+\definecolor{trayrule}{HTML}{4B6584}
+
+\newcommand{\pred}[1]{\textsc{#1}}
+\newcommand{\Result}{\pred{Result}}
+\newcommand{\Poss}{\pred{Poss}}
+\newcommand{\key}{\textbf{\textcolor{keyrule}{\large$\bigstar$}}\ }
+
+\newtcolorbox{keybox}[1][]{
+  enhanced, breakable,
+  colback=keybg, colframe=keyrule,
+  fonttitle=\bfseries, title={#1},
+  left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+\newtcolorbox{tray}[1][]{
+  enhanced, breakable,
+  colback=traybg, colframe=trayrule,
+  fonttitle=\bfseries, title={#1},
+  left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+\title{\vspace{-1.5cm}AI Supo 2 --- Topics covered\\\large Q1, Q2 (Sec 6) and Q1 (Sec 7)}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1cm}
+
+\hfill \textbf{\textcolor{keyrule}{$\bigstar$}}\ = 80/20 essentials, learn cold.
+
+\hrulefill
+
+\section*{Section 6 --- Situation Calculus}
+
+\subsection*{1.1\ \ The language}
+
+Situation calculus encodes a changing world inside first-order logic.
+
+\begin{keybox}[\key Core ontology]
+\begin{tabular}{@{}p{3.3cm}p{12cm}@{}}
+\textbf{Situation} $s$ & A snapshot of the world. $s_0$ is the initial situation. Situations are objects in the logic, so you can quantify over them.\\
+\textbf{Fluent} & A predicate whose truth value depends on a situation. Last argument is always $s$.\ \ E.g.\ $\pred{At}(\text{Robot}, \text{kitchen}, s)$, $\pred{HaveArrow}(s)$.\\
+\textbf{Action} & A first-class object (\emph{not} a situation). E.g.\ $\pred{Go}(\text{kitchen}, \text{hall})$, $\pred{Shoot}$.\\
+\textbf{$\Result(a,s)$} & A function returning the situation that results from doing action $a$ in situation $s$.\\
+\textbf{$\pred{Goal}(s)$} & A fluent meaning ``the goal is satisfied in $s$''.\\
+\end{tabular}
+\end{keybox}
+
+Static facts about the world (e.g.\ $\pred{Adjacent}(p_1,p_2)$, $\pred{Wall}(p)$) are \emph{not} fluents --- they don't depend on $s$.
+
+\subsection*{1.2\ \ Composing actions: \pred{Sequence}/\pred{Do}}
+
+$\pred{Sequence}(a, s, s')$ means ``executing the action list $a$ from $s$ produces $s'$''. Defined recursively:
+\[
+  \pred{Sequence}([\,], s, s),
+  \qquad
+  \pred{Sequence}([a \mid \mathit{rest}], s, s') \iff \pred{Sequence}(\mathit{rest},\, \Result(a, s),\, s').
+\]
+
+\subsection*{1.3\ \ The frame problem}
+
+When action $a$ happens, almost \emph{everything} stays the same --- only a tiny fraction changes. Stating ``everything else is unchanged'' naively requires $O(\text{actions} \times \text{fluents})$ frame axioms. That's the \textbf{frame problem}.
+
+\begin{keybox}[\key Successor-state axioms (the fix)]
+For \emph{each fluent} $F$, write \emph{one} axiom of the form
+\[
+  F(\vec{x}, \Result(a, s)) \iff \underbrace{\Phi^+(\vec{x}, a, s)}_{\text{$a$ makes $F$ true}}\ \vee\ \Big(F(\vec{x}, s)\ \wedge\ \neg \underbrace{\Phi^-(\vec{x}, a, s)}_{\text{$a$ makes $F$ false}}\Big).
+\]
+This combines effect axioms \emph{and} frame axioms in a single sentence per fluent. Reasoning becomes tractable.
+\end{keybox}
+
+\textbf{Common student error:} writing one axiom \emph{per action} rather than per fluent. Successor-state axioms close over \emph{all} actions $a$ at once.
+
+\subsection*{1.4\ \ Possibility axioms}
+
+For each action $A$, give one axiom $\Poss(A, s) \iff \ldots$ saying when $A$ is applicable in $s$. This is the precondition.
+
+\begin{tray}[Recipe for every action]
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item One \textbf{possibility} axiom: $\Poss(A,s) \iff \ldots$
+  \item One \textbf{successor-state} axiom \emph{per fluent} that any action (including $A$) can affect.
+\end{enumerate}
+\end{tray}
+
+\subsection*{1.5\ \ Planning queries (Q1)}
+
+There are \emph{two} ways to phrase ``find me a plan'' as a logical query.
+
+\begin{keybox}[\key Form A --- explicit situation]
+\[
+  \exists a\, \exists s\, .\ \pred{Sequence}(a, s_0, s) \,\wedge\, \pred{Goal}(s)
+\]
+Read: ``find an action list $a$ and a situation $s$ such that running $a$ from $s_0$ produces $s$, and the goal holds in $s$.'' A constructive proof binds $a$ to a plan.
+\end{keybox}
+
+\begin{keybox}[\key Form B --- situation hidden inside the action list]
+\[
+  \exists \mathit{actionList}\, .\ \pred{Goal}(\dots \mathit{actionList} \dots)
+\]
+No explicit $s$. The goal predicate must now take an action list as argument.
+\end{keybox}
+
+\textbf{How to make Form B work (the Q1 answer in three moves):}
+
+\begin{enumerate}[leftmargin=*,itemsep=1pt]
+  \item Define an auxiliary $\pred{Do}$ that folds the action list through $\Result$ starting from $s_0$:
+  \[
+    \pred{Do}([\,], s) = s, \qquad \pred{Do}([a \mid \mathit{rest}], s) = \pred{Do}(\mathit{rest},\, \Result(a, s)).
+  \]
+  \item Redefine the goal predicate so the situation is \emph{internal} to it:
+  \[
+    \pred{Goal}(\mathit{actionList}) \iff \pred{GoalHolds}(\pred{Do}(\mathit{actionList}, s_0)).
+  \]
+  Here $\pred{GoalHolds}(s)$ is the original situation-based goal fluent.
+  \item Equivalence with Form A: the existentially quantified $s$ is exactly $\pred{Do}(\mathit{actionList}, s_0)$. So Form B holds iff Form A would have with $s$ instantiated to that value. The same successor-state axioms make either form evaluable.
+\end{enumerate}
+
+\textbf{Why bother?} The witness from a constructive proof of Form B is \emph{just} the action list --- which is what the planner actually wants. Situations are a derived intermediate quantity that Form A forces you to quantify over.
+
+\subsection*{1.6\ \ Wumpus World: Shoot, Move, Orient (Q2)}
+
+\textbf{Constants \& helpers (assumed non-fluent unless marked):}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item Locations $[x,y]$; orientations $\in \{0, 90, 180, 270\}$; \pred{Agent}, \pred{Wumpus} constants.
+  \item $\pred{LocationToward}([x,y], d)$: the adjacent cell in direction $d$.
+  \item $\pred{LocationAhead}(s) = \pred{LocationToward}(\pred{loc}(s),\pred{ori}(s))$.
+  \item $\pred{Wall}(p)$, $\pred{Adjacent}(p_1, p_2)$: static map predicates.
+\end{itemize}
+
+\textbf{Fluents:} $\pred{At}(\pred{Agent},[x,y],s)$, $\pred{Orientation}(\pred{Agent},d,s)$, $\pred{HaveArrow}(s)$, $\pred{WumpusAlive}(s)$.
+
+\textbf{Helper fluent (line-of-fire):}
+\[
+  \pred{FacingWumpus}(s) \iff \exists [x,y].\ \pred{At}(\pred{Wumpus},[x,y],s)\,\wedge\,\pred{InLineOfFire}(\pred{Agent},[x,y],s).
+\]
+
+\begin{keybox}[\key Shoot]
+\textbf{Possibility:} $\Poss(\pred{Shoot}, s) \iff \pred{HaveArrow}(s)$.\\[2pt]
+\textbf{Successor-state for \pred{HaveArrow}:}
+$\pred{HaveArrow}(\Result(a,s)) \iff \pred{HaveArrow}(s)\,\wedge\,a \neq \pred{Shoot}$.\\[2pt]
+\textbf{Successor-state for \pred{WumpusAlive}:}
+\[
+  \pred{WumpusAlive}(\Result(a,s)) \iff \pred{WumpusAlive}(s)\,\wedge\,\neg\big(a=\pred{Shoot}\,\wedge\,\pred{FacingWumpus}(s)\big).
+\]
+\end{keybox}
+
+\begin{keybox}[\key Move (Forward)]
+\textbf{Possibility:} $\Poss(\pred{Forward}, s) \iff \neg \pred{Wall}(\pred{LocationAhead}(s))$.\\[2pt]
+\textbf{Successor-state for \pred{At}:}
+\begin{align*}
+  \pred{At}(\pred{Agent}, p, \Result(a, s)) \iff{}&
+  \big(a = \pred{Forward}\,\wedge\,p = \pred{LocationAhead}(s)\big)\\
+  \vee{}& \big(a \neq \pred{Forward}\,\wedge\,\pred{At}(\pred{Agent}, p, s)\big).
+\end{align*}
+\end{keybox}
+
+\begin{keybox}[\key Orient (TurnLeft, TurnRight)]
+$\pred{LeftTurn}(d) = (d+90) \bmod 360,\quad \pred{RightTurn}(d) = (d-90) \bmod 360$.\\[2pt]
+\textbf{Possibility:} $\Poss(\pred{TurnLeft},s) \iff \top$, $\ \Poss(\pred{TurnRight},s) \iff \top$.\\[2pt]
+\textbf{Successor-state for \pred{Orientation}:}
+\begin{align*}
+\pred{Orientation}(\pred{Agent},d,\Result(a,s)) \iff{}
+& (a = \pred{TurnLeft}\,\wedge\,d = \pred{LeftTurn}(\pred{ori}(s)))\\
+\vee{}& (a = \pred{TurnRight}\,\wedge\,d = \pred{RightTurn}(\pred{ori}(s)))\\
+\vee{}& (a \neq \pred{TurnLeft}\,\wedge\,a \neq \pred{TurnRight}\\
+& \quad \wedge\,\pred{Orientation}(\pred{Agent},d,s)).
+\end{align*}
+\end{keybox}
+
+\subsection*{1.7\ \ Common pitfalls (Sec 6)}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item Writing effect axioms only --- forgetting the frame part. Use successor-state form so frames are automatic.
+  \item Writing one successor-state axiom per action instead of per fluent.
+  \item Treating $\pred{Wall}$, $\pred{Adjacent}$ as fluents and writing pointless successor-state axioms for them.
+  \item Forgetting the outer universal $\forall a, s$ when writing the axioms formally.
+\end{itemize}
+
+\hrulefill
+
+\section*{Section 7 --- Heuristics for Planning}
+
+\subsection*{2.1\ \ Planning vs search}
+
+\begin{keybox}[\key The four differences (worth knowing cold)]
+\begin{tabular}{@{}p{3.4cm}p{6cm}p{6cm}@{}}
+& \textbf{Search} & \textbf{Planning}\\
+\hline
+State representation & Opaque (black box) & Structured (set of fluents)\\
+Actions & Arbitrary transitions & Precondition + add-list + delete-list\\
+Goal test & Single function & Logical condition over fluents\\
+Heuristic source & Domain-specific, supplied by human & Can be \textbf{derived from the structure}\\
+\end{tabular}
+\end{keybox}
+
+\subsection*{2.2\ \ Why planning gives heuristics ``for free''}
+
+In ordinary search the human writes the heuristic. In planning, each operator's preconditions and add/delete lists are visible to the planner --- so the planner can \emph{automatically} construct a relaxed problem and use its optimal cost as $h$.
+
+\begin{keybox}[\key The recipe]
+\textbf{Drop part of the problem to get an easier (``relaxed'') problem whose optimal cost is a lower bound on the original.} Solving the relaxation must be substantially cheaper (preferably polynomial) and the bound must be admissible.
+\end{keybox}
+
+\subsection*{2.3\ \ Relaxation heuristics}
+
+\textbf{(a) Ignore delete lists (delete-relaxation).} Drop every action's delete-list. Nothing ever becomes false; literals only accumulate. The relaxed problem is monotone and solvable in polynomial time. Its length is $h^+$, the canonical admissible heuristic. \textbf{Used by FastForward (FF) --- one of the most successful planners.}
+
+\textbf{(b) Ignore preconditions.} Drop all preconditions. Every action always applies. Optimal relaxed-plan length = minimum number of actions whose add-lists cover the goal (a set-cover problem). Looser than $h^+$ but easy to compute.
+
+\textbf{(c) Subgoal independence.} Plan for each goal conjunct in isolation, then combine:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item $h_{\max}(s) = \max_g \mathrm{cost}(g)$ \ --- admissible (under-counts).
+  \item $h_{\text{add}}(s) = \sum_g \mathrm{cost}(g)$ \ --- not admissible (double-counts) but often more informative.
+\end{itemize}
+
+\subsection*{2.4\ \ Other useful heuristics}
+
+\textbf{Number of unsatisfied goal conditions remaining.} Quick and dirty; not admissible in general but cheap and surprisingly effective on simple problems.
+
+\textbf{Planning-graph level.} The depth at which a goal first becomes reachable in a planning graph is an admissible heuristic (deeper graph = harder problem). Used by Graphplan.
+
+\textbf{Helpful actions.} Restrict the branching factor at each search node to only those actions that appear in the relaxed plan from that node. Trades completeness for speed.
+
+\subsection*{2.5\ \ How to structure the Q1 (Sec 7) answer}
+
+A strong answer names at least \textbf{three heuristics from different families} and links them back to the question. A good template:
+
+\begin{enumerate}[leftmargin=*,itemsep=1pt]
+  \item State the key idea: planning's structured representation lets heuristics be derived \emph{automatically} from the problem, unlike generic search.
+  \item Give the relaxation recipe (drop part of the problem; lower bound on cost).
+  \item Name two or three concrete heuristics: at least one relaxation-based (ignore deletes / ignore preconditions / subgoal independence), and at least one structural (planning-graph level / unsatisfied-goals count / helpful actions).
+  \item Close by linking back: planning's edge over generic search is precisely this ability to compute its own heuristic.
+\end{enumerate}
+
+\hrulefill
+
+\section*{The 80/20 cheat-sheet (memorise this page)}
+
+\begin{tray}[Sec 6 --- non-negotiable]
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item Situations, fluents, actions, $\Result(a,s)$ --- definitions on the tip of your tongue.
+  \item For every action: \textbf{one possibility axiom, one successor-state axiom per affected fluent.}
+  \item Successor-state schema: $F(\vec{x}, \Result(a, s)) \iff \Phi^+\,\vee\,(F(\vec{x},s) \wedge \neg \Phi^-)$.
+  \item Two query forms: $\exists a\,\exists s.\ \pred{Sequence}(a,s_0,s) \wedge \pred{Goal}(s)$ vs $\exists \mathit{actionList}.\ \pred{Goal}(\mathit{actionList})$.
+  \item Form B works by defining $\pred{Goal}(\mathit{actionList}) \iff \pred{GoalHolds}(\pred{Do}(\mathit{actionList}, s_0))$.
+\end{itemize}
+\end{tray}
+
+\begin{tray}[Sec 7 --- non-negotiable]
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item Planning vs search: structured state, structured actions, derivable heuristics.
+  \item The relaxation recipe: drop part of the problem; cost of relaxed solution = lower bound on real cost.
+  \item Two relaxations you must know: \textbf{ignore deletes} ($h^+$, FastForward), \textbf{ignore preconditions} (set cover).
+  \item Subgoal-independence: $h_{\max}$ admissible, $h_{\text{add}}$ informative.
+\end{itemize}
+\end{tray}
+
+\end{document}
