@@ -3,7 +3,7 @@
 
 cd "$(dirname "$0")"
 
-PORT=5001
+PORT=5847
 
 # Activate virtualenv and start Flask (no reloader so it doesn't flicker on startup)
 source venv/bin/activate

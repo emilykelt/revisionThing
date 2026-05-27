@@ -56,7 +56,7 @@ source venv/bin/activate
 python3 app.py
 ```
 
-Then open [http://localhost:5001](http://localhost:5001) in your browser. (Port 5000 conflicts with macOS AirPlay Receiver.)
+Then open [http://localhost:5847](http://localhost:5847) in your browser. (Port 5000 conflicts with macOS AirPlay Receiver; 5847 is the new default.)
 
 ## Data
 

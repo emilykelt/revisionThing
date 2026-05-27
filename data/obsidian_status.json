@@ -1,6 +1,6 @@
 {
-  "status": "ok",
-  "path": "vault://Projects/Revision Tracker.md",
-  "error": "",
-  "updated_at": "2026-05-24T11:23:46.617233"
+  "status": "error",
+  "path": "",
+  "error": "cannot reach Obsidian REST API at http://127.0.0.1:27123 \u2014 is the plugin running? ([Errno 61] Connection refused)",
+  "updated_at": "2026-05-27T11:20:37.683877"
 }

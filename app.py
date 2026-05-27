@@ -1655,8 +1655,8 @@ def api_planner_put():
 
 if __name__ == '__main__':
     import os
-    # Default to 5001: macOS reserves port 5000 for AirPlay Receiver.
-    port = int(os.environ.get('PORT', 5001))
+    # Default to 5847: avoids 5000 (AirPlay) and 5001 (commonly squatted).
+    port = int(os.environ.get('PORT', 5847))
     host = os.environ.get('HOST', '127.0.0.1')
     debug = os.environ.get('FLASK_DEBUG', '1') != '0'
     app.run(debug=debug, port=port, host=host)

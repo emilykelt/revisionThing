@@ -12,7 +12,7 @@ import signal
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-PORT = 5001
+PORT = 5847
 
 
 def _kill_port(port):
