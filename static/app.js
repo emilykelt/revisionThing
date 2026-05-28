@@ -75,7 +75,25 @@ const app = {
 
     // ---- Initialization ----
     async init() {
+        // Server is the source of truth for planner state so the web client and
+        // the pywebview desktop app stay in sync — each WebKit instance has its
+        // own localStorage, but they share /api/planner.
+        await this._hydratePlannerFromServer();
         await this.loadDashboard();
+    },
+
+    async _hydratePlannerFromServer() {
+        try {
+            const res = await fetch('/api/planner');
+            if (!res.ok) return;
+            const data = await res.json();
+            const serverSel = data?.selections;
+            if (serverSel && typeof serverSel === 'object') {
+                localStorage.setItem('plannerSelections', JSON.stringify(serverSel));
+            }
+        } catch (_) {
+            // Server unreachable — keep whatever's in localStorage.
+        }
     },
 
     // ---- View Switching ----
@@ -85,6 +103,10 @@ const app = {
         document.querySelectorAll('.nav-btn').forEach(b => {
             b.classList.toggle('active', b.dataset.view === viewId);
         });
+        // Ask isn't a view — keep it highlighted while the chat panel is open.
+        const navAsk = document.getElementById('nav-ask');
+        const panel = document.getElementById('chat-panel');
+        if (navAsk && panel?.classList.contains('open')) navAsk.classList.add('active');
         // Auto-collapse sidebar after navigation so the content has full focus.
         const sidebar = document.getElementById('sidebar');
         if (sidebar && sidebar.classList.contains('expanded')) {
@@ -162,6 +184,13 @@ const app = {
         const vault = encodeURIComponent(this.OBSIDIAN_VAULT_NAME);
         const file = encodeURIComponent(this.OBSIDIAN_PLAN_PATH);
         return `obsidian://open?vault=${vault}&file=${file}`;
+    },
+
+    // Route custom-scheme links through the server so they work inside the
+    // pywebview window (WebKit blocks non-http navigations by default).
+    openExternal(url) {
+        if (!url) return;
+        fetch('/api/open-external?url=' + encodeURIComponent(url)).catch(() => {});
     },
 
     _isoToday() {
@@ -480,7 +509,7 @@ const app = {
             </ul>
             <div class="dash-todo-actions">
                 ${courseBtn}
-                <a class="btn btn-ghost dash-todo-action-btn" href="${planUrl}">Open in Obsidian</a>
+                <button class="btn btn-ghost dash-todo-action-btn" onclick="app.openExternal('${this.escapeAttr(planUrl)}')">Open in Obsidian</button>
             </div>
         `;
 
@@ -1285,19 +1314,11 @@ const app = {
                 body: JSON.stringify(body),
             });
             const result = await res.json();
-            // Record past paper attempt progress
-            if (q.is_actual_past_paper && q.source && result.overall_score != null) {
-                fetch('/api/pp/progress', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ref: q.source,
-                        score: result.overall_score,
-                        total_marks: result.total_marks || q.total_marks || 0,
-                        marks_awarded: result.total_marks_awarded,
-                    }),
-                }).catch(() => {});
-                this._ppData = null; // invalidate so browser shows updated score
+            // Server-side /api/question/submit already mirrors the attempt into
+            // pp_progress when the source matches "<year> Paper N QN", so we
+            // only need to invalidate the cached pp data here.
+            if (q.is_actual_past_paper && q.source) {
+                this._ppData = null;
             }
             this.renderFeedback(result);
         } catch (err) {
@@ -1340,18 +1361,9 @@ const app = {
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Answer'; }
                 return;
             }
-            // Record past-paper progress (mirror what submitAnswer does)
+            // Server-side /api/question/submit-handwritten already mirrors the
+            // attempt into pp_progress; just invalidate cached pp data.
             if (q.is_actual_past_paper && q.source) {
-                fetch('/api/pp/progress', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ref: q.source,
-                        score: result.overall_score,
-                        total_marks: result.total_marks || q.total_marks || 0,
-                        marks_awarded: result.total_marks_awarded,
-                    }),
-                }).catch(() => {});
                 this._ppData = null;
             }
             this.renderFeedback(result);
@@ -2620,8 +2632,128 @@ const app = {
         this.renderPastPapers();
     },
 
+    // Coverage grid: one card per (paper, course). Columns are years; cells in
+    // each column are that course's actual questions for that year, stacked by
+    // question number. Question numbers shift between years (e.g. HCI was Q6/Q7
+    // in 2018, Q9/Q10 in 2025) so we stack positionally rather than gridding by
+    // exact qnum — every real question gets a cell.
+    _renderPpCoverage() {
+        const el = document.getElementById('pp-coverage');
+        if (!el || !this._ppData) return;
+
+        // courseId → [questions]  (full list, regardless of year/paper)
+        const byCourse = {};
+        for (const c of this._ppData.courses) {
+            byCourse[c.course_id] = c.questions || [];
+        }
+
+        const scoreClass = (s) => {
+            if (s >= 0.75) return 'ppc-cell--good';
+            if (s >= 0.55) return 'ppc-cell--ok';
+            if (s >= 0.35) return 'ppc-cell--mid';
+            return 'ppc-cell--low';
+        };
+        const cellInfo = (q) => {
+            if (q.attempts > 0) {
+                const s = q.best_score ?? 0;
+                return {
+                    cls: scoreClass(s),
+                    title: `${q.ref}: ${Math.round(s * 100)}% best (${q.attempts} attempt${q.attempts !== 1 ? 's' : ''})`,
+                };
+            }
+            if (q.completed_elsewhere) {
+                // If user logged marks for the elsewhere attempt, color like a
+                // normal scored cell; otherwise keep the lavender "done" tint.
+                if (q.completed_confidence != null) {
+                    const s = q.completed_confidence;
+                    const marks = (q.elsewhere_marks != null && q.elsewhere_total_marks)
+                        ? ` (${q.elsewhere_marks}/${q.elsewhere_total_marks})` : '';
+                    return {
+                        cls: scoreClass(s),
+                        title: `${q.ref}: ${Math.round(s * 100)}%${marks} — done elsewhere`,
+                    };
+                }
+                return { cls: 'ppc-cell--elsewhere', title: `${q.ref}: done elsewhere` };
+            }
+            return { cls: 'ppc-cell--untouched', title: `${q.ref}: not attempted` };
+        };
+
+        const sections = this.PAPERS.map(paper => {
+            const cards = paper.courses.map(course => {
+                const all = byCourse[course.id] || [];
+                if (!all.length) return '';
+
+                // Group by year and sort each group by qnum so positional stacking
+                // is stable across years.
+                const byYear = {};
+                for (const q of all) (byYear[q.year] ||= []).push(q);
+                const years = Object.keys(byYear).map(Number).sort((a, b) => b - a);
+                for (const y of years) byYear[y].sort((a, b) => a.question - b.question);
+                const maxRows = Math.max(...years.map(y => byYear[y].length));
+
+                const yearsHtml = years.map(y =>
+                    `<div class="ppc-year" title="${y}">${y}</div>`
+                ).join('');
+
+                const rowsHtml = [];
+                for (let i = 0; i < maxRows; i++) {
+                    const cellsHtml = years.map(y => {
+                        const q = byYear[y][i];
+                        if (!q) {
+                            return `<div class="ppc-cell ppc-cell--empty" title="No question in this slot"></div>`;
+                        }
+                        const { cls, title } = cellInfo(q);
+                        const click = ` onclick="app.practicePastPaper('${this.escapeAttr(course.id)}',${q.year},${q.paper},${q.question})"`;
+                        return `<div class="ppc-cell ${cls}" title="${this.escapeAttr(title)}"${click}></div>`;
+                    }).join('');
+                    rowsHtml.push(`<div class="ppc-row"><div class="ppc-cells">${cellsHtml}</div></div>`);
+                }
+
+                const done = all.filter(q => q.attempts > 0 || q.completed_elsewhere).length;
+                const ratio = `${done}/${all.length}`;
+
+                return `<div class="ppc-course-card">
+                    <div class="ppc-course-header">
+                        <span class="ppc-course-name">${this.escapeHtml(course.name)}</span>
+                        <span class="ppc-course-ratio">${ratio}</span>
+                    </div>
+                    <div class="ppc-grid">
+                        <div class="ppc-row ppc-row--years">
+                            <div class="ppc-cells">${yearsHtml}</div>
+                        </div>
+                        ${rowsHtml.join('')}
+                    </div>
+                </div>`;
+            }).filter(Boolean).join('');
+
+            if (!cards) return '';
+            return `<div class="ppc-paper-section">
+                <div class="ppc-paper-header">
+                    <h3 class="ppc-paper-title">Paper ${paper.num}</h3>
+                    <span class="ppc-paper-meta">${paper.total} questions, answer ${paper.choose}</span>
+                </div>
+                <div class="ppc-course-grid">${cards}</div>
+            </div>`;
+        }).filter(Boolean).join('');
+
+        el.innerHTML = sections
+            ? `<div class="ppc-wrap">
+                <div class="ppc-legend">
+                    <span class="ppc-legend-item"><span class="ppc-cell ppc-cell--good"></span>≥ 75%</span>
+                    <span class="ppc-legend-item"><span class="ppc-cell ppc-cell--ok"></span>55–74%</span>
+                    <span class="ppc-legend-item"><span class="ppc-cell ppc-cell--mid"></span>35–54%</span>
+                    <span class="ppc-legend-item"><span class="ppc-cell ppc-cell--low"></span>&lt; 35%</span>
+                    <span class="ppc-legend-item"><span class="ppc-cell ppc-cell--elsewhere"></span>done elsewhere</span>
+                    <span class="ppc-legend-item"><span class="ppc-cell ppc-cell--untouched"></span>not yet</span>
+                </div>
+                ${sections}
+            </div>`
+            : '';
+    },
+
     renderPastPapers() {
         if (!this._ppData) return;
+        this._renderPpCoverage();
         const yearFilter = document.getElementById('pp-year-filter').value;
         const courseFilter = document.getElementById('pp-course-filter').value;
         const topicFilter = this._ppTopicFilter; // {courseId, topicId, label} or null
@@ -2653,10 +2785,14 @@ const app = {
                     ? `<span class="pp-hard-badge" title="Parts flagged difficult: ${hardParts.join(', ')}">⚑ ${hardParts.join('')}</span>`
                     : '';
                 const elsewhereCls = q.completed_elsewhere ? ' pp-row--elsewhere' : '';
+                const elsewhereMarksStr = (q.elsewhere_marks != null && q.elsewhere_total_marks)
+                    ? ` ${q.elsewhere_marks}/${q.elsewhere_total_marks}` : '';
                 const elsewhereTitle = q.completed_elsewhere
-                    ? `Marked done elsewhere${q.completed_elsewhere_date ? ' on ' + q.completed_elsewhere_date : ''}`
-                    : 'Mark as completed elsewhere (e.g. on paper)';
-                const elsewhereLabel = q.completed_elsewhere ? '✓ Done elsewhere' : '⌂ Done elsewhere';
+                    ? `Marked done elsewhere${q.completed_elsewhere_date ? ' on ' + q.completed_elsewhere_date : ''}${elsewhereMarksStr ? ' —' + elsewhereMarksStr : ''} — click to clear`
+                    : 'Mark as completed elsewhere (e.g. on paper) and log your marks';
+                const elsewhereLabel = q.completed_elsewhere
+                    ? `✓ Done elsewhere${elsewhereMarksStr}`
+                    : '⌂ Done elsewhere';
                 // tripos.pro enrichment: community attempt count, mark median,
                 // examiners' solution PDF. Only renders when sync data exists.
                 const tp = q.tripos;
@@ -2775,29 +2911,60 @@ const app = {
     },
 
     async toggleCompletedElsewhere(ref) {
+        // Locate the question so we know the marks total and current state.
+        let target = null;
+        for (const c of (this._ppData?.courses || [])) {
+            for (const q of (c.questions || [])) {
+                if (q.ref === ref) { target = q; break; }
+            }
+            if (target) break;
+        }
+        const totalMarks = target?.total_marks || 0;
+        const currentlyOn = !!target?.completed_elsewhere;
+
+        const payload = { ref, toggle_completed_elsewhere: true };
+        // Only prompt for marks when turning the flag ON (off = clear).
+        if (!currentlyOn && totalMarks > 0) {
+            const raw = prompt(
+                `Marks for ${ref} (out of ${totalMarks}).\n` +
+                `Leave blank to mark done without a score, cancel to abort.`,
+                ''
+            );
+            if (raw === null) return; // cancelled
+            const trimmed = raw.trim();
+            if (trimmed !== '') {
+                const n = Number(trimmed);
+                if (!isFinite(n) || n < 0 || n > totalMarks) {
+                    alert(`Enter a number between 0 and ${totalMarks}.`);
+                    return;
+                }
+                payload.marks_awarded = n;
+                payload.total_marks = totalMarks;
+            }
+        }
+
         try {
             const res = await fetch('/api/pp/progress', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ref, toggle_completed_elsewhere: true }),
+                body: JSON.stringify(payload),
             });
             const updated = await res.json();
-            // Update local cache so re-render reflects the change without refetch.
+            const apply = (q) => {
+                q.completed_elsewhere = !!updated.completed_elsewhere;
+                q.completed_elsewhere_date = updated.completed_elsewhere_date || null;
+                q.completed_confidence = updated.completed_confidence ?? null;
+                q.elsewhere_marks = updated.elsewhere_marks ?? null;
+                q.elsewhere_total_marks = updated.elsewhere_total_marks ?? null;
+            };
             for (const c of (this._ppData?.courses || [])) {
                 for (const q of (c.questions || [])) {
-                    if (q.ref === ref) {
-                        q.completed_elsewhere = !!updated.completed_elsewhere;
-                        q.completed_elsewhere_date = updated.completed_elsewhere_date || null;
-                    }
+                    if (q.ref === ref) apply(q);
                 }
             }
-            // Mirror onto _allPapers (used by dashboard heatmap & todo).
             for (const c of (this._allPapers || [])) {
                 for (const q of (c.questions || [])) {
-                    if (q.ref === ref) {
-                        q.completed_elsewhere = !!updated.completed_elsewhere;
-                        q.completed_elsewhere_date = updated.completed_elsewhere_date || null;
-                    }
+                    if (q.ref === ref) apply(q);
                 }
             }
             this.renderPastPapers();
@@ -3947,38 +4114,55 @@ const app = {
         return div.innerHTML;
     },
 
-    // Renders text with KaTeX math ($...$, $$...$$) and **bold** markdown
+    // Renders text with KaTeX math ($...$, $$...$$), fenced code blocks
+    // (```lang ... ```), inline `code`, and **bold** markdown.
     renderContent(text) {
         if (!text) return '';
         const blocks = [];
-        // Use unique token unlikely to appear in content
-        const mkPH = i => `\x00\x00MATH${i}\x00\x00`;
-        const rePH = /\x00\x00MATH(\d+)\x00\x00/g;
+        // Unique token unlikely to appear in content. Used to protect already-
+        // rendered HTML from further regex passes.
+        const mkPH = i => `\x00\x00BLOCK${i}\x00\x00`;
+        const rePH = /\x00\x00BLOCK(\d+)\x00\x00/g;
+        const escHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let s = text
+            // Fenced code blocks: ```lang\n ... \n```  (extract first so math
+            // inside code stays literal)
+            .replace(/```([a-zA-Z0-9_+-]*)\n?([\s\S]*?)\n?```/g, (m, lang, body) => {
+                const idx = blocks.length;
+                const cls = lang ? ` class="language-${lang.replace(/[^a-zA-Z0-9_-]/g, '')}"` : '';
+                blocks.push(`<pre class="content-pre"><code${cls}>${escHtml(body)}</code></pre>`);
+                return mkPH(idx);
+            })
+            // Inline code: `code`
+            .replace(/`([^`\n]+)`/g, (m, body) => {
+                const idx = blocks.length;
+                blocks.push(`<code class="content-code">${escHtml(body)}</code>`);
+                return mkPH(idx);
+            })
             // Display math: $$...$$ or \[...\]
             .replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]/g, (m, g1, g2) => {
                 const expr = (g1 || g2).trim();
                 const idx = blocks.length;
                 if (typeof katex !== 'undefined') {
                     try { blocks.push(katex.renderToString(expr, { displayMode: true, throwOnError: false })); }
-                    catch(e) { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
-                } else { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
+                    catch(e) { blocks.push(`<code>${escHtml(m)}</code>`); }
+                } else { blocks.push(`<code>${escHtml(m)}</code>`); }
                 return mkPH(idx);
             })
-            // Inline math: $...$ (only if content has a math char — avoids matching $5 / prices)
-            // or \(...\)
-            .replace(/\$(?=[^$\n]*[\\^_{}\|])([^$\n]+?)\$|\\\((.+?)\\\)/g, (m, g1, g2) => {
+            // Inline math: $...$ (must contain a math-suggestive char so we
+            // don't eat "$5"/prices). \^_{}|() are all valid triggers.
+            .replace(/\$(?=[^$\n]*[\\^_{}()|])([^$\n]+?)\$|\\\((.+?)\\\)/g, (m, g1, g2) => {
                 const expr = (g1 || g2).trim();
                 const idx = blocks.length;
                 if (typeof katex !== 'undefined') {
                     try { blocks.push(katex.renderToString(expr, { displayMode: false, throwOnError: false })); }
-                    catch(e) { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
-                } else { blocks.push(`<code>${this.escapeHtml(m)}</code>`); }
+                    catch(e) { blocks.push(`<code>${escHtml(m)}</code>`); }
+                } else { blocks.push(`<code>${escHtml(m)}</code>`); }
                 return mkPH(idx);
             });
-        // Escape HTML using regex (avoids DOM node that might strip null bytes)
+        // Escape HTML in the remaining (non-code, non-math) text.
         s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        // Apply bold markdown, then restore math blocks
+        // Bold; then restore the protected blocks (code/math) verbatim.
         s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
              .replace(rePH, (_, i) => blocks[+i]);
         return s;
@@ -4566,12 +4750,12 @@ const app = {
     toggleChat() {
         const panel = document.getElementById('chat-panel');
         const backdrop = document.getElementById('chat-backdrop');
-        const fab = document.getElementById('chat-fab');
+        const navAsk = document.getElementById('nav-ask');
         if (!panel) return;
         const open = panel.classList.toggle('open');
         if (backdrop) backdrop.classList.toggle('show', open);
         panel.setAttribute('aria-hidden', open ? 'false' : 'true');
-        if (fab) fab.classList.toggle('hidden', open);
+        if (navAsk) navAsk.classList.toggle('active', open);
         if (open) {
             // Auto-grow input + autofocus
             const ta = document.getElementById('chat-input');

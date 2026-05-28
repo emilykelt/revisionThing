@@ -1,0 +1,563 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage{mathpartir}
+\usepackage{pdflscape}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{kw}{HTML}{8B0058}
+\definecolor{cmt}{HTML}{6A8F4B}
+\definecolor{str}{HTML}{B36B00}
+\definecolor{bg}{HTML}{FBFAF7}
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+% Highlight colours for added-in-each-language rules:
+\definecolor{l1color}{HTML}{2C3E50}     % L1 — neutral dark
+\definecolor{l2color}{HTML}{0E7C7B}     % L2 — teal
+\definecolor{l3color}{HTML}{B45309}     % L3 — amber
+\definecolor{subcolor}{HTML}{7A1FA0}    % subtyping — purple
+
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\lstdefinelanguage{ocaml}{
+  morekeywords={let,rec,in,match,with,function,fun,if,then,else,type,of,and,as,when,
+                 begin,end,for,do,done,while,to,downto,true,false,ref,mutable,not,skip,
+                 inl,inr,fst,snd},
+  morecomment=[s]{(*}{*)},
+  morestring=[b]",
+  sensitive=true,
+}
+\lstdefinestyle{c}{
+  language=ocaml,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{kw}\bfseries,
+  commentstyle=\color{cmt}\itshape,
+  stringstyle=\color{str},
+  backgroundcolor=\color{bg},
+  frame=single,
+  rulecolor=\color{black!20},
+  framesep=4pt,
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+}
+\lstset{style=c}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Gotcha,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+% Rule highlighting shortcuts
+\newcommand{\Lone}[1]{{\color{l1color}#1}}
+\newcommand{\Ltwo}[1]{{\color{l2color}#1}}
+\newcommand{\Lthree}[1]{{\color{l3color}#1}}
+\newcommand{\Lsub}[1]{{\color{subcolor}#1}}
+
+% mathpartir rule helpers
+\newcommand{\rname}[1]{\textsc{\footnotesize#1}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Semantics of Programming Languages} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+The Semantics paper sets two questions per year. Across \textbf{eight years of past papers (2018--2025, 16 questions)} the topic frequencies are:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+Semantic equivalence (incl.\ contextual equivalence)  & 7 & 44\% \\
+Operational semantics \& transition systems          & 6 & 38\% \\
+Subtyping                                            & 4 & 25\% \\
+Type systems \& typing judgements                    & 5 & 31\% \\
+Store and memory models                              & 3 & 19\% \\
+Evaluation contexts                                  & 3 & 19\% \\
+Concurrency, interleaving, mutexes                   & 1 &  6\% \\
+Other (alpha-equivalence, scope, shadowing)          & 4 & 25\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} The course is organised around the languages \textbf{L1 $\to$ L2 $\to$ L3} (basic imperative $\to$ adds functions $\to$ adds products/sums/records/references). \textbf{Semantic equivalence and operational semantics together carry ${\sim}80\%$ of marks.} Subtyping is reliable Q2 material. Evaluation contexts and the store-typing condition appear regularly.
+
+This document is structured as:
+\begin{enumerate}[leftmargin=*,itemsep=1pt]
+  \item Tier 1: operational semantics + typing (the language progression L1 $\to$ L2 $\to$ L3).
+  \item Tier 2: subtyping, evaluation contexts, semantic/contextual equivalence.
+  \item Tier 3: concurrency and supporting material.
+  \item \textbf{The complete rule sheet} (Section~\ref{sec:rules}) --- every operational and typing rule for L1, L2, L3, and subtyping, colour-coded to show what each language adds. Refer here while revising.
+  \item Exam checklist.
+\end{enumerate}
+
+\textbf{Colour key} (used throughout, but most heavily in Section~\ref{sec:rules}):
+\begin{center}
+\Lone{$\blacksquare$ L1 (base)} \quad
+\Ltwo{$\blacksquare$ L2 adds (functions, let, let rec)} \quad
+\Lthree{$\blacksquare$ L3 adds (pairs, sums, records, refs)} \quad
+\Lsub{$\blacksquare$ Subtyping}
+\end{center}
+
+\hrulefill
+
+\section{Operational semantics --- the language progression}
+
+\subsection{Transition systems and structural operational semantics (SOS)}
+
+\begin{must}
+The foundation. A \emph{transition system} is a pair $(\mathit{Config}, \to)$ with $\to\, \subseteq \mathit{Config} \times \mathit{Config}$. SOS defines $\to$ by giving a set of \emph{inference rules}; the relation is the smallest one closed under them.
+\end{must}
+
+\textbf{Configurations} are pairs $\langle e, s \rangle$ of an expression $e$ and a store $s$ (a finite partial function $\mathbb{L} \rightharpoonup \mathbb{Z}$ in L1/L2; $\mathbb{L} \rightharpoonup \mathit{Values}$ in L3). A transition $\langle e, s \rangle \to \langle e', s' \rangle$ is a single computation step.
+
+\textbf{Values} are terminated states. A configuration is \emph{stuck} if $e$ is not a value and $\langle e, s\rangle \not\to$. The goal of typing is to ensure well-typed programs never get stuck.
+
+\textbf{Notation.} $\to^*$ is reflexive-transitive closure. $\to^\omega$ means there is an infinite reduction sequence (the program diverges).
+
+\subsection{L1: the imperative core}
+
+\textbf{Syntax.}
+\[ e ::= n \mid b \mid e_1 \, \mathit{op} \, e_2 \mid \texttt{if } e_1 \texttt{ then } e_2 \texttt{ else } e_3 \mid \ell := e \mid \,!\ell \mid \texttt{skip} \mid e_1 ; e_2 \mid \texttt{while } e_1 \texttt{ do } e_2 \texttt{ done} \]
+
+\textbf{Two flavours of rule:}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Computation rules} actually compute (e.g.\ \rname{op+}, \rname{if1}, \rname{if2}, \rname{deref}, \rname{assign1}, \rname{seq1}, \rname{while}).
+  \item \textbf{Context (congruence) rules} push reduction into sub-expressions and dictate evaluation order (e.g.\ \rname{op1}, \rname{op2}, \rname{seq2}, \rname{if3}, \rname{assign2}).
+\end{itemize}
+
+\textbf{Determinacy of L1.} For any $\langle e, s\rangle$, there is at most one $\langle e', s'\rangle$ with $\langle e, s\rangle \to \langle e', s'\rangle$. Proved by induction on derivations. Determinacy is broken in L3 because \rname{ref1} ``picks a fresh location'' non-deterministically.
+
+\subsection{L2: adds functions}
+
+\textbf{Syntax additions.} $e ::= \cdots \mid \texttt{fun } x{:}T \to e \mid e_1\,e_2 \mid x \mid \texttt{let } x{:}T = e_1 \texttt{ in } e_2 \mid \texttt{let rec } x{:}T_1 \to T_2 = (\texttt{fun } y{:}T_1 \to e_1) \texttt{ in } e_2$
+
+\textbf{Types additions.} $T ::= \cdots \mid T_1 \to T_2$.
+
+\textbf{Three choices of function semantics:}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Call-by-value (CBV)} --- the default for this course, and for ML/Java/most languages. Evaluate the argument to a value, then substitute. Rule \rname{fun}: $\langle (\texttt{fun } x{:}T \to e)\, v, s\rangle \to \langle \{v/x\}e, s\rangle$.
+  \item \textbf{Call-by-name (CBN)} --- substitute the unevaluated argument; evaluate only on use. Basis of Haskell (which uses call-by-need = CBN with sharing). Rule \rname{CBN-fun}: $\langle (\texttt{fun } x{:}T \to e)\, e_2, s\rangle \to \langle \{e_2/x\}e, s\rangle$.
+  \item \textbf{Full beta} --- reduce either side, even inside lambdas. The basis of lambda-calculus theory.
+\end{itemize}
+
+\begin{gotcha}
+\textbf{CBV vs CBN observably differ in any language with effects.} The lecturer's example: $e = (\texttt{fun } x{:}\texttt{unit} \to (\ell := 1); x)(\ell := 2)$ starting in $\{\ell \mapsto 0\}$. CBV: the argument $(\ell := 2)$ runs first, then $\ell := 1$, ending with $\ell \mapsto 1$. CBN: the argument is substituted unevaluated; the body runs $\ell := 1$ then evaluates the substituted argument $(\ell := 2)$, ending with $\ell \mapsto 2$.
+\end{gotcha}
+
+\textbf{Variables and binders.} $\texttt{fun } x{:}T \to e$ binds $x$ in $e$; $\texttt{let } x{:}T = e_1 \texttt{ in } e_2$ binds $x$ in $e_2$. We work \emph{up to alpha-equivalence} --- bound names can be silently renamed to avoid capture. Substitution $\{e/x\}e'$ is capture-avoiding.
+
+\textbf{Two key properties of L2.}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Substitution lemma}: if $\Gamma \vdash e{:}T$ and $\Gamma, x{:}T \vdash e'{:}T'$ with $x \notin \mathit{dom}(\Gamma)$, then $\Gamma \vdash \{e/x\}e' {:} T'$. Used in the type-preservation proof.
+  \item \textbf{Normalisation}: in the L2 sub-language without \texttt{while} or store, a well-typed closed expression always terminates. (You need refs or recursion through the store to write a divergent term in pure typed L2.)
+\end{itemize}
+
+\subsection{L3: adds data and proper references}
+
+\textbf{Syntax additions.} Pairs, sums, records, and general references:
+\begin{align*}
+e &::= \cdots \mid (e_1, e_2) \mid \texttt{fst } e \mid \texttt{snd } e \\
+  &\mid \texttt{inl } e{:}T \mid \texttt{inr } e{:}T \mid \texttt{match } e \texttt{ with inl}(x{:}T_1) \to e_1 \mid \texttt{inr}(y{:}T_2) \to e_2 \\
+  &\mid \{\mathit{lab}_1 = e_1, \ldots, \mathit{lab}_k = e_k\} \mid e.\mathit{lab} \\
+  &\mid \texttt{ref } e \mid \,!e \mid e_1 := e_2 \mid \ell
+\end{align*}
+\textbf{Types additions.} $T ::= \cdots \mid T_1 * T_2 \mid T_1 + T_2 \mid \{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k\} \mid T \texttt{ ref}$.
+
+\textbf{The reference upgrade.} L1/L2 had only $\ell := e$ and $!\ell$ for \emph{pre-existing} locations storing only \emph{integers}. L3 adds:
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \texttt{ref}~$e$ --- allocates a fresh location holding $e$'s value. \emph{Has to do something at runtime}: each evaluation gives a fresh $\ell$, so $(\texttt{ref } 0, \texttt{ref } 0)$ produces two distinct locations.
+  \item Stores now map $\mathbb{L}$ to \emph{any value}, not just $\mathbb{Z}$. Locations can hold functions, pairs, even other locations.
+  \item $!e$ and $e_1 := e_2$ are now general expressions, not restricted to literal $\ell$s.
+\end{itemize}
+
+\textbf{Consequence: ``tying the knot'' for recursion through the store.} Even without \texttt{let rec}, you can write recursive functions in L3 by storing a function in a ref and having the stored function deref the ref to call itself. This is why L3 loses the normalisation theorem L2 enjoyed.
+
+\textbf{Curry--Howard correspondence.} The typing rules for the \emph{pure} fragment of L3 (no refs, no let rec) correspond exactly to the rules of natural deduction in intuitionistic propositional logic: $\to$ as implication, $*$ as conjunction, $+$ as disjunction. ``Programs are proofs.''
+
+\subsection{Properties: progress, preservation, safety}
+
+These three theorems are the spine of every typed language. Drill the statements.
+
+\begin{plain}{Progress}
+If $\Gamma \vdash e{:}T$, $e$ closed, and $\Gamma \vdash s$ (the store is well-typed at $\Gamma$), then either $e$ is a value or there exist $e', s'$ with $\langle e, s\rangle \to \langle e', s'\rangle$.
+
+\textbf{Read it as:} well-typed programs don't get stuck.
+\end{plain}
+
+\begin{plain}{Type Preservation (Subject Reduction)}
+If $\Gamma \vdash e{:}T$, $e$ closed, $\Gamma \vdash s$, and $\langle e, s\rangle \to \langle e', s'\rangle$, then $e'$ is closed and for some $\Gamma'$ with $\mathit{dom}(\Gamma') \cap \mathit{dom}(\Gamma) = \emptyset$, $\Gamma, \Gamma' \vdash e'{:}T$ and $\Gamma, \Gamma' \vdash s'$.
+
+\textbf{Why $\Gamma'$?} \rname{ref1} allocates a fresh location, growing the type environment. In L1/L2, $\Gamma' = \emptyset$ always.
+
+\textbf{Read it as:} types are preserved by single steps.
+\end{plain}
+
+\begin{plain}{Type Safety}
+If $\Gamma \vdash e{:}T$, $e$ closed, $\Gamma \vdash s$, and $\langle e, s\rangle \to^* \langle e', s'\rangle$, then either $e'$ is a value or it can step further.
+
+\textbf{Proof sketch:} Safety $=$ Progress $+$ Preservation. Induct on the length of the reduction sequence using preservation; apply progress at the end.
+\end{plain}
+
+\textbf{Well-typed store} (the L3 condition $\Gamma \vdash s$):
+\[
+\Gamma \vdash s \iff \mathit{dom}(\Gamma) = \mathit{dom}(s) \text{ and for all } \ell \in \mathit{dom}(s), \text{ if } \Gamma(\ell) = T \texttt{ ref then } \Gamma \vdash s(\ell){:}T.
+\]
+In L1/L2 this collapses to $\mathit{dom}(\Gamma) \subseteq \mathit{dom}(s)$ since stores hold only integers.
+
+\hrulefill
+
+\section{Tier 2: subtyping, evaluation contexts, equivalence}
+
+\subsection{Subtyping}
+
+\begin{must}
+Tested in 2019-9, 2020-8, 2022-8, 2024-9. The exam questions reliably ask: state the subtype rules, give an example derivation using \rname{sub}, explain why $T~\texttt{ref}$ subtyping is unsound (with a witness).
+\end{must}
+
+\textbf{Subsumption} is the gateway rule:
+\[
+\rname{sub}\quad \dfrac{\Gamma \vdash e{:}T \quad T <: T'}{\Gamma \vdash e{:}T'}
+\]
+``If $e$ has type $T$, it can be used wherever a $T'$ is expected, provided $T$ is a subtype of $T'$.'' This breaks unique typing.
+
+\textbf{Subtype rules.}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \rname{s-refl} $T <: T$. \rname{s-trans} from $T <: T'$ and $T' <: T''$, get $T <: T''$. So $<:$ is a \emph{preorder} (not antisymmetric --- record reordering shows two distinct types can be mutually subtyped).
+  \item \rname{s-record-width}: a record with extra fields on the right is a subtype of the smaller record.
+  \[ \{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k, \mathit{lab}_{k+1}{:}T_{k+1}, \ldots\} <: \{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k\} \]
+  \item \rname{s-record-depth}: subtype within fields.
+  \[ \dfrac{T_1 <: T_1' \quad \cdots \quad T_k <: T_k'}{\{\mathit{lab}_1{:}T_1, \ldots\} <: \{\mathit{lab}_1{:}T_1', \ldots\}} \]
+  \item \rname{s-record-order}: permuting fields is allowed (some languages reject this).
+  \item \rname{s-fun}: \emph{contravariant in argument, covariant in result.}
+  \[ \dfrac{T_1' <: T_1 \quad T_2 <: T_2'}{T_1 \to T_2 \,<:\, T_1' \to T_2'} \]
+  \item \rname{s-pair}: covariant in both components.
+\end{itemize}
+
+\begin{gotcha}
+\textbf{$T$~\texttt{ref} subtyping is unsound either way.}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \emph{Covariant} ($T <: T' \Rightarrow T\,\texttt{ref} <: T'\,\texttt{ref}$) breaks: cast a \texttt{\{p:int,q:int\} ref} to \texttt{\{p:int\} ref} (legal by covariance + \rname{s-record-width}), assign \texttt{\{p=0\}} through it, then \texttt{deref} via the original two-field type and read a missing \texttt{q}.
+  \item \emph{Contravariant} breaks symmetrically.
+\end{itemize}
+The correct rule: \texttt{ref} is \emph{invariant} --- $T\,\texttt{ref} <: T'\,\texttt{ref}$ only when $T = T'$.
+\end{gotcha}
+
+\textbf{Why functions are contravariant.} If $f : T_1 \to T_2$ is used where a $T_1' \to T_2'$ is expected, callers will pass it $T_1'$ values, so $f$ must accept those: $T_1' <: T_1$. Callers will use the result as $T_2'$, so $f$'s output (a $T_2$) must be usable as $T_2'$: $T_2 <: T_2'$.
+
+\textbf{Simple object encoding.} An object is a record whose fields are functions sharing a closed-over reference for state. Method-class subtyping falls out of record-width subtyping: ``ResetCounter $<:$ Counter'' because the former has all the latter's methods plus more.
+
+\subsection{Evaluation contexts --- a presentation refactor}
+
+The L3 semantics has many congruence rules (\rname{op1}, \rname{op2}, \rname{seq2}, \rname{if3}, \rname{app1}, \rname{app2}, \rname{let1}, \rname{pair1}, \rname{pair2}, \ldots). \textbf{Evaluation contexts} bundle them all into one rule.
+
+\textbf{Definition.} An evaluation context $E$ is an expression with a single $\square$ ``hole'' marking where the next reduction can happen, given by:
+\begin{align*}
+E ::=\ & \square \mid \square\,\mathit{op}\,e \mid v\,\mathit{op}\,\square \mid \texttt{if } \square \texttt{ then } e \texttt{ else } e \mid \square ; e \mid \square\,e \mid v\,\square \\
+& \mid \texttt{let } x{:}T = \square \texttt{ in } e \mid (\square, e) \mid (v, \square) \mid \texttt{fst } \square \mid \texttt{snd } \square \\
+& \mid \texttt{inl } \square{:}T \mid \texttt{inr } \square{:}T \mid \texttt{match } \square \texttt{ with } \ldots \\
+& \mid \{\mathit{lab}_1 = v_1, \ldots, \mathit{lab}_i = \square, \ldots, \mathit{lab}_k = e_k\} \mid \square.\mathit{lab} \\
+& \mid \square := e \mid v := \square \mid\, !\square \mid \texttt{ref } \square
+\end{align*}
+
+\textbf{The single context rule:}
+\[
+\rname{eval}\quad \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle E[e], s\rangle \to \langle E[e'], s'\rangle}
+\]
+\textbf{Then keep all the computation rules, drop all the congruence rules.} The two presentations define exactly the same $\to$ relation (Theorem 26 in the notes).
+
+\textbf{Why use it.} The grammar of $E$ fully specifies evaluation order in one place. Adding a new construct just requires adding one $E$ form per ``hole'' position and the computation rule. Essential for large languages.
+
+\subsection{Semantic and contextual equivalence}
+
+\begin{must}
+The single most-tested topic (7/16 questions). Memorise the L1 definition, the L3 contextual-equivalence definition, the four ``good equivalence'' criteria, and the canonical examples.
+\end{must}
+
+\subsubsection*{L1: a simple definition that works}
+
+For typed L1, define $e_1 \simeq^T_\Gamma e_2$ to hold iff $\Gamma \vdash e_1 : T$, $\Gamma \vdash e_2 : T$, and for all $s$ with $\mathit{dom}(\Gamma) \subseteq \mathit{dom}(s)$, either:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item[(a)] both diverge: $\langle e_1, s\rangle \to^\omega$ and $\langle e_2, s\rangle \to^\omega$; or
+  \item[(b)] both terminate at the same value \emph{and} the same store: $\langle e_1, s\rangle \to^* \langle v, s'\rangle$ and $\langle e_2, s\rangle \to^* \langle v, s'\rangle$.
+\end{itemize}
+
+\textbf{Why ``same store too''?} If you allowed $e_1, e_2$ to leave different stores, the context $\square; \,!\ell$ would distinguish them, breaking congruence.
+
+\textbf{Theorem (Congruence for L1).} $\simeq^T_\Gamma$ is a congruence: $e_1 \simeq^T_\Gamma e_2 \Rightarrow C[e_1] \simeq^{T'}_\Gamma C[e_2]$ for every context $C$ that types both sides. Proved by case analysis on $C$.
+
+\subsubsection*{L3: simple definition fails, use contextual equivalence}
+
+For L3, the obvious value-and-store definition is \emph{not} a congruence. So we define equivalence \emph{by} the congruence property:
+
+\textbf{Contextual equivalence (L3).} Typed L3 programs $\Gamma \vdash e_1 : T$, $\Gamma \vdash e_2 : T$ are contextually equivalent iff for every context $C$ with $\{\} \vdash C[e_1] : \texttt{unit}$ and $\{\} \vdash C[e_2] : \texttt{unit}$, either:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item[(a)] $\langle C[e_1], \{\}\rangle \to^\omega$ and $\langle C[e_2], \{\}\rangle \to^\omega$; or
+  \item[(b)] both reduce to $\langle \texttt{skip}, s_1\rangle$ and $\langle \texttt{skip}, s_2\rangle$ (note: \emph{any} terminating stores --- we observe only termination).
+\end{itemize}
+
+\textbf{Congruence is automatic by construction.} Contextual equivalence is the largest congruence preserving termination. The trade-off: it's \emph{undecidable in general}, and very hard to prove particular equivalences. Research-active topic.
+
+\subsubsection*{The four criteria a ``good'' equivalence must satisfy}
+
+\begin{enumerate}[leftmargin=*,itemsep=1pt]
+  \item Programs with observably-different values are not equivalent.
+  \item Terminating $\not\simeq$ diverging.
+  \item $\simeq$ is an equivalence relation (reflexive, symmetric, transitive).
+  \item $\simeq$ is a congruence: $e_1 \simeq e_2 \Rightarrow C[e_1] \simeq C[e_2]$ for all $C$.
+\end{enumerate}
+And subject to all those: $\simeq$ should be as coarse as possible (relate as many programs as possible).
+
+\subsubsection*{Canonical examples to know cold}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+\textbf{Pair} & \textbf{Equivalent?} & \textbf{Why} \\
+\hline
+$2 + 2$ vs $4$               & yes        & both reduce to $4$ in any store. \\
+$\ell := 0; 4$ vs $\ell := 1; 3+!\ell$ & \textbf{no} & distinguished by $C[\square] = \square + !\ell$ \\
+$(\ell :=\,!\ell + 1); (\ell :=\,!\ell - 1)$ vs $(\ell :=\,!\ell)$ & yes & both leave the store unchanged. \\
+$e_1; e_2$ vs $e_2; e_1$ & \textbf{not in general} & only if neither touches the store. \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Watch for the trick:} two programs that always terminate at the same value can be \emph{inequivalent} if they leave different stores --- a context that reads the store separates them.
+
+\hrulefill
+
+\section{Tier 3: concurrency}
+
+The notes' concluding lecture adds parallel composition to L1, giving a tiny concurrent language.
+
+\textbf{Syntax addition.} $e ::= \cdots \mid e_1 \,\|\, e_2$. \textbf{Types addition.} $T ::= \cdots \mid \texttt{proc}$.
+
+\textbf{Typing.} \rname{thread}: $\dfrac{\Gamma \vdash e : \texttt{unit}}{\Gamma \vdash e : \texttt{proc}}$ and \rname{parallel}: $\dfrac{\Gamma \vdash e_1 : \texttt{proc} \quad \Gamma \vdash e_2 : \texttt{proc}}{\Gamma \vdash e_1 \,\|\, e_2 : \texttt{proc}}$.
+
+\textbf{Reduction.} Symmetric: either thread can step.
+\[
+\rname{parallel1}\;\dfrac{\langle e_1, s\rangle \to \langle e_1', s'\rangle}{\langle e_1 \| e_2, s\rangle \to \langle e_1' \| e_2, s'\rangle} \qquad
+\rname{parallel2}\;\dfrac{\langle e_2, s\rangle \to \langle e_2', s'\rangle}{\langle e_1 \| e_2, s\rangle \to \langle e_1 \| e_2', s'\rangle}
+\]
+\textbf{Loss of determinacy.} Even $\langle (\ell := 1) \,\|\, (\ell := 2), \{\ell \mapsto 0\}\rangle$ can reach $\{\ell \mapsto 1\}$ or $\{\ell \mapsto 2\}$.
+
+\textbf{Atomicity.} Assignment and dereference are atomic in this model (you don't get half-words torn). \emph{Compound} expressions like $\ell :=\,!\ell + 1$ are \emph{not} atomic --- a race in $\ell :=\,!\ell + 1 \,\|\, \ell :=\,!\ell + 7$ can lose updates.
+
+\textbf{Mutexes.} Add $\texttt{lock } m$ and $\texttt{unlock } m$ and an extra mutex-state $M : \mathbb{M} \to \mathbb{B}$ in configurations $\langle e, s, M\rangle$. Rule \rname{lock} only fires when $\neg M(m)$ --- atomically test, set, and proceed.
+
+\textbf{Two-phase locking (2PL) sufficient condition for serialisability:} each transaction has an expanding phase (acquires locks, no releases) then a shrinking phase (releases, no acquires). Strict 2PL holds all locks until commit. Acquire locks in a fixed global order to avoid deadlock.
+
+\hrulefill
+
+\begin{landscape}
+\section{Complete rule sheet: L1, L2, L3, subtyping}
+\label{sec:rules}
+
+\textbf{Colour key.}\quad
+\Lone{$\blacksquare$ L1 base rules} \quad
+\Ltwo{$\blacksquare$ added by L2 (functions, let, let rec)} \quad
+\Lthree{$\blacksquare$ added by L3 (pairs, sums, records, refs)} \quad
+\Lsub{$\blacksquare$ subtyping}
+
+\textbf{Conventions:} $n \in \mathbb{Z}$, $b \in \{\texttt{true}, \texttt{false}\}$, $v$ ranges over values, $s$ over stores, $\Gamma$ over type environments, $\mathit{op} \in \{+, \geq\}$.
+
+\subsection*{Values}
+\Lone{$v ::= b \mid n \mid \texttt{skip}$} \quad
+\Ltwo{$\mid\ \texttt{fun } x{:}T \to e$} \quad
+\Lthree{$\mid\ (v_1, v_2) \mid \texttt{inl } v{:}T \mid \texttt{inr } v{:}T \mid \{\mathit{lab}_1 = v_1, \ldots, \mathit{lab}_k = v_k\} \mid \ell$}
+
+\subsection*{Operational semantics (reduction)}
+
+\begin{multicols}{2}
+\small
+
+\textbf{Arithmetic and Booleans} \Lone{(L1)}
+\[ \rname{op+}\ \langle n_1 + n_2, s\rangle \to \langle n, s\rangle \text{ if } n = n_1 + n_2 \]
+\[ \rname{op\(\geq\)}\ \langle n_1 \geq n_2, s\rangle \to \langle b, s\rangle \text{ if } b = (n_1 \geq n_2) \]
+\[ \rname{op1}\ \dfrac{\langle e_1, s\rangle \to \langle e_1', s'\rangle}{\langle e_1\,\mathit{op}\,e_2, s\rangle \to \langle e_1'\,\mathit{op}\,e_2, s'\rangle} \]
+\[ \rname{op2}\ \dfrac{\langle e_2, s\rangle \to \langle e_2', s'\rangle}{\langle v\,\mathit{op}\,e_2, s\rangle \to \langle v\,\mathit{op}\,e_2', s'\rangle} \]
+
+\textbf{Store (L1)} --- L1 form only handles integer locations.
+\[ \Lone{\rname{deref}\ \langle\,!\ell, s\rangle \to \langle n, s\rangle \text{ if } s(\ell) = n} \]
+\[ \Lone{\rname{assign1}\ \langle \ell := n, s\rangle \to \langle \texttt{skip}, s + \{\ell \mapsto n\}\rangle} \]
+\[ \Lone{\rname{assign2}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle \ell := e, s\rangle \to \langle \ell := e', s'\rangle}} \]
+
+\textbf{Sequencing} \Lone{(L1)}
+\[ \rname{seq1}\ \langle \texttt{skip}; e_2, s\rangle \to \langle e_2, s\rangle \]
+\[ \rname{seq2}\ \dfrac{\langle e_1, s\rangle \to \langle e_1', s'\rangle}{\langle e_1; e_2, s\rangle \to \langle e_1'; e_2, s'\rangle} \]
+
+\textbf{Conditional} \Lone{(L1)}
+\[ \rname{if1}\ \langle \texttt{if true then } e_2 \texttt{ else } e_3, s\rangle \to \langle e_2, s\rangle \]
+\[ \rname{if2}\ \langle \texttt{if false then } e_2 \texttt{ else } e_3, s\rangle \to \langle e_3, s\rangle \]
+\[ \rname{if3}\ \dfrac{\langle e_1, s\rangle \to \langle e_1', s'\rangle}{\langle \texttt{if } e_1 \texttt{ then } e_2 \texttt{ else } e_3, s\rangle \to \langle \texttt{if } e_1' \texttt{ then } e_2 \texttt{ else } e_3, s'\rangle} \]
+
+\textbf{While loop} \Lone{(L1)}
+\[ \rname{while}\ \langle \texttt{while } e_1 \texttt{ do } e_2 \texttt{ done}, s\rangle \to \]
+\[ \langle \texttt{if } e_1 \texttt{ then } (e_2; \texttt{while } e_1 \texttt{ do } e_2 \texttt{ done}) \texttt{ else skip}, s\rangle \]
+
+\textbf{Functions (CBV)} \Ltwo{(L2)}
+\[ \Ltwo{\rname{app1}\ \dfrac{\langle e_1, s\rangle \to \langle e_1', s'\rangle}{\langle e_1\,e_2, s\rangle \to \langle e_1'\,e_2, s'\rangle}} \]
+\[ \Ltwo{\rname{app2}\ \dfrac{\langle e_2, s\rangle \to \langle e_2', s'\rangle}{\langle v\,e_2, s\rangle \to \langle v\,e_2', s'\rangle}} \]
+\[ \Ltwo{\rname{fun}\ \langle (\texttt{fun } x{:}T \to e)\,v, s\rangle \to \langle \{v/x\}e, s\rangle} \]
+
+\textbf{Local definitions} \Ltwo{(L2)}
+\[ \Ltwo{\rname{let1}\ \dfrac{\langle e_1, s\rangle \to \langle e_1', s'\rangle}{\langle \texttt{let } x{:}T = e_1 \texttt{ in } e_2, s\rangle \to \langle \texttt{let } x{:}T = e_1' \texttt{ in } e_2, s'\rangle}} \]
+\[ \Ltwo{\rname{let2}\ \langle \texttt{let } x{:}T = v \texttt{ in } e_2, s\rangle \to \langle \{v/x\}e_2, s\rangle} \]
+\[ \Ltwo{\rname{letrecfun}\ \langle \texttt{let rec } x{:}T_1 {\to} T_2 = (\texttt{fun } y{:}T_1 \to e_1) \texttt{ in } e_2, s\rangle \to} \]
+\[ \Ltwo{\langle \{(\texttt{fun } y{:}T_1 \to \texttt{let rec } x \cdots \texttt{ in } e_1)/x\}e_2, s\rangle} \]
+
+\textbf{Pairs} \Lthree{(L3)}
+\[ \Lthree{\rname{pair1}\ \dfrac{\langle e_1, s\rangle \to \langle e_1', s'\rangle}{\langle (e_1, e_2), s\rangle \to \langle (e_1', e_2), s'\rangle}} \]
+\[ \Lthree{\rname{pair2}\ \dfrac{\langle e_2, s\rangle \to \langle e_2', s'\rangle}{\langle (v_1, e_2), s\rangle \to \langle (v_1, e_2'), s'\rangle}} \]
+\[ \Lthree{\rname{proj1}\ \langle \texttt{fst}(v_1, v_2), s\rangle \to \langle v_1, s\rangle} \]
+\[ \Lthree{\rname{proj2}\ \langle \texttt{snd}(v_1, v_2), s\rangle \to \langle v_2, s\rangle} \]
+\[ \Lthree{\rname{proj3}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle \texttt{fst } e, s\rangle \to \langle \texttt{fst } e', s'\rangle}} \]
+\[ \Lthree{\rname{proj4}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle \texttt{snd } e, s\rangle \to \langle \texttt{snd } e', s'\rangle}} \]
+
+\textbf{Sums} \Lthree{(L3)}
+\[ \Lthree{\rname{inl}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle \texttt{inl } e{:}T, s\rangle \to \langle \texttt{inl } e'{:}T, s'\rangle}} \]
+\[ \Lthree{\rname{inr}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle \texttt{inr } e{:}T, s\rangle \to \langle \texttt{inr } e'{:}T, s'\rangle}} \]
+\[ \Lthree{\rname{match1}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle \texttt{match } e \texttt{ with } \cdots, s\rangle \to \langle \texttt{match } e' \texttt{ with } \cdots, s'\rangle}} \]
+\[ \Lthree{\rname{match2}\ \langle \texttt{match inl } v{:}T \texttt{ with inl}(x{:}T_1) \to e_1 \mid \texttt{inr}(y{:}T_2) \to e_2, s\rangle \to \langle \{v/x\}e_1, s\rangle} \]
+\[ \Lthree{\rname{match3}\ \langle \texttt{match inr } v{:}T \texttt{ with } \cdots, s\rangle \to \langle \{v/y\}e_2, s\rangle} \]
+
+\textbf{Records} \Lthree{(L3)}
+\[ \Lthree{\rname{record1}\ \dfrac{\langle e_i, s\rangle \to \langle e_i', s'\rangle}{\langle \{\ldots, \mathit{lab}_i = e_i, \ldots\}, s\rangle \to \langle \{\ldots, \mathit{lab}_i = e_i', \ldots\}, s'\rangle}} \]
+(leftmost non-value field)
+\[ \Lthree{\rname{record2}\ \langle \{\mathit{lab}_1 = v_1, \ldots, \mathit{lab}_k = v_k\}.\mathit{lab}_i, s\rangle \to \langle v_i, s\rangle} \]
+\[ \Lthree{\rname{record3}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle e.\mathit{lab}_i, s\rangle \to \langle e'.\mathit{lab}_i, s'\rangle}} \]
+
+\textbf{General references} \Lthree{(L3 --- replaces L1 store rules)}
+\[ \Lthree{\rname{ref1}\ \langle \texttt{ref } v, s\rangle \to \langle \ell, s + \{\ell \mapsto v\}\rangle, \quad \ell \notin \mathit{dom}(s)} \]
+\[ \Lthree{\rname{ref2}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle \texttt{ref } e, s\rangle \to \langle \texttt{ref } e', s'\rangle}} \]
+\[ \Lthree{\rname{deref1}\ \langle\,!\ell, s\rangle \to \langle v, s\rangle, \quad s(\ell) = v} \]
+\[ \Lthree{\rname{deref2}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle\,!e, s\rangle \to \langle\,!e', s'\rangle}} \]
+\[ \Lthree{\rname{assign1}\ \langle \ell := v, s\rangle \to \langle \texttt{skip}, s + \{\ell \mapsto v\}\rangle} \]
+\[ \Lthree{\rname{assign2}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle \ell := e, s\rangle \to \langle \ell := e', s'\rangle}} \]
+\[ \Lthree{\rname{assign3}\ \dfrac{\langle e, s\rangle \to \langle e', s'\rangle}{\langle e := e_2, s\rangle \to \langle e' := e_2, s'\rangle}} \]
+\end{multicols}
+
+\subsection*{Typing rules ($\Gamma \vdash e : T$)}
+
+\begin{multicols}{2}
+\small
+
+\textbf{Constants and operators} \Lone{(L1)}
+\[ \rname{int}\ \Gamma \vdash n : \texttt{int} \quad (n \in \mathbb{Z}) \]
+\[ \rname{bool}\ \Gamma \vdash b : \texttt{bool} \quad (b \in \{\texttt{true}, \texttt{false}\}) \]
+\[ \rname{skip}\ \Gamma \vdash \texttt{skip} : \texttt{unit} \]
+\[ \rname{op+}\ \dfrac{\Gamma \vdash e_1{:}\texttt{int} \quad \Gamma \vdash e_2{:}\texttt{int}}{\Gamma \vdash e_1 + e_2 : \texttt{int}} \]
+\[ \rname{op\(\geq\)}\ \dfrac{\Gamma \vdash e_1{:}\texttt{int} \quad \Gamma \vdash e_2{:}\texttt{int}}{\Gamma \vdash e_1 \geq e_2 : \texttt{bool}} \]
+
+\textbf{Control flow} \Lone{(L1)}
+\[ \rname{if}\ \dfrac{\Gamma \vdash e_1{:}\texttt{bool} \quad \Gamma \vdash e_2{:}T \quad \Gamma \vdash e_3{:}T}{\Gamma \vdash \texttt{if } e_1 \texttt{ then } e_2 \texttt{ else } e_3 : T} \]
+\[ \rname{seq}\ \dfrac{\Gamma \vdash e_1{:}\texttt{unit} \quad \Gamma \vdash e_2{:}T}{\Gamma \vdash e_1; e_2 : T} \]
+\[ \rname{while}\ \dfrac{\Gamma \vdash e_1{:}\texttt{bool} \quad \Gamma \vdash e_2{:}\texttt{unit}}{\Gamma \vdash \texttt{while } e_1 \texttt{ do } e_2 \texttt{ done} : \texttt{unit}} \]
+
+\textbf{Store (L1 form)}
+\[ \Lone{\rname{assign}\ \dfrac{\Gamma(\ell) = \texttt{intref} \quad \Gamma \vdash e{:}\texttt{int}}{\Gamma \vdash \ell := e : \texttt{unit}}} \]
+\[ \Lone{\rname{deref}\ \dfrac{\Gamma(\ell) = \texttt{intref}}{\Gamma \vdash\,!\ell : \texttt{int}}} \]
+
+\textbf{Functions} \Ltwo{(L2)}
+\[ \Ltwo{\rname{var}\ \Gamma \vdash x : T \quad \text{if } \Gamma(x) = T} \]
+\[ \Ltwo{\rname{fun}\ \dfrac{\Gamma, x{:}T \vdash e : T'}{\Gamma \vdash \texttt{fun } x{:}T \to e : T \to T'}} \]
+\[ \Ltwo{\rname{app}\ \dfrac{\Gamma \vdash e_1 : T \to T' \quad \Gamma \vdash e_2 : T}{\Gamma \vdash e_1\,e_2 : T'}} \]
+
+\textbf{Local definitions} \Ltwo{(L2)}
+\[ \Ltwo{\rname{let}\ \dfrac{\Gamma \vdash e_1 : T \quad \Gamma, x{:}T \vdash e_2 : T'}{\Gamma \vdash \texttt{let } x{:}T = e_1 \texttt{ in } e_2 : T'}} \]
+\[ \Ltwo{\rname{letrecfun}\ \dfrac{\Gamma, x{:}T_1{\to}T_2, y{:}T_1 \vdash e_1 : T_2 \quad \Gamma, x{:}T_1{\to}T_2 \vdash e_2 : T}{\Gamma \vdash \texttt{let rec } x{:}T_1{\to}T_2 = (\texttt{fun } y{:}T_1 \to e_1) \texttt{ in } e_2 : T}} \]
+
+\textbf{Pairs} \Lthree{(L3)}
+\[ \Lthree{\rname{pair}\ \dfrac{\Gamma \vdash e_1 : T_1 \quad \Gamma \vdash e_2 : T_2}{\Gamma \vdash (e_1, e_2) : T_1 * T_2}} \]
+\[ \Lthree{\rname{proj1}\ \dfrac{\Gamma \vdash e : T_1 * T_2}{\Gamma \vdash \texttt{fst } e : T_1}} \]
+\[ \Lthree{\rname{proj2}\ \dfrac{\Gamma \vdash e : T_1 * T_2}{\Gamma \vdash \texttt{snd } e : T_2}} \]
+
+\textbf{Sums} \Lthree{(L3)}
+\[ \Lthree{\rname{inl}\ \dfrac{\Gamma \vdash e : T_1}{\Gamma \vdash \texttt{inl } e{:}T_1 + T_2 : T_1 + T_2}} \]
+\[ \Lthree{\rname{inr}\ \dfrac{\Gamma \vdash e : T_2}{\Gamma \vdash \texttt{inr } e{:}T_1 + T_2 : T_1 + T_2}} \]
+\[ \Lthree{\rname{match}\ \dfrac{\Gamma \vdash e : T_1 + T_2 \quad \Gamma, x{:}T_1 \vdash e_1 : T \quad \Gamma, y{:}T_2 \vdash e_2 : T}{\Gamma \vdash \texttt{match } e \texttt{ with inl}(x{:}T_1) \to e_1 \mid \texttt{inr}(y{:}T_2) \to e_2 : T}} \]
+
+\textbf{Records} \Lthree{(L3)}
+\[ \Lthree{\rname{record}\ \dfrac{\Gamma \vdash e_1 : T_1 \quad \cdots \quad \Gamma \vdash e_k : T_k}{\Gamma \vdash \{\mathit{lab}_1 = e_1, \ldots, \mathit{lab}_k = e_k\} : \{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k\}}} \]
+\[ \Lthree{\rname{recordproj}\ \dfrac{\Gamma \vdash e : \{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k\}}{\Gamma \vdash e.\mathit{lab}_i : T_i}} \]
+
+\textbf{General references} \Lthree{(L3)}
+\[ \Lthree{\rname{ref}\ \dfrac{\Gamma \vdash e : T}{\Gamma \vdash \texttt{ref } e : T\,\texttt{ref}}} \]
+\[ \Lthree{\rname{assign}\ \dfrac{\Gamma \vdash e_1 : T\,\texttt{ref} \quad \Gamma \vdash e_2 : T}{\Gamma \vdash e_1 := e_2 : \texttt{unit}}} \]
+\[ \Lthree{\rname{deref}\ \dfrac{\Gamma \vdash e : T\,\texttt{ref}}{\Gamma \vdash\,!e : T}} \]
+\[ \Lthree{\rname{loc}\ \dfrac{\Gamma(\ell) = T\,\texttt{ref}}{\Gamma \vdash \ell : T\,\texttt{ref}}} \]
+
+\textbf{Subtyping} \Lsub{(extends L3)}
+\[ \Lsub{\rname{sub}\ \dfrac{\Gamma \vdash e : T \quad T <: T'}{\Gamma \vdash e : T'}} \]
+\[ \Lsub{\rname{s-refl}\ T <: T} \]
+\[ \Lsub{\rname{s-trans}\ \dfrac{T <: T' \quad T' <: T''}{T <: T''}} \]
+\[ \Lsub{\rname{s-record-width}} \]
+\[ \Lsub{\{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k, \mathit{lab}_{k+1}{:}T_{k+1}, \ldots\} <: \{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k\}} \]
+\[ \Lsub{\rname{s-record-depth}\ \dfrac{T_1 <: T_1' \quad \cdots \quad T_k <: T_k'}{\{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k\} <: \{\mathit{lab}_1{:}T_1', \ldots, \mathit{lab}_k{:}T_k'\}}} \]
+\[ \Lsub{\rname{s-record-order}\ \{\mathit{lab}_1{:}T_1, \ldots, \mathit{lab}_k{:}T_k\} <: \{\mathit{lab}_{\pi(1)}{:}T_{\pi(1)}, \ldots\}} \]
+\[ \Lsub{(\pi \text{ a permutation of } 1, \ldots, k)} \]
+\[ \Lsub{\rname{s-fun}\ \dfrac{T_1' <: T_1 \quad T_2 <: T_2'}{T_1 \to T_2 \,<:\, T_1' \to T_2'}} \]
+\[ \Lsub{\rname{s-pair}\ \dfrac{T_1 <: T_1' \quad T_2 <: T_2'}{T_1 * T_2 \,<:\, T_1' * T_2'}} \]
+\[ \Lsub{\text{(refs are \emph{invariant} --- no sound subtype rule)}} \]
+\end{multicols}
+
+\subsection*{Stores and configurations}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \Lone{\textbf{L1/L2 stores:}} finite partial functions $s : \mathbb{L} \rightharpoonup \mathbb{Z}$ (locations hold integers).
+  \item \Lthree{\textbf{L3 stores:}} finite partial functions $s : \mathbb{L} \rightharpoonup \mathit{Values}$ (locations hold \emph{any} value, including functions and other locations).
+  \item \Lone{\textbf{Type-environment role:}} in L1/L2, $\Gamma$ maps locations to \texttt{intref} only. The condition $\mathit{dom}(\Gamma) \subseteq \mathit{dom}(s)$ suffices for safety.
+  \item \Ltwo{\textbf{L2 adds:}} $\Gamma$ also maps variables to types. Type-environments are pairs $(\Gamma_{\mathit{loc}}, \Gamma_{\mathit{var}})$.
+  \item \Lthree{\textbf{L3 adds:}} $\Gamma$ maps locations to $T\,\texttt{ref}$ for any $T$. The store must be well-typed at $\Gamma$ ($\Gamma \vdash s$): for each $\ell$, the stored value must have type matching $\Gamma(\ell)$. Type preservation may extend $\Gamma$ with fresh locations.
+\end{itemize}
+\end{landscape}
+
+\section{The one-page exam checklist}
+
+\begin{must}
+If you have one hour to revise, do these in order:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item Be able to give a small reduction sequence using L1's \rname{op1}/\rname{op2}/\rname{seq}/\rname{while} rules.
+  \item Be able to give a typing derivation $\Gamma \vdash e : T$ for any small L1 program.
+  \item State Progress, Type Preservation, and Safety, and explain how Safety = Progress + Preservation.
+  \item Explain CBV vs CBN with the standard $\ell := 2$ example showing they differ in any language with effects.
+  \item Be able to apply \rname{fun}, \rname{app1}, \rname{app2} to reduce a small lambda example to a value.
+  \item Be able to give the L3 reduction rules for \texttt{ref}, \texttt{!e}, and $e_1 := e_2$, and explain why determinacy is lost.
+  \item State the well-typed store condition $\Gamma \vdash s$ and explain why L3 type preservation extends $\Gamma$ with a fresh $\Gamma'$.
+  \item Give the subtype rules, paying attention to \rname{s-fun} contravariance and the invariance of $T\,\texttt{ref}$. Be able to construct the standard $T\,\texttt{ref}$-subtyping counterexample.
+  \item Reformulate the L3 semantics using evaluation contexts $E$ + \rname{eval}.
+  \item State the L1 definition of semantic equivalence $\simeq^T_\Gamma$, give the four ``good equivalence'' criteria, and explain why the L3 simple definition fails to be a congruence.
+  \item State contextual equivalence for L3 and explain why it's a congruence by construction.
+  \item Know the canonical equivalent and non-equivalent pairs ($2+2 \simeq 4$; $\ell:=0;4 \not\simeq \ell:=1; 3+!\ell$; $\ell:=!\ell+1; \ell:=!\ell-1 \simeq \ell:=!\ell$).
+  \item For concurrency: explain how the parallel rule loses determinacy, why $\ell:=!\ell+1$ races even with atomic assignment, and how a mutex fixes it.
+\end{enumerate}
+\end{must}
+
+\vspace{0.3cm}
+\begin{center}
+\textit{Good luck.}
+\end{center}
+
+\end{document}

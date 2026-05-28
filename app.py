@@ -35,6 +35,27 @@ def api_dashboard():
     return jsonify(get_dashboard_data())
 
 
+@app.route('/api/open-external')
+def api_open_external():
+    """Hand a deep-link URL to the OS via `open`.
+
+    The pywebview desktop window won't follow custom URL schemes like
+    `obsidian://` directly, so the client fetches this endpoint instead of
+    navigating to the link. Limited to a small allow-list of schemes for
+    safety since this is exposed on localhost.
+    """
+    url = (request.args.get('url') or '').strip()
+    allowed_prefixes = ('obsidian://', 'file://')
+    if not url or not url.startswith(allowed_prefixes):
+        return jsonify({'error': 'unsupported url scheme'}), 400
+    try:
+        import subprocess
+        subprocess.Popen(['open', url])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    return ('', 204)
+
+
 @app.route('/api/graph')
 def api_graph():
     courses = load_courses()
@@ -308,6 +329,11 @@ def api_submit_answer():
                                   pr.get('model_solution', ''),
                                   topic_name, course_name, topic_id, course_id)
 
+        _record_pp_progress_if_pastpaper(
+            data.get('source'), overall_score,
+            total_marks=total_marks, marks_awarded=total_marks_awarded,
+        )
+
         return jsonify({
             'part_results': part_results,
             'overall_score': overall_score,
@@ -336,6 +362,12 @@ def api_submit_answer():
         if evaluation['score'] < 0.5 and evaluation.get('model_solution'):
             _queue_flashcards(question, evaluation['model_solution'],
                               topic_name, course_name, topic_id, course_id)
+
+        _record_pp_progress_if_pastpaper(
+            data.get('source'), evaluation['score'],
+            total_marks=int(evaluation.get('marks_available') or 0),
+            marks_awarded=evaluation.get('marks_awarded'),
+        )
 
         return jsonify({
             'score': evaluation['score'],
@@ -568,6 +600,8 @@ def api_pastpapers_all():
                 'completed_elsewhere': prog.get('completed_elsewhere', False),
                 'completed_elsewhere_date': prog.get('completed_elsewhere_date'),
                 'completed_confidence': prog.get('completed_confidence'),
+                'elsewhere_marks': prog.get('elsewhere_marks'),
+                'elsewhere_total_marks': prog.get('elsewhere_total_marks'),
                 'tripos': tripos_info,
             })
         questions.sort(key=lambda q: (-q['year'], q['paper'], q['question']))
@@ -618,6 +652,31 @@ def _save_pp_progress(data):
         json.dump(data, f, indent=2)
 
 
+_PP_REF_RE = re.compile(r'^\d{4} Paper \d+ Q\d+$')
+
+
+def _record_pp_progress_if_pastpaper(source, score, total_marks=0, marks_awarded=None):
+    """If `source` looks like a past-paper ref, append an attempt to pp_progress.
+
+    Called server-side from every submit path so the past-papers page stays in
+    sync with history without depending on the client to fire a follow-up POST.
+    """
+    if not source or not _PP_REF_RE.match(source.strip()):
+        return
+    ref = source.strip()
+    progress = _load_pp_progress()
+    entry = progress.get(ref, {'attempts': 0, 'best_score': 0, 'difficult_parts': []})
+    entry['attempts'] = entry.get('attempts', 0) + 1
+    if score is not None:
+        entry['best_score'] = max(entry.get('best_score', 0), float(score))
+    if total_marks:
+        earned = int(marks_awarded) if marks_awarded is not None else round(float(score or 0) * int(total_marks))
+        entry['total_marks'] = int(total_marks)
+        entry['best_marks'] = max(entry.get('best_marks', 0), earned)
+    progress[ref] = entry
+    _save_pp_progress(progress)
+
+
 @app.route('/api/pp/progress', methods=['GET'])
 def api_pp_progress_get():
     return jsonify(_load_pp_progress())
@@ -656,19 +715,38 @@ def api_pp_progress_update():
     if 'toggle_completed_elsewhere' in data:
         # Mark a question as done outside the app (e.g. on paper). Stored with
         # an ISO date so the dashboard heatmap can place it on a calendar cell.
+        # Optional marks payload lets the user record what they actually scored
+        # on paper so the coverage grid colors the cell like a normal attempt.
         if entry.get('completed_elsewhere'):
             entry.pop('completed_elsewhere', None)
             entry.pop('completed_elsewhere_date', None)
+            entry.pop('completed_confidence', None)
+            entry.pop('elsewhere_marks', None)
+            entry.pop('elsewhere_total_marks', None)
         else:
             entry['completed_elsewhere'] = True
             entry['completed_elsewhere_date'] = datetime.now().date().isoformat()
-            # Optional confidence (0-1) for the heatmap colour.
-            conf = data.get('completed_confidence')
-            if conf is not None:
+            total_marks = data.get('total_marks')
+            marks_awarded = data.get('marks_awarded')
+            if total_marks is not None and marks_awarded is not None:
                 try:
-                    entry['completed_confidence'] = max(0.0, min(1.0, float(conf)))
+                    tm = int(total_marks)
+                    ma = int(marks_awarded)
+                    if tm > 0:
+                        entry['elsewhere_total_marks'] = tm
+                        entry['elsewhere_marks'] = ma
+                        entry['completed_confidence'] = max(0.0, min(1.0, ma / tm))
                 except (TypeError, ValueError):
                     pass
+            else:
+                # Optional confidence (0-1) for the heatmap colour, accepted for
+                # callers that already have a normalised score.
+                conf = data.get('completed_confidence')
+                if conf is not None:
+                    try:
+                        entry['completed_confidence'] = max(0.0, min(1.0, float(conf)))
+                    except (TypeError, ValueError):
+                        pass
 
     progress[ref] = entry
     _save_pp_progress(progress)
@@ -1437,6 +1515,11 @@ def api_submit_handwritten():
                 r['model_solution'],
                 topic_name, course_name, topic_id, course_id,
             )
+
+    _record_pp_progress_if_pastpaper(
+        source, overall_score,
+        total_marks=total_marks, marks_awarded=total_marks_awarded,
+    )
 
     return jsonify({
         'part_results': [{

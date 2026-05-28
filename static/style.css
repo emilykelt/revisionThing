@@ -3864,7 +3864,8 @@ h1, h2, h3, .display {
     font-style: italic;
 }
 
-.chat-pre {
+.chat-pre,
+.content-pre {
     background: rgba(255, 255, 255, 0.55);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius);
@@ -3873,16 +3874,28 @@ h1, h2, h3, .display {
     overflow-x: auto;
     font-size: 0.85em;
     line-height: 1.45;
+    white-space: pre;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 }
-.chat-pre code {
+.chat-pre code,
+.content-pre code {
     font-family: var(--font-mono);
     background: transparent;
     padding: 0;
     border-radius: 0;
     white-space: pre;
     display: block;
+    color: inherit;
+}
+.content-code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: rgba(214, 58, 111, 0.08);
+    color: var(--accent, #1F4E79);
+    padding: 0.08em 0.32em;
+    border-radius: 4px;
+    white-space: pre-wrap;
 }
 .chat-msg--user .chat-pre {
     background: rgba(250, 246, 240, 0.12);
@@ -4976,4 +4989,208 @@ button.pp-freq-cell:hover {
     font-size: 0.72rem;
     color: var(--text-muted);
     font-family: var(--font-mono);
+}
+
+/* ============================================
+   Past-paper Coverage Grid (top of Past Papers tab)
+   One card per (paper, course): year columns × question rows.
+   Click a cell to jump into practice for that question.
+   ============================================ */
+.ppc-wrap {
+    margin-bottom: 2rem;
+}
+
+.ppc-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 1.2rem;
+    align-items: center;
+    padding: 0.55rem 0.9rem;
+    margin-bottom: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius);
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+}
+.ppc-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+.ppc-legend .ppc-cell {
+    width: 12px;
+    height: 12px;
+    cursor: default;
+}
+
+.ppc-paper-section {
+    margin-bottom: 1.8rem;
+}
+
+.ppc-paper-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    margin: 0 0 0.7rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+.ppc-paper-title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    letter-spacing: -0.005em;
+}
+.ppc-paper-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.ppc-course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.85rem;
+}
+
+.ppc-course-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius);
+    padding: 0.7rem 0.85rem 0.85rem;
+    backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+    box-shadow: var(--shadow-sm);
+}
+
+.ppc-course-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.55rem;
+}
+.ppc-course-name {
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ppc-course-ratio {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.ppc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.ppc-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+.ppc-q-label {
+    width: 22px;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-align: right;
+}
+.ppc-cells {
+    display: flex;
+    gap: 3px;
+    flex-wrap: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+.ppc-row--years {
+    margin-bottom: 2px;
+}
+.ppc-row--years .ppc-cells {
+    align-items: flex-end;
+}
+.ppc-year {
+    width: 16px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    writing-mode: vertical-rl;
+    line-height: 1;
+    letter-spacing: 0.02em;
+}
+
+.ppc-cell {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    border-radius: 3px;
+    background: rgba(36, 32, 28, 0.08);
+    border: 1px solid rgba(36, 32, 28, 0.04);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.ppc-cell:hover {
+    transform: scale(1.18);
+    box-shadow: 0 2px 6px rgba(60, 50, 90, 0.18);
+    z-index: 2;
+    position: relative;
+}
+/* Invisible spacer — used when a year had fewer questions than the
+   column-stack max for its course; keeps alignment without visual noise. */
+.ppc-cell--empty {
+    background: transparent;
+    border-color: transparent;
+    cursor: default;
+    pointer-events: none;
+}
+.ppc-cell--empty:hover { transform: none; box-shadow: none; }
+.ppc-cell--untouched {
+    background: rgba(36, 32, 28, 0.10);
+}
+.ppc-cell--elsewhere {
+    background: var(--accent-mist);
+    border-color: rgba(120, 100, 170, 0.25);
+}
+.ppc-cell--low {
+    background: var(--danger-light);
+    border-color: rgba(197, 115, 102, 0.35);
+}
+.ppc-cell--mid {
+    background: #E0BD78;
+    border-color: rgba(201, 162, 74, 0.35);
+}
+.ppc-cell--ok {
+    background: var(--success-light);
+    border-color: rgba(107, 143, 112, 0.35);
+}
+.ppc-cell--good {
+    background: var(--success);
+    border-color: rgba(107, 143, 112, 0.55);
+}
+
+@media (max-width: 700px) {
+    .ppc-course-grid {
+        grid-template-columns: 1fr;
+    }
+    .ppc-cell, .ppc-year { width: 14px; }
+    .ppc-cell { height: 14px; }
+    .ppc-year { height: 28px; }
 }

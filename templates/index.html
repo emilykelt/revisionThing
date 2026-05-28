@@ -52,6 +52,10 @@
             <button class="nav-btn" data-view="supervision" onclick="app.showSupervisions()" title="Supervisions">
                 <span class="nav-icon">✦</span><span class="nav-label">Supervisions</span>
             </button>
+            <span class="nav-divider"></span>
+            <button class="nav-btn" id="nav-ask" onclick="app.toggleChat()" title="Ask">
+                <span class="nav-icon">💬</span><span class="nav-label">Ask</span>
+            </button>
         </nav>
     </aside>
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="app.toggleSidebar()"></div>
@@ -181,6 +185,7 @@
                     <option value="">All years</option>
                 </select>
             </div>
+            <div id="pp-coverage"></div>
             <div id="pp-list"></div>
         </div>
 
@@ -316,12 +321,7 @@
         </div>
     </main>
 
-    <!-- Chatbot floating button + side panel -->
-    <button class="chat-fab" id="chat-fab" onclick="app.toggleChat()" aria-label="Open chat">
-        <span class="chat-fab-icon">💬</span>
-        <span class="chat-fab-label">Ask</span>
-    </button>
-
+    <!-- Chatbot side panel (opened from the Ask button in the sidebar) -->
     <aside class="chat-panel" id="chat-panel" aria-hidden="true">
         <div class="chat-panel-header">
             <div class="chat-panel-title">

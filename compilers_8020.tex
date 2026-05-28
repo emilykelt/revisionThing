@@ -1,0 +1,683 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,automata,calc}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{kw}{HTML}{8B0058}
+\definecolor{cmt}{HTML}{6A8F4B}
+\definecolor{str}{HTML}{B36B00}
+\definecolor{bg}{HTML}{FBFAF7}
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\lstdefinelanguage{ocaml}{
+  morekeywords={let,rec,in,match,with,function,fun,if,then,else,type,of,and,as,when,
+                 begin,end,for,do,done,while,to,downto,true,false,ref,mutable,not},
+  morecomment=[s]{(*}{*)},
+  morestring=[b]",
+  sensitive=true,
+}
+
+\lstdefinestyle{c}{
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{kw}\bfseries,
+  commentstyle=\color{cmt}\itshape,
+  stringstyle=\color{str},
+  backgroundcolor=\color{bg},
+  frame=single,
+  rulecolor=\color{black!20},
+  framesep=4pt,
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+}
+\lstset{style=c}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Gotcha,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Compiler Construction} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+The Compiler Construction paper (Paper 4) sets two questions per year. Across \textbf{eight years of past papers (2018--2025, 16 questions)} the structure is remarkably stable: \textbf{question 1 is always lexing / parsing / grammar work}; \textbf{question 2 is always back-end / runtime / optimisation work}. Topic frequencies:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+\multicolumn{3}{l}{\emph{Front-end (Q1 territory):}} \\
+Parsing techniques (LL, LR, SLR)   & 5 & 31\% \\
+Grammar transformations            & 3 & 19\% \\
+Lexical analysis                   & 3 & 19\% \\
+Syntax analysis                    & 2 & 13\% \\
+\quad \textbf{Total Q1-ish (front-end)} & \textbf{8}  & \textbf{100\% of Q1s} \\
+\hline
+\multicolumn{3}{l}{\emph{Back-end (Q2 territory):}} \\
+Runtime systems and VMs            & 4 & 25\% \\
+Code generation and optimisation   & 3 & 19\% \\
+Intermediate code and translators  & 3 & 19\% \\
+Error handling and exceptions      & 3 & 19\% \\
+Tail call optimisation             & 2 & 13\% \\
+Memory management / garbage collection & 2 & 13\% \\
+Type systems and strong typing     & 2 & 13\% \\
+Data types and structures          & 2 & 13\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} \textbf{Lexing + parsing + grammar transformations are guaranteed to appear and account for \textasciitilde50\% of the marks.} The other half is split across the back-end topics --- but \textbf{runtime systems / VMs and intermediate code together hit \textasciitilde50\% of all Q2s}, with GC, exceptions, and TCO each appearing every few years.
+
+This document goes in that order: \textbf{must-know first, then important, then context}.
+
+\hrulefill
+
+\section{The Big Three of the Front End (50\% of marks)}
+
+\subsection{Lexical analysis: RE $\to$ NFA $\to$ DFA}
+
+\begin{must}
+The most-asked sub-topic. You must be able to: (a) draw an NFA for a given regex using Thompson's construction, (b) convert it to a DFA via the subset construction, (c) explain $\epsilon$-closure, (d) state why the longest-match rule matters, (e) sketch how DFA minimisation works.
+\end{must}
+
+\subsubsection*{The job of a lexer}
+
+Lexing converts a sequence of \emph{characters} into a sequence of \emph{tokens}, each annotated with a token class and (optionally) an attribute (the identifier name, the integer value, etc.). The lexer is specified as a list of (regex, token) pairs:
+
+\begin{lstlisting}[language=ocaml]
+if                 -> IF
+then               -> THEN
+[a-zA-Z][a-zA-Z0-9]* as s -> IDENT s
+[0-9]+              as n -> INT (int_of_string n)
+[ \t\n]+            -> SKIP
+\end{lstlisting}
+
+\subsubsection*{Regular expressions, formally}
+
+Regexes over alphabet $\Sigma$:
+$$e \;::=\; \emptyset \mid \epsilon \mid a \mid e \vee e \mid ee \mid e^*$$
+The language $L(e)$ is defined inductively:
+$$L(\emptyset) = \{\}, \quad L(\epsilon) = \{\epsilon\}, \quad L(a) = \{a\}$$
+$$L(e_1 \vee e_2) = L(e_1) \cup L(e_2), \quad L(e_1 e_2) = \{w_1 w_2 \mid w_1 \in L(e_1), w_2 \in L(e_2)\}$$
+$$L(e^*) = \bigcup_{n \geq 0} L(e^n)$$
+
+\subsubsection*{Thompson's construction: regex $\to$ NFA}
+
+A recursive procedure: each regex compiles to an NFA with one start and one accept state, parameterised by sub-NFAs.
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+Regex & NFA fragment \\
+\hline
+$a$           & $\circ \xrightarrow{a} \bullet$ \\
+$\epsilon$    & $\circ \xrightarrow{\epsilon} \bullet$ \\
+$e_1 e_2$     & connect $e_1$'s accept to $e_2$'s start via $\epsilon$ \\
+$e_1 \vee e_2$ & new start $\to_\epsilon$ both starts; both accepts $\to_\epsilon$ new accept \\
+$e^*$         & new start $\to_\epsilon$ \{old start, new accept\}; old accept $\to_\epsilon$ \{old start, new accept\} \\
+\hline
+\end{tabular}
+\end{center}
+
+Result: an NFA with at most $2 \cdot |e|$ states, exactly one accept state, where the only outgoing transitions of each state are either a single labelled edge or at most two $\epsilon$-edges.
+
+\subsubsection*{Subset construction: NFA $\to$ DFA}
+
+The DFA state corresponds to a \emph{set} of NFA states (intuition: ``the set of all NFA states we could be in, given the input so far'').
+
+\textbf{$\epsilon$-closure} of a set $S$: all NFA states reachable from any $q \in S$ via $\epsilon$-edges (including $S$ itself). This is exactly a transitive closure.
+
+\textbf{Algorithm.}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item Start state: $\epsilon\text{-closure}(\{q_0\})$.
+  \item For each DFA state $S$ and input symbol $a$: the next state is $\epsilon\text{-closure}(\{q' \mid q' \in \delta(q, a), q \in S\})$.
+  \item Accept any DFA state containing an NFA accept state.
+\end{itemize}
+
+\textbf{Worst case}: exponential blow-up ($2^n$ DFA states for $n$ NFA states), but for practical lexer regexes the DFA stays modest.
+
+\subsubsection*{Longest match \& priority}
+
+A real lexer has multiple regexes (one per token). Rules:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Longest match (maximal munch):} prefer the longest possible token, e.g.\ \texttt{ifx} is one \texttt{IDENT}, not \texttt{IF} followed by \texttt{IDENT x}.
+  \item \textbf{Rule priority:} on ties, the regex listed first wins, e.g.\ \texttt{if} matches both the \texttt{IF} keyword regex and the \texttt{IDENT} regex; keywords go first.
+\end{itemize}
+
+\subsubsection*{DFA minimisation (briefly)}
+
+Two states are \textbf{equivalent} iff they agree on accept-status and, for every input symbol, transition to equivalent states. The standard algorithm partitions states by ``distinguishable behaviour'' and yields a unique (up-to-renaming) minimal DFA.
+
+\subsection{LL(1) parsing}
+
+\begin{must}
+The most testable parser flavour. You must be able to: compute FIRST and FOLLOW sets, build an LL(1) parsing table, run the parser on a given input, identify when a grammar is not LL(1) and apply standard transformations (left-recursion elimination, left factoring) to make it so.
+\end{must}
+
+\subsubsection*{Recursive descent and predictive parsing}
+
+A recursive-descent parser has one mutually-recursive function per non-terminal. \textbf{Predictive parsing} is the deterministic case --- the next $k$ tokens of lookahead uniquely determine which production to apply. LL($k$) = Left-to-right scan, Leftmost derivation, $k$ tokens of lookahead. We'll focus on $k=1$.
+
+\subsubsection*{FIRST}
+
+$\text{FIRST}(\alpha)$ = the set of terminals that can appear at the start of any string derivable from $\alpha$, plus $\epsilon$ if $\alpha \Rightarrow^* \epsilon$.
+
+\textbf{Compute FIRST iteratively until fixed point:}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item For terminal $a$: $\text{FIRST}(a) = \{a\}$.
+  \item For production $A \to X_1 X_2 \cdots X_n$: add $\text{FIRST}(X_1) \setminus \{\epsilon\}$ to $\text{FIRST}(A)$. If $\epsilon \in \text{FIRST}(X_1)$, also add $\text{FIRST}(X_2) \setminus \{\epsilon\}$, and so on; if all $X_i$ can derive $\epsilon$, add $\epsilon$ to $\text{FIRST}(A)$.
+\end{itemize}
+
+\subsubsection*{FOLLOW}
+
+$\text{FOLLOW}(A)$ = set of terminals that can immediately follow $A$ in some sentential form (used when the parser needs to decide between using an $\epsilon$-production and not). \textbf{Always add \$ to FOLLOW(start symbol).}
+
+\textbf{Iterative rule:} for each production $B \to \alpha A \beta$, add $\text{FIRST}(\beta) \setminus \{\epsilon\}$ to $\text{FOLLOW}(A)$. If $\epsilon \in \text{FIRST}(\beta)$ (or $\beta$ is empty), add $\text{FOLLOW}(B)$ to $\text{FOLLOW}(A)$. Iterate to fixed point.
+
+\subsubsection*{Building the LL(1) parsing table}
+
+Table $M[A, a]$ holds the production to use when the top-of-stack is non-terminal $A$ and the lookahead is terminal $a$.
+
+For each production $A \to \alpha$:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item For every $a \in \text{FIRST}(\alpha) \setminus \{\epsilon\}$: set $M[A, a] = A \to \alpha$.
+  \item If $\epsilon \in \text{FIRST}(\alpha)$: for every $b \in \text{FOLLOW}(A)$, set $M[A, b] = A \to \alpha$.
+\end{itemize}
+
+\textbf{The grammar is LL(1) iff no cell contains more than one production.} If you get a conflict, the grammar is ambiguous, left-recursive, or needs left-factoring.
+
+\subsubsection*{The LL(1) parsing algorithm}
+
+\begin{lstlisting}[language=ocaml]
+push the start symbol then $ onto stack
+a := next_token()
+loop:
+  X := top_of_stack
+  if X = $ and a = $: accept
+  if X is a terminal:
+    if X = a: pop; a := next_token()
+    else: error
+  else:  (* X is non-terminal *)
+    if M[X, a] = (X -> alpha): pop; push alpha in reverse
+    else: error
+\end{lstlisting}
+
+\subsubsection*{Worked example: the expression grammar}
+
+The textbook grammar $G_3$ for arithmetic, already free of left recursion and ambiguity:
+$$E \to T E', \quad E' \to {+} T E' \mid \epsilon, \quad T \to F T', \quad T' \to {*} F T' \mid \epsilon, \quad F \to (E) \mid \texttt{id}$$
+
+\textbf{FIRST sets:} $\text{FIRST}(E) = \text{FIRST}(T) = \text{FIRST}(F) = \{(, \texttt{id}\}$, $\text{FIRST}(E') = \{+, \epsilon\}$, $\text{FIRST}(T') = \{*, \epsilon\}$.
+
+\textbf{FOLLOW sets:} $\text{FOLLOW}(E) = \text{FOLLOW}(E') = \{), \$\}$, $\text{FOLLOW}(T) = \text{FOLLOW}(T') = \{+, ), \$\}$, $\text{FOLLOW}(F) = \{+, *, ), \$\}$.
+
+\subsection{Grammar transformations}
+
+\begin{must}
+Tested in 2020-3, 2020-4, 2024-1. Two transformations to drill: \textbf{eliminating left recursion} and \textbf{left factoring}. Both turn a grammar that isn't LL(1) into one that is (when possible).
+\end{must}
+
+\subsubsection*{Eliminating left recursion}
+
+\textbf{Direct left recursion} ($A \to A\alpha \mid \beta$) breaks every top-down parser: it would loop forever trying to expand $A$. The standard fix:
+
+$$A \to A\alpha_1 \mid A\alpha_2 \mid \cdots \mid \beta_1 \mid \beta_2 \mid \cdots$$
+becomes
+$$A \to \beta_1 A' \mid \beta_2 A' \mid \cdots, \quad A' \to \alpha_1 A' \mid \alpha_2 A' \mid \cdots \mid \epsilon$$
+
+\textbf{Worked example.}
+$$E \to E + T \mid T \quad\Longrightarrow\quad E \to T E', \quad E' \to {+} T E' \mid \epsilon$$
+
+\textbf{Indirect left recursion} (e.g.\ $A \to B\alpha$, $B \to A\gamma$) needs to be unfolded into direct recursion first by substituting $B$'s productions into $A$'s.
+
+\subsubsection*{Left factoring}
+
+When two productions for the same non-terminal share a common prefix, an LL(1) parser can't decide which to take. Factor out the prefix:
+
+$$A \to \alpha\beta_1 \mid \alpha\beta_2 \quad\Longrightarrow\quad A \to \alpha A', \quad A' \to \beta_1 \mid \beta_2$$
+
+\textbf{Worked example.} The classic \emph{dangling else}:
+$$S \to \texttt{if } E \texttt{ then } S \mid \texttt{if } E \texttt{ then } S \texttt{ else } S$$
+After left factoring:
+$$S \to \texttt{if } E \texttt{ then } S \; S', \quad S' \to \texttt{ else } S \mid \epsilon$$
+Now LL(1), \emph{but} the dangling-else ambiguity (which \texttt{if} an \texttt{else} attaches to) remains as a parsing-table conflict; most languages resolve by preferring the shift (attach to the nearest \texttt{if}).
+
+\subsubsection*{The big picture}
+
+Grammar transformations don't change the \emph{language} the grammar describes; they change the \emph{parsing strategy} it admits. The standard pipeline:
+
+\begin{enumerate}[leftmargin=*,itemsep=1pt]
+  \item Disambiguate (encode precedence and associativity into separate non-terminals --- one per precedence level --- with left-recursion for left-associative operators).
+  \item Eliminate left recursion (required for top-down parsing; LR can handle left recursion directly).
+  \item Left-factor (so each lookahead picks at most one production).
+\end{enumerate}
+
+\subsection{LR and SLR(1) parsing}
+
+\begin{must}
+The harder parser flavour. You must be able to: state what an LR(0) item is, construct the DFA of item sets (via closure and goto), explain shift/reduce and reduce/reduce conflicts, run a shift-reduce parser given a parse table, and contrast LR(0) / SLR(1) / LR(1) / LALR(1).
+\end{must}
+
+\subsubsection*{Why LR is more powerful}
+
+\textbf{LR parsers do a rightmost derivation in reverse} (bottom-up). They handle left recursion natively. The parser maintains a stack of grammar symbols and a state; at each step it either:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Shifts} the next input token onto the stack, or
+  \item \textbf{Reduces} a stack suffix matching some production's RHS, replacing it with the LHS.
+\end{itemize}
+
+LR($k$) = Left-to-right scan, Rightmost derivation in reverse, $k$ tokens of lookahead. Almost all real languages are LR(1).
+
+\subsubsection*{LR(0) items}
+
+An \textbf{LR(0) item} is a production with a dot marking how much of the RHS has been parsed:
+$$A \to \alpha \,\bullet\, \beta$$
+Reading: ``we've parsed $\alpha$; we expect $\beta$ next.'' An item with the dot at the end ($A \to \alpha \bullet$) means a reduction is possible.
+
+\subsubsection*{Closure of an item set}
+
+If $A \to \alpha \bullet B \beta$ is in the set and $B$ is a non-terminal, then for every production $B \to \gamma$, add $B \to \bullet \gamma$ to the set. Iterate to fixed point. Intuition: ``if we're about to parse $B$, we're also about to parse anything $B$ starts with.''
+
+\subsubsection*{GOTO}
+
+$\text{GOTO}(I, X)$ = closure of \{all items $A \to \alpha X \bullet \beta$ such that $A \to \alpha \bullet X \beta \in I$\}. This is the next item set after shifting symbol $X$.
+
+\subsubsection*{Building the canonical LR(0) DFA}
+
+Start state: $\text{closure}(\{S' \to \bullet S\})$ where $S'$ is a fresh start symbol (with one production $S' \to S$\$). Apply $\text{GOTO}$ for every symbol from every state; new sets become new states. Stop at fixed point.
+
+\subsubsection*{From DFA to parse table: SLR(1)}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Shift action.} If $A \to \alpha \bullet a \beta \in I_i$ and $\text{GOTO}(I_i, a) = I_j$: set $\text{ACTION}[i, a] = \text{shift } j$.
+  \item \textbf{Reduce action (SLR).} If $A \to \alpha \bullet \in I_i$: for every $a \in \text{FOLLOW}(A)$, set $\text{ACTION}[i, a] = \text{reduce } A \to \alpha$.
+  \item \textbf{Accept.} If $S' \to S\bullet \in I_i$: $\text{ACTION}[i, \$] = \text{accept}$.
+  \item \textbf{GOTO table.} For non-terminals: $\text{GOTO}[i, A] = j$ when $\text{GOTO}(I_i, A) = I_j$.
+\end{itemize}
+
+\subsubsection*{Conflicts}
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Shift/reduce conflict:} a state contains both a shift item ($A \to \alpha \bullet a \beta$) and a complete item ($B \to \gamma \bullet$) with $a \in \text{FOLLOW}(B)$. Grammar is not SLR(1). Often arises from the dangling-else; the conventional fix is ``prefer shift.''
+  \item \textbf{Reduce/reduce conflict:} two complete items in the same state with overlapping FOLLOW. The grammar is genuinely ambiguous on this input prefix.
+\end{itemize}
+
+\subsubsection*{SLR(1) vs LR(1) vs LALR(1)}
+
+\begin{center}
+\begin{tabular}{lp{10cm}}
+\hline
+\textbf{Variant} & \textbf{Lookahead source} \\
+\hline
+LR(0)    & no lookahead; reduce on any input. Very weak. \\
+SLR(1)   & reduce $A \to \alpha$ only when next token $\in \text{FOLLOW}(A)$. \\
+LR(1)    & each item carries its own lookahead set, computed per-state. Strictly more powerful than SLR(1). Often has many states. \\
+LALR(1)  & LR(1) with states having identical cores merged. Same power on most grammars as LR(1) for far fewer states. What \texttt{yacc}/\texttt{bison} use. \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Memorable hierarchy:} $\text{LR(0)} \subsetneq \text{SLR(1)} \subsetneq \text{LALR(1)} \subsetneq \text{LR(1)}$ (in terms of grammars they can handle).
+
+\subsubsection*{The shift-reduce algorithm}
+
+\begin{lstlisting}[language=ocaml]
+push state 0 onto stack
+a := next_token()
+loop:
+  s := top state of stack
+  case ACTION[s, a]:
+    shift t      -> push a, then push t; a := next_token()
+    reduce A->b  -> pop 2|b| items (symbol+state pairs);
+                    let s' = top state; push A;
+                    push GOTO[s', A]
+    accept       -> done
+    error        -> syntax error
+\end{lstlisting}
+
+\hrulefill
+
+\section{The Big Three of the Back End (25\% of marks)}
+
+\subsection{Intermediate representations and stack-based VMs}
+
+\begin{useful}
+The lecturer derives the Jargon VM from a simple interpreter through CPS-conversion, defunctionalisation, and stack-splitting. Exam questions tend to ask: ``given this AST node, generate stack-machine bytecode''; ``explain how function calls / closures / conditionals translate.''
+\end{useful}
+
+\subsubsection*{Why a stack-based IR?}
+
+The case for an \textbf{intermediate representation} between AST and machine code:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Retargetability:} compile front-end once, write a back-end per machine.
+  \item \textbf{Optimisation:} most optimisations are easier on a uniform IR than on either the AST or assembly.
+  \item \textbf{Portability:} a VM-targeted IR (JVM bytecode, OCaml bytecode) can run on any platform with a host interpreter.
+\end{itemize}
+
+\subsubsection*{The basic stack machine}
+
+Expressions become postfix sequences that push and pop on an operand stack:
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+\textbf{AST} & \textbf{Bytecode} \\
+\hline
+\texttt{Int n}            & \texttt{PUSH n} \\
+\texttt{Add(e1, e2)}      & $\langle e_1 \rangle$; $\langle e_2 \rangle$; \texttt{OPER ADD} \\
+\texttt{Var x}            & \texttt{LOOKUP x} \\
+\texttt{Let(x, e1, e2)}   & $\langle e_1 \rangle$; \texttt{BIND x}; $\langle e_2 \rangle$; \texttt{SWAP}; \texttt{POP} \\
+\texttt{If(e1, e2, e3)}   & $\langle e_1 \rangle$; \texttt{TEST L1}; $\langle e_2 \rangle$; \texttt{GOTO L2}; \texttt{LABEL L1}; $\langle e_3 \rangle$; \texttt{LABEL L2} \\
+\texttt{Lambda(x, e)}     & \texttt{MK\_CLOSURE L}; \quad with \texttt{LABEL L}: \texttt{BIND x}; $\langle e \rangle$; \texttt{SWAP}; \texttt{POP}; \texttt{RETURN} \\
+\texttt{App(e1, e2)}      & $\langle e_2 \rangle$; $\langle e_1 \rangle$; \texttt{APPLY} \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection*{Compiling control flow to linear code}
+
+\textbf{Nested code} (where TEST holds two sub-instruction-lists) becomes \textbf{linear code} (where TEST holds a label and we emit the branches sequentially with GOTOs around). Two new instructions: \texttt{LABEL L} (a marker, no-op at runtime) and \texttt{GOTO L} (unconditional jump). After compilation, a second pass replaces symbolic labels with numeric code offsets.
+
+\subsubsection*{Closures}
+
+A first-class function has free variables captured from its definition environment. A \textbf{closure} = code pointer + environment.
+
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Compilation:} \verb|MK_CLOSURE(label, n)| allocates a closure on the heap containing the code label and $n$ values for the captured free variables.
+  \item \textbf{Application:} \verb|APPLY| pops the argument and the closure, pushes the frame pointer for return, sets up a new frame, jumps to the code label.
+  \item \textbf{Return:} \verb|RETURN| restores the caller's frame pointer and jumps to the saved return address.
+\end{itemize}
+
+The Jargon VM puts all complex values (closures, pairs, sum-type cells) \textbf{on the heap}, keeping the stack to fixed-size words (integers, booleans, heap pointers, code pointers, stack pointers).
+
+\subsubsection*{Variable access via static offsets}
+
+A variable's name is a compile-time concept. At runtime, the compiler converts each variable reference to either:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item a \textbf{stack offset} from the current frame pointer (for parameters and locals), or
+  \item a \textbf{heap offset} into the current closure (for captured free variables).
+\end{itemize}
+
+\subsection{Garbage collection}
+
+\begin{useful}
+Tested in 2023-2 and 2024-2. Be able to: (a) explain reference counting and its cyclic-garbage weakness, (b) describe mark-and-sweep, (c) describe copying / semi-space collection, (d) sketch generational GC and the weak generational hypothesis.
+\end{useful}
+
+\subsubsection*{The root set and reachability}
+
+\textbf{An object is garbage iff it is unreachable from the root set} (registers, global variables, current stack frames). All tracing GCs share this definition; they differ in \emph{how} they find unreachable objects.
+
+\subsubsection*{Reference counting}
+
+Every object holds an integer count of incoming references. On pointer copy, increment; on overwrite or scope exit, decrement; when the count hits zero, free the object (and recursively decrement counts in fields).
+
+\textbf{Pros:} immediate reclamation, no global pause, simple to retrofit. \\
+\textbf{Cons:} \textbf{cannot collect cycles} (a self-referential structure keeps its count $\geq 1$ even when unreachable); per-pointer-update cost; cache pollution; not thread-safe without expensive atomic increments.
+
+\subsubsection*{Mark and sweep}
+
+Two-phase tracing collector:
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Mark:} starting from roots, walk the live object graph; set a mark bit on each visited object.
+  \item \textbf{Sweep:} scan the entire heap; objects without the mark bit are freed (returned to the free list). Clear all mark bits.
+\end{enumerate}
+
+\textbf{Pros:} \textbf{handles cycles}, low per-mutation cost. \\
+\textbf{Cons:} stops the world during collection (full heap scan); causes \textbf{heap fragmentation}; mark phase touches the whole live set, hurting locality.
+
+\subsubsection*{Copying / semi-space collector}
+
+Divide the heap into \textbf{from-space} and \textbf{to-space}. Allocation just bumps a pointer in from-space (extremely cheap). On GC:
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item Trace from roots; copy each live object from from-space into to-space.
+  \item Leave a \textbf{forwarding pointer} in the from-space copy so that any other reference to the same object during the same trace finds the new location.
+  \item When done, swap the roles of the spaces; from-space becomes the new free area.
+\end{enumerate}
+
+\textbf{Pros:} bump-pointer allocation, automatic compaction (no fragmentation), trace cost proportional to \emph{live} set not heap size. \\
+\textbf{Cons:} \textbf{requires twice the heap}; copies all live data on every cycle; updates every pointer to copied objects.
+
+\subsubsection*{Generational GC}
+
+\textbf{Weak generational hypothesis:} most objects die young. Empirically, ${>}98\%$ of garbage in many workloads is from the most recently allocated objects.
+
+\textbf{Idea.} Partition the heap by object age. Run frequent, fast collections of the \textbf{young generation} (most objects there are already dead), and infrequent, slow collections of the \textbf{old generation}. Promote surviving young objects into the old generation.
+
+\textbf{Complication.} A young object may be referenced from the old generation, so collecting the young alone requires scanning the entire old generation. The cure: a \textbf{remembered set} (or \textbf{write barrier}) that records old-to-young pointers as they are created.
+
+\subsection{Tail-call optimisation}
+
+\begin{useful}
+Tested in 2022-2 and 2023-2. Be able to: define a tail call, explain how TCO replaces a call+return with a jump, and explain why this is necessary for functional-language compilers to be practical.
+\end{useful}
+
+\textbf{A tail call} is a function call that is the last action of the calling function --- no further computation happens with its return value before the caller itself returns. In source code: \verb|return f(x)| is a tail call; \verb|return f(x) + 1| is not.
+
+\textbf{TCO.} Instead of pushing a new stack frame for a tail call, reuse the current frame: overwrite the parameters with the new argument values and jump to the function's entry point. The call disappears at the machine level; there's just a goto.
+
+\textbf{Effect.} A function that's \emph{tail recursive} (recurses only in tail position) executes in constant stack space, exactly like a loop. This is the only way functional languages can implement looping --- they have no \texttt{while} or \texttt{for}, only function calls.
+
+\textbf{Example.}
+\begin{lstlisting}[language=ocaml]
+(* Not tail recursive: each call awaits the multiplication *)
+let rec fact n = if n = 0 then 1 else n * fact (n - 1)
+
+(* Tail recursive via accumulator: the call IS the last action *)
+let rec fact_acc n acc = if n = 0 then acc else fact_acc (n - 1) (n * acc)
+let fact n = fact_acc n 1
+\end{lstlisting}
+
+\textbf{What the optimiser does.} Recognise the syntactic form ``\texttt{return f(args)}'' at the end of a function. Generate code that (a) evaluates \texttt{args} into temporaries, (b) overwrites the current frame's parameter slots with those temporaries, (c) jumps to \texttt{f}'s entry. No \texttt{call} instruction, no \texttt{ret} from \texttt{f} back through the caller.
+
+\textbf{Mutual tail recursion} works the same way: \texttt{f} can tail-call \texttt{g} which can tail-call \texttt{f}, with both using a fixed amount of stack.
+
+\textbf{Interaction with exception handlers.} A call placed inside a try-block is \emph{not} a tail call --- on return the handler frame must be cleaned up. (This is why some compilers don't TCO inside handlers.)
+
+\hrulefill
+
+\section{The Second Tier}
+
+\subsection{Exceptions}
+
+\begin{useful}
+Tested in 2019-4, 2021-4, 2025-1. Be able to describe the VM-level mechanism: an exception pointer, handler frames, and the cleanup raise does.
+\end{useful}
+
+\textbf{The semantics.} A \texttt{try $e_1$ with $p \to e_2$} expression evaluates $e_1$. If $e_1$ yields a value $v$, return $v$. If $e_1$ raises an exceptional value $w$ matching pattern $p$, evaluate $e_2$ with $p$ bound to $w$. Otherwise, the exception continues propagating out of the \texttt{try}.
+
+\textbf{The implementation.} Add a new VM register: the \textbf{exception pointer} (\texttt{ep}), pointing to the most recent \textbf{handler frame} on the stack. A handler frame stores:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item The address of the handler code.
+  \item The saved frame pointer (\texttt{fp}) and code pointer (\texttt{cp}) to restore on entry to the handler.
+  \item The saved \texttt{ep} of the enclosing handler (so we can pop our handler when leaving the \texttt{try}).
+\end{itemize}
+
+\textbf{Entering a try block:} push a handler frame; set \texttt{ep} to the new frame.
+
+\textbf{Leaving the try normally:} restore \texttt{ep} to the saved enclosing value; the handler frame is discarded.
+
+\textbf{Raising:} read \texttt{ep}; set \texttt{fp} and \texttt{cp} to the values saved in the handler frame; pop everything above the handler frame off the stack (this is what ``unwinding'' means); pass the raised value to the handler code.
+
+\textbf{Cost.} Entering and leaving a \texttt{try} is cheap (push/pop a few words). Raising is moderately expensive (unwinds an arbitrary amount of stack). \textbf{Don't use exceptions for normal control flow in performance-sensitive code} --- if exception-free execution is the common case, the design pays nothing.
+
+\subsection{Linking and ABIs}
+
+\begin{useful}
+Conceptual background that has appeared in passing. Expect questions about ``what does the linker do?'' and ``compare static vs dynamic linking.''
+\end{useful}
+
+\textbf{An object file} contains: machine code (\texttt{.text}), initialised global data (\texttt{.data}), uninitialised globals (\texttt{.bss}), a \textbf{symbol table} (exported and imported names), and a \textbf{relocation table} (places in the code/data where addresses depend on the final layout). ELF is the standard format on Linux.
+
+\textbf{The linker:}
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item Concatenates \texttt{.text} segments from all object files; ditto \texttt{.data} and \texttt{.bss}.
+  \item Resolves symbols: for every imported name in one object file, find a matching export in another (or in a library).
+  \item Performs relocations: where the code references a symbol, patch in the symbol's final address.
+\end{enumerate}
+
+\textbf{Static vs dynamic linking.}
+
+\begin{center}
+\begin{tabular}{p{7cm}p{7cm}}
+\hline
+\textbf{Static} & \textbf{Dynamic} \\
+\hline
+Library code copied into the executable at link time. & Library code loaded at run time by the OS. \\
+Bigger executables. & Smaller executables. \\
+Independent of installed library versions --- predictable. & Library bug fixes propagate automatically --- ``DLL hell'' is the failure mode. \\
+Faster program startup. & Slower startup (loader resolves symbols on launch or lazily). \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{An ABI (Application Binary Interface)} is the contract between independently-compiled units: register usage and calling convention (which args go in which registers; who saves what), stack frame layout, data alignment, system call mechanism, name mangling (especially in C++), object file format.
+
+\subsection{Type systems and type checking}
+
+\begin{useful}
+Tested in 2018-4, 2020-4. Be able to: explain the role of type checking (in the front end, after parsing), describe Hindley--Milner / unification-based inference at a high level, distinguish static and dynamic typing.
+\end{useful}
+
+\textbf{Where typing fits.} Lexer $\to$ Parser $\to$ \textbf{Type checker} $\to$ IR. The output of typing is an \emph{annotated AST}; the type checker either accepts (every expression has a type that satisfies the language rules) or reports a type error. After type checking, the rest of the compiler can assume well-typed input.
+
+\textbf{What a static type system buys you.}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item Many program errors caught at compile time (no \texttt{1 + "hello"}).
+  \item Efficient code generation: no need to box every value or runtime-check every operation.
+  \item Documentation: types describe interfaces.
+\end{itemize}
+
+\textbf{Hindley--Milner inference (very brief).} Used by ML, OCaml, Haskell. Walk the AST; for each expression, generate a type with fresh variables for unknown parts and a set of equality constraints. Solve constraints by \textbf{unification}. Generalise type variables that don't appear in the surrounding context to produce \emph{polymorphic} types.
+
+\textbf{Dynamic typing} (Python, JavaScript): every value carries a type tag; every operation checks tags at runtime; ``type errors'' become runtime exceptions. Easier to write, harder to debug, slower without sophisticated JIT compilation.
+
+\subsection{Compiler optimisations}
+
+\begin{useful}
+The big lecture topic. The exam usually asks ``define optimisation X and give an example,'' not ``implement it.''
+\end{useful}
+
+\subsubsection*{What makes an optimisation valid}
+
+An optimisation transforms a program while preserving \emph{observable behaviour}: same effects, same termination behaviour, same return value. The harder language has, the more subtle preservation becomes (e.g.\ floating-point associativity is \emph{not} a valid optimisation in IEEE 754).
+
+\subsubsection*{The classic catalogue}
+
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Constant folding:} evaluate constant expressions at compile time. \verb|2 + 3| $\to$ \verb|5|.
+  \item \textbf{Constant propagation:} replace a variable with its known constant value.
+  \item \textbf{Algebraic simplification:} \verb|x * 1| $\to$ \verb|x|, \verb|x + 0| $\to$ \verb|x|, \verb|x - x| $\to$ \verb|0|. Care: \verb|x * 0| $\to$ \verb|0| only if \verb|x| has no side effects.
+  \item \textbf{Common subexpression elimination (CSE):} \verb|a*b + a*b| $\to$ \verb|let t = a*b in t + t|.
+  \item \textbf{Dead-code elimination:} remove computations whose result is never used.
+  \item \textbf{Inlining:} replace a function call with the function body. Enables many subsequent optimisations; can bloat code. The compiler heuristic decides which to inline based on size, call count, and exposed opportunities.
+  \item \textbf{Tail-call optimisation:} as above.
+  \item \textbf{Loop-invariant code motion:} hoist a computation that doesn't depend on the loop variable out of the loop.
+  \item \textbf{Strength reduction:} replace a costly operation with a cheaper one. \verb|x * 2| $\to$ \verb|x << 1|; multiply-by-loop-induction-variable $\to$ add.
+  \item \textbf{Peephole optimisation:} pattern-match small windows of generated assembly and replace with shorter equivalents (e.g.\ \verb|push X; pop X| $\to$ nothing; \verb|mov rax, rax| $\to$ nothing).
+\end{itemize}
+
+\subsubsection*{Optimisation under undefined behaviour}
+
+\textbf{Two principles for languages like C}:
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item The compiler imposes no constraints on the behaviour of programs that have undefined behaviour (UB).
+  \item The compiler may therefore \emph{assume} the input program does not exhibit UB.
+\end{enumerate}
+
+Consequence: optimisations can transform a UB-exhibiting program in surprising ways. For example, signed integer overflow is UB in C, so the compiler may assume \verb|i + 1 > i| holds for all \verb|int i| --- and delete a loop bound check that would only fire if it didn't.
+
+\subsection{Data types and records}
+
+\begin{useful}
+Tested in 2019-3, 2021-3. Be able to: describe how tuples / records / sum types lay out in memory, and how method dispatch works in OO languages.
+\end{useful}
+
+\textbf{Tuples and records.} A flat block on the heap, with each field at a known compile-time offset. The compiler computes offsets from declaration order plus alignment requirements; access is a single load.
+
+\textbf{Sum types (variants).} A \textbf{tag} word identifying which case the value is, followed by the case's payload. Pattern matching becomes a switch on the tag.
+
+\textbf{Arrays.} Contiguous memory, optionally preceded by a length word. Bounds-checking on each access in safe languages (cheap and removable by the optimiser when bounds are statically known); absent in unsafe languages like C.
+
+\textbf{Method dispatch in OO languages.}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Static dispatch} (Java's \texttt{final}, C++'s non-\texttt{virtual}): the call target is decided at compile time. Cheap; no indirection.
+  \item \textbf{Dynamic dispatch} (Java's normal methods, C++'s \texttt{virtual}): each object's header points to a \textbf{vtable} (per-class array of function pointers); a method call indirects through the vtable. Costs one extra load and an indirect call; the indirect call also defeats inlining.
+\end{itemize}
+
+\textbf{Multiple inheritance} (C++): more complex --- vtables per ancestor class, with offsets to adjust \verb|this| when casting between super- and subobjects.
+
+\subsection{Bootstrapping}
+
+\begin{useful}
+Background topic. Not specifically tested in recent years but underpins ``how was the OCaml compiler compiled?'' --- a good interview-style question.
+\end{useful}
+
+\textbf{The puzzle:} the OCaml compiler is itself written in OCaml. How was the first OCaml compiler compiled?
+
+\textbf{Bootstrap chain (general):}
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item Write a small subset compiler ($\mathit{lang}_0$) in some other language (e.g.\ C).
+  \item Use it to compile a larger subset compiler ($\mathit{lang}_1$) written in $\mathit{lang}_0$.
+  \item Use that to compile the full compiler written in $\mathit{lang}_n$.
+  \item Henceforth, each release is compiled by the previous release.
+\end{enumerate}
+
+\textbf{Ken Thompson's ``Reflections on Trusting Trust''.} An attacker who modifies the compiler binary to inject a backdoor whenever it compiles a login program --- \emph{and} the same compiler binary to inject the backdoor-injecting code whenever it compiles a compiler --- can hide the attack such that the source contains no trace. The lesson: a compiler binary is only as trustworthy as the chain of binaries that produced it.
+
+\hrulefill
+
+\section{The one-page exam checklist}
+
+\begin{must}
+If you have one hour to revise, do these in order:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item Be able to apply Thompson's construction to a small regex to produce an NFA.
+  \item Be able to do the subset construction with $\epsilon$-closures to produce a DFA from an NFA.
+  \item Be able to compute FIRST and FOLLOW sets for a given grammar.
+  \item Be able to build the LL(1) parsing table, identify any conflicts, and run the parser on a string.
+  \item Be able to eliminate left recursion and left-factor a small grammar.
+  \item Be able to construct the LR(0) item-set DFA: closure, GOTO, build the canonical collection.
+  \item Be able to convert that DFA to an SLR(1) parse table using FOLLOW sets, identify shift/reduce and reduce/reduce conflicts.
+  \item Be able to run a shift-reduce parser given a parse table.
+  \item Be able to translate a small expression (with conditionals and functions) into stack-machine bytecode, including labels for branches.
+  \item Be able to define ``tail call'' and explain TCO at the machine level.
+  \item Be able to describe reference counting, mark-and-sweep, copying, and generational GC --- with one pro and one con of each.
+  \item Be able to describe the implementation of exceptions (handler frames + exception pointer + stack unwinding).
+  \item Be able to name 5 standard optimisations and give an example of each.
+\end{enumerate}
+\end{must}
+
+\vspace{0.4cm}
+\begin{center}
+\textit{Good luck.}
+\end{center}
+
+\end{document}
