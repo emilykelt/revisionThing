@@ -114,14 +114,54 @@ def _get_past_paper_questions(course_id, topic_id):
     return results
 
 
-def call_claude(prompt, model, max_tokens=1024):
+# ---- Prompt caching ----
+# Anthropic prompt caching is a prefix match: a large, byte-stable prefix that
+# is reused across calls within the 5-minute TTL is served at ~0.1x cost. It
+# only kicks in when the rendered prefix exceeds the model minimum (~2048 tok
+# on Sonnet 4.6, ~4096 on Haiku 4.5); below that the API silently skips caching
+# at no extra cost. So we only mark prefixes that are both large AND reused —
+# chiefly the course-catalogue system prompt in course_chat. The one-shot
+# question/eval prompts have no shared large prefix, so they are left uncached.
+
+def _cached_system(system):
+    """Wrap a system-prompt string in a single cache_control text block.
+
+    Use only for a system prompt that is (a) large and (b) reused byte-for-byte
+    across calls — otherwise the cache never reads and you gain nothing."""
+    return [{
+        'type': 'text',
+        'text': system,
+        'cache_control': {'type': 'ephemeral'},
+    }]
+
+
+def _log_cache_usage(msg, label):
+    """Print cache hit/miss stats so caching can be verified. Cheap and quiet:
+    only logs when the request actually touched the cache."""
+    usage = getattr(msg, 'usage', None)
+    if usage is None:
+        return
+    read = getattr(usage, 'cache_read_input_tokens', 0) or 0
+    written = getattr(usage, 'cache_creation_input_tokens', 0) or 0
+    if read or written:
+        print(
+            f'[claude] {label}: cache_read={read} cache_write={written} '
+            f'uncached_input={getattr(usage, "input_tokens", "?")}'
+        )
+
+
+def call_claude(prompt, model, max_tokens=1024, system=None, cache_system=True):
     try:
         client = _get_client()
-        msg = client.messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            messages=[{'role': 'user', 'content': prompt}],
-        )
+        kwargs = {
+            'model': model,
+            'max_tokens': max_tokens,
+            'messages': [{'role': 'user', 'content': prompt}],
+        }
+        if system:
+            kwargs['system'] = _cached_system(system) if cache_system else system
+        msg = client.messages.create(**kwargs)
+        _log_cache_usage(msg, model)
         return msg.content[0].text
     except Exception as e:
         print(f'[claude] call_claude error: {e}')
@@ -833,12 +873,18 @@ def course_chat(message: str, course_id: 'str | None' = None, history: list = No
 
     try:
         client = _get_client()
+        # The system prompt embeds the whole course catalogue and is reused
+        # byte-for-byte across every turn of a chat session — cache it so each
+        # follow-up turn re-reads the catalogue from cache instead of re-paying
+        # for it. (Scope-stable per course_id, since scope_note + summary are
+        # fixed for a given course.)
         msg = client.messages.create(
             model=CHAT_MODEL,
             max_tokens=800,
-            system=system,
+            system=_cached_system(system),
             messages=messages,
         )
+        _log_cache_usage(msg, 'course_chat')
         return {'reply': msg.content[0].text}
     except Exception as e:
         print(f'[claude] course_chat error: {e}')
