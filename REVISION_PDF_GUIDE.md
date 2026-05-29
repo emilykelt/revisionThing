@@ -129,5 +129,6 @@ The frequency table at the top isn't decoration — it's the spine of the docume
 | Formal Models of Language | `fml_8020.tex` | 2018–2025, 15 questions |
 | Further HCI | `fhci_8020.tex` | 2018–2025, 16 questions |
 | Economics, Law and Ethics | `ele_8020.tex` | 2018–2025, 15 questions |
+| Logic and Proof | `logic_8020.tex` | 2018–2025, 16 questions (algorithms how-to + rule reference) |
 
 When the past-paper coverage shifts (e.g. new year added to `data/tripos_coverage.json`), regenerate the frequency tally and update the opening section before reusing the same LaTeX.

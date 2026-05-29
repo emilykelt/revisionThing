@@ -1,0 +1,293 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{multicol}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Algorithm,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam trap,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\newcommand{\seq}{\Rightarrow}
+\newcommand{\imp}{\rightarrow}
+\newcommand{\eq}{\simeq}
+\newcommand{\T}{\mathbf{t}}
+\newcommand{\F}{\mathbf{f}}
+\newcommand{\rn}[1]{\;({#1})}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Logic and Proof} \\[2pt] \large Algorithms How-To + One-Page Rule Reference}
+\author{\small Part IB --- Cambridge CST --- Paper 6}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{What the exam actually asks}
+
+Logic \& Proof is an \textbf{algorithm-running} course: questions hand you a formula or clause set and say ``apply DPLL / resolution / build the BDD.'' Across \textbf{2018--2025 (16 questions)}:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+Resolution theorem proving & 7 & 44\% \\
+Binary Decision Diagrams & 6 & 38\% \\
+DPLL method & 5 & 31\% \\
+First-order logic / Skolemisation \& unification & 3 & 19\% \\
+Sequent calculus & 3 & 19\% \\
+CNF conversion; Fourier--Motzkin; model checking; S4/S5 modal & 2 each & 12\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} \textbf{Resolution, BDDs and DPLL are the spine ($\sim$60\% of marks)} --- you must be able to \emph{run each by hand, showing every step}. They all start from \textbf{clause/CNF form}, so master that conversion first. Then sequent calculus + quantifier rules, unification, Fourier--Motzkin, and modal S4. This guide gives the \textbf{recipe + a worked example} for each algorithm, then a \textbf{one-page rule reference} (last page) to memorise.
+
+\hrulefill
+
+\section{Clause / CNF conversion (everything starts here)}
+
+\begin{must}[title=Propositional CNF (4 steps)]
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Eliminate $\leftrightarrow,\imp$:}\ \ $A\leftrightarrow B \eq (A\imp B)\wedge(B\imp A)$, \ \ $A\imp B\eq \neg A\vee B$.
+  \item \textbf{Push $\neg$ inward} (to atoms) $\Rightarrow$ \emph{NNF}: \ $\neg\neg A\eq A$,\ \ de Morgan $\neg(A\wedge B)\eq\neg A\vee\neg B$, etc.
+  \item \textbf{Push $\vee$ inward} (distribute over $\wedge$): \ $A\vee(B\wedge C)\eq(A\vee B)\wedge(A\vee C)$.
+  \item \textbf{Simplify:} drop a disjunction with $P$ and $\neg P$ ($\eq\T$); $(P\vee A)\wedge(\neg P\vee A)\eq A$; remove repeats.
+\end{enumerate}
+A \textbf{clause} is a disjunction of literals, written as a set $\{\neg K_1,\dots,L_1,\dots\}$; the empty clause $\square=\{\,\}$ is \textbf{false} (contradiction).
+\end{must}
+
+\begin{must}[title=First-order clause form (for resolution)]
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Negate} the goal (resolution and DPLL are \emph{refutation} methods --- prove unsatisfiability).
+  \item Eliminate $\leftrightarrow,\imp$; push $\neg$ in to get \textbf{NNF}.
+  \item \textbf{Skolemise:} for each $\exists y$ inside $\forall x_1\dots\forall x_k$, replace $y$ by $f(x_1,\dots,x_k)$ for a \emph{new} $f$ (a Skolem \emph{constant} if no enclosing $\forall$). Push quantifiers \emph{in} first (miniscope) $\Rightarrow$ fewer/smaller Skolem args $\Rightarrow$ shorter proofs.
+  \item \textbf{Drop the $\forall$'s} (clauses are implicitly universally quantified).
+  \item Distribute to \textbf{CNF}; write each conjunct as a clause (set of literals).
+\end{enumerate}
+Skolemisation preserves \emph{(un)satisfiability}, not validity --- which is exactly what refutation needs.
+\end{must}
+
+\section{DPLL (propositional SAT) --- 31\%}
+
+\begin{must}
+Refute a clause set (show unsatisfiable). Repeat:
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Delete tautologies} --- any clause containing $P$ and $\neg P$.
+  \item \textbf{Unit propagation} --- for each unit clause $\{L\}$: delete every clause containing $L$, and delete $\neg L$ from all clauses.
+  \item \textbf{Pure-literal deletion} --- if $L$ occurs but $\neg L$ never does, delete all clauses containing $L$.
+  \item \textbf{Stop:} empty clause $\square$ generated $\Rightarrow$ \textbf{unsatisfiable} (refutation found). All clauses deleted $\Rightarrow$ \textbf{satisfiable}.
+  \item \textbf{Case split} on a literal $L$: recurse on the set $+\{L\}$ and on the set $+\{\neg L\}$. Satisfiable iff \emph{either} branch is.
+\end{enumerate}
+\end{must}
+
+\begin{plain}{Worked: is $P\vee Q\imp Q\vee R$ a theorem?}
+Negate $+$ CNF gives clauses $\{P,Q\}$, $\{\neg Q\}$, $\{\neg R\}$.
+\[
+\begin{array}{llll}
+\{P,Q\} & \{\neg Q\} & \{\neg R\} & \text{initial}\\
+\{P\}   &           & \{\neg R\} & \text{unit }\neg Q\\
+        &           &            & \text{units }P,\ \neg R\ \text{(also pure)} \Rightarrow\ \text{all deleted}
+\end{array}
+\]
+All clauses deleted $\Rightarrow$ \textbf{satisfiable} ($P\mapsto1,Q\mapsto0,R\mapsto0$), so the original formula is \textbf{not valid}. (If a case split is needed, show both $L$/$\neg L$ columns; reaching $\square$ in \emph{every} branch $=$ unsatisfiable $=$ theorem.)
+\end{plain}
+
+\section{Resolution --- 44\% (the headline algorithm)}
+
+\begin{must}[title=Resolution refutation]
+To prove $A$: (1) negate $A$; (2) convert $\neg A$ to clauses; (3) repeatedly apply the \textbf{resolution rule} to clauses with complementary literals; (4) derive $\square$ $\Rightarrow$ $\neg A$ unsatisfiable $\Rightarrow$ $A$ is a theorem.
+\[
+\frac{B\vee A \qquad \neg B\vee C}{A\vee C}
+\qquad\text{set form}\qquad
+\frac{\{B,A_1,\dots,A_m\}\quad \{\neg B,C_1,\dots,C_n\}}{\{A_1,\dots,A_m,C_1,\dots,C_n\}}
+\]
+\end{must}
+
+\begin{plain}{Worked (propositional): prove $P\wedge Q\imp Q\wedge P$}
+Negated clauses: $\{P\}$, $\{Q\}$, $\{\neg Q,\neg P\}$.
+\[
+\frac{\{P\}\quad\{\neg P,\neg Q\}}{\{\neg Q\}}\qquad
+\frac{\{Q\}\quad\{\neg Q\}}{\square}
+\]
+$\square$ reached $\Rightarrow$ theorem. \textbf{Tip:} suppress repeated literals ($\{Q,Q\}=\{Q\}$); resolving a clause with its own tautology leads nowhere.
+\end{plain}
+
+\subsection{Unification (needed for first-order resolution)}
+
+\begin{must}[title=Unification algorithm (on term trees)]
+Find the \textbf{most general unifier} (MGU) $\theta$ with $t_1\theta=t_2\theta$. Cases:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{variable $x$ vs term $t$:} if $x=t$, return $[\,]$; \textbf{occurs check} --- if $x$ occurs in $t$, \emph{fail}; else return $[t/x]$.
+  \item \textbf{constant vs constant:} equal $\Rightarrow[\,]$; differ $\Rightarrow$ fail.
+  \item \textbf{pair $(t_1,t_2)$ vs $(u_1,u_2)$:} unify $t_1,u_1$ as $\theta_1$; unify $t_2\theta_1,u_2\theta_1$ as $\theta_2$; return $\theta_1\circ\theta_2$. Any failure $\Rightarrow$ not unifiable.
+\end{itemize}
+\end{must}
+
+\begin{plain}{Worked unifications}
+$f(x,b)$ with $f(a,y)$: unify $x,a\Rightarrow[a/x]$; then $b,y\Rightarrow[b/y]$. \ \textbf{MGU} $[a/x,b/y]$.\\
+$f(x,x)$ with $f(a,b)$: $[a/x]$ then $a$ vs $b$ \textbf{fail}.\\
+$f(x,x)$ with $f(y,g(y))$: $[y/x]$ then $y$ vs $g(y)$ --- \textbf{occurs check fails}.
+\end{plain}
+
+\begin{gotcha}
+Skip the \textbf{occurs check} and you can ``prove'' non-theorems (it builds infinite terms / unsound proofs --- this is why Prolog, which omits it, is not a sound theorem prover). \textbf{Rename variables apart} between the two clauses before resolving --- but renaming is \emph{not} part of unification itself.
+\end{gotcha}
+
+\subsection{First-order resolution \& factoring}
+
+\begin{must}
+\textbf{Binary resolution} (with MGU $\sigma$ of $B$ and $D$):
+\[
+\frac{\{B,A_1,\dots,A_m\}\quad\{\neg D,C_1,\dots,C_n\}}{\{A_1,\dots,A_m,C_1,\dots,C_n\}\sigma}\quad(B\sigma=D\sigma)
+\]
+\textbf{Factoring} (needed for completeness --- one resolution step removes only \emph{one} complementary pair):
+\[
+\frac{\{B_1,\dots,B_k,A_1,\dots,A_m\}}{\{B_1,A_1,\dots,A_m\}\sigma}\quad(B_1\sigma=\dots=B_k\sigma)
+\]
+\end{must}
+
+\begin{useful}
+\textbf{Strategies:} \emph{set of support} --- every step must involve (a descendant of) the negated conclusion. \emph{Linear resolution} --- each resolvent becomes a parent of the next step; this is the shape of \textbf{Prolog} execution (linear resolution on \emph{Horn} clauses, left-to-right, depth-first). Delete \emph{subsumed} and tautologous clauses to stop the prover flooding.
+\end{useful}
+
+\section{Binary Decision Diagrams --- 38\%}
+
+\begin{must}[title=ROBDD = canonical form]
+A BDD is an if-then-else DAG over the propositional variables. Write $x_P Y$ for ``\textbf{if $P$ then $X$ else $Y$}'' (Shannon expansion). Three conditions make it canonical:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{ordering} --- variables tested in a fixed order; if $P$ before $Q$ then $P<Q$ (each var at most once per path);
+  \item \textbf{uniqueness} --- identical subgraphs stored once (hash by variable $+$ child pointers);
+  \item \textbf{irredundancy} --- delete a node whose true- and false-children are identical.
+\end{itemize}
+Then: $\textbf{equivalent} \Leftrightarrow$ same BDD (compare pointers); \textbf{tautology} $\Leftrightarrow$ BDD $=\mathbf 1$; \textbf{unsatisfiable} $\Leftrightarrow$ BDD $=\mathbf 0$.
+\end{must}
+
+\begin{must}[title=Building the BDD of a connective (the ``apply'' recursion)]
+To combine $Z={}_X P\,_Y$ and $Z'={}_{X'}P'\,_{Y'}$ under a connective:
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item recursively build BDDs for the sub-formulas, then combine top variables;
+  \item \textbf{$P=P'$:} new node on $P$ with children $\mathrm{apply}(X,X')$ and $\mathrm{apply}(Y,Y')$;
+  \item \textbf{$P<P'$:} branch on $P$, pairing each child of $P$ with the \emph{whole} $Z'$ (treat $Z'$ as $_{Z'}P\,_{Z'}$); symmetric if $P>P'$;
+  \item \textbf{simplify} (uniqueness + irredundancy) at every step; if both children equal, return the child.
+\end{enumerate}
+Use a \textbf{hash table} of (op, input BDDs) $\to$ result so each combination is computed once.
+\end{must}
+
+\begin{gotcha}
+\textbf{Variable ordering is everything}: a good order gives a small BDD, a bad order can be exponentially larger. State the ordering you use and test variables in it consistently. Negation is cheap: copy the BDD and swap the $\mathbf 0/\mathbf 1$ leaves.
+\end{gotcha}
+
+\section{Decision procedures: Fourier--Motzkin \& SMT --- 12\%+}
+
+\begin{must}[title=Fourier--Motzkin variable elimination (linear arithmetic over $\mathbb{R}/\mathbb{Q}$)]
+Decide satisfiability of a conjunction of linear inequalities. To eliminate variable $x$:
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item rewrite each constraint mentioning $x$ as a \textbf{lower bound} ($x\ge\ell$) or an \textbf{upper bound} ($x\le u$);
+  \item add, for \emph{every} (lower, upper) pair, the combined constraint $\ell\le u$ (with $x$ gone);
+  \item keep constraints not mentioning $x$; \textbf{repeat} for the next variable.
+\end{enumerate}
+End with a contradiction such as $0\le c$ with $c<0$ $\Rightarrow$ \textbf{unsatisfiable}; otherwise satisfiable. (This is \emph{quantifier elimination} for $\exists$.)
+\end{must}
+
+\begin{plain}{Worked: Fourier--Motzkin on a 4-constraint system}
+Constraints: $x\le y,\ x\le z,\ -x+y+2z\le 0,\ -z\le -1$.\\
+Third gives lower bound $x\ge y+2z$; uppers are $x\le y,\ x\le z$. Pair them:
+$y+2z\le y\Rightarrow z\le 0$;\ \ $y+2z\le z\Rightarrow z\le -y$. With $-z\le-1$ (i.e.\ $z\ge1$) we have $z\ge1$ and $z\le0$: combine $\Rightarrow 0\le -1$. \textbf{Contradiction $\Rightarrow$ unsatisfiable.}
+\end{plain}
+
+\begin{useful}
+\textbf{SMT $=$ DPLL $+$ theory solver.} Treat each atomic arithmetic fact (e.g.\ $a<0$) as a propositional letter; DPLL handles the Boolean structure, and a decision procedure checks whether the chosen literals are consistent in the theory. If not, it feeds back a \emph{blocking clause} ($\neg(a<0)\vee\neg(a>0)$) and DPLL backtracks --- \textbf{over-approximation $+$ counterexample-driven refinement}. (Z3 is the canonical SMT solver.) \emph{Note:} pure-literal deletion is unsafe in SMT --- literals are connected through the theory.
+\end{useful}
+
+\section{Sequent calculus, modal logic \& tableaux --- 19\%/12\%}
+
+\begin{must}[title=How to do a sequent proof (work backwards)]
+Goal sequent $\Gamma\seq\Delta$ means ``if all of $\Gamma$ hold then some of $\Delta$ holds.'' Start from the formula you want as $\seq A$ and apply rules \textbf{upwards}, breaking connectives down, until every leaf is a \textbf{basic sequent} $A,\Gamma\seq A,\Delta$ (same formula both sides). \emph{Left} rules act on assumptions, \emph{right} rules on goals (full set on the last page).
+\end{must}
+
+\begin{gotcha}
+Apply the quantifier rules with a \textbf{proviso first}: $\forall r$ and $\exists l$ require ``$x$ not free in the conclusion,'' so use them \emph{before} $\forall l$/$\exists r$ introduce terms that could capture $x$. $\forall l$ and $\exists r$ may be needed \emph{twice} (keep a copy of the quantified formula). Rename to avoid clashes.
+\end{gotcha}
+
+\begin{useful}
+\textbf{Modal logic (Kripke).} A frame is $(W,R)$: worlds $+$ accessibility. $w\Vdash\square A$ iff $A$ holds in \emph{all} $v$ with $R(w,v)$; $w\Vdash\Diamond A$ iff in \emph{some}. $\Diamond A\eq\neg\square\neg A$. Systems by axiom: \textbf{K} (distribution $+$ necessitation), \textbf{T} $\square A\imp A$ (reflexive), \textbf{4} $\square A\imp\square\square A$ (transitive), \textbf{B} $A\imp\square\Diamond A$ (symmetric); \textbf{S4}$=$T$+$4, \textbf{S5}$=$T$+$4$+$B (equivalence relation). In S4, $\square\square A\eq\square A$ (operator strings collapse to length $\le$ few). \textbf{S4 sequent rules} ($\square r,\Diamond l$) \emph{discard} all non-$\square$/$\Diamond$ formulas --- so apply them \emph{first}, or you lose information and the proof fails.\\[3pt]
+\textbf{Tableaux} $=$ a streamlined, refutation sequent calculus (only left rules; prove $A$ by refuting $A\seq$). \emph{Free-variable tableaux} add unification --- but then you \textbf{must Skolemise} (mixing unification with un-Skolemised $\exists$ is unsound).
+\end{useful}
+
+% ============================ ONE-PAGE RULE REFERENCE ============================
+\newpage
+\section*{One-page rule reference}
+\begin{footnotesize}
+\begin{multicols}{2}
+
+\textbf{Propositional equivalences.}\\
+$\neg\neg A\eq A$;\ \ $A\imp B\eq\neg A\vee B$;\ \ $A\leftrightarrow B\eq(A\imp B)\wedge(B\imp A)$.\\
+de Morgan: $\neg(A\wedge B)\eq\neg A\vee\neg B$,\ $\neg(A\vee B)\eq\neg A\wedge\neg B$.\\
+distrib: $A\vee(B\wedge C)\eq(A\vee B)\wedge(A\vee C)$ and dual.\\
+simplify: $A\wedge\T\eq A$, $A\vee\F\eq A$, $A\wedge\neg A\eq\F$, $A\vee\neg A\eq\T$.
+
+\textbf{Clause form.} negate $\to$ elim $\leftrightarrow,\imp$ $\to$ NNF $\to$ Skolemise ($\exists y$ under $\forall\bar x$ $\mapsto f(\bar x)$) $\to$ drop $\forall$ $\to$ CNF $\to$ clauses. $\square=\{\}=\F$.
+
+\textbf{DPLL.} del tautologies; unit-propagate $\{L\}$ (drop clauses with $L$, drop $\neg L$); del pure-literal clauses; $\square\Rightarrow$ unsat; empty set $\Rightarrow$ sat; else case-split on $L$.
+
+\textbf{Resolution.} \ $\dfrac{\{B,\bar A\}\ \ \{\neg D,\bar C\}}{\{\bar A,\bar C\}\sigma}\ (B\sigma{=}D\sigma)$.\\
+\textbf{Factoring} \ $\dfrac{\{B_1,\dots,B_k,\bar A\}}{\{B_1,\bar A\}\sigma}\ (B_1\sigma{=}\dots{=}B_k\sigma)$.
+
+\textbf{Unification (MGU).} var $x$ vs $t$: occurs-check then $[t/x]$; const vs const: equal or fail; pair: unify firsts $\theta_1$, then $t_2\theta_1$ vs $u_2\theta_1$, compose.
+
+\textbf{BDD.} $x_P Y\equiv$ if $P$ then $X$ else $Y$. Canonical when ordered + unique + irredundant. apply: $P{=}P'$ branch on $P$ pairing children; $P{<}P'$ pair $P$'s children with all of $Z'$. Equiv $\Leftrightarrow$ same DAG; valid $\Leftrightarrow\mathbf1$; unsat $\Leftrightarrow\mathbf0$.
+
+\textbf{Fourier--Motzkin.} per var: split into $x\ge\ell$ / $x\le u$; add $\ell\le u$ for every pair; drop $x$; repeat; $0\le c<0\Rightarrow$ unsat.
+
+\columnbreak
+
+\textbf{Sequent rules} ($\Gamma\seq\Delta$; basic $A,\Gamma\seq A,\Delta$).
+\[\dfrac{\Gamma\seq\Delta,A}{\neg A,\Gamma\seq\Delta}\rn{\neg l}\quad
+\dfrac{A,\Gamma\seq\Delta}{\Gamma\seq\Delta,\neg A}\rn{\neg r}\]
+\[\dfrac{A,B,\Gamma\seq\Delta}{A\wedge B,\Gamma\seq\Delta}\rn{\wedge l}\quad
+\dfrac{\Gamma\seq\Delta,A\ \ \Gamma\seq\Delta,B}{\Gamma\seq\Delta,A\wedge B}\rn{\wedge r}\]
+\[\dfrac{A,\Gamma\seq\Delta\ \ B,\Gamma\seq\Delta}{A\vee B,\Gamma\seq\Delta}\rn{\vee l}\quad
+\dfrac{\Gamma\seq\Delta,A,B}{\Gamma\seq\Delta,A\vee B}\rn{\vee r}\]
+\[\dfrac{\Gamma\seq\Delta,A\ \ B,\Gamma\seq\Delta}{A\imp B,\Gamma\seq\Delta}\rn{\imp l}\quad
+\dfrac{A,\Gamma\seq\Delta,B}{\Gamma\seq\Delta,A\imp B}\rn{\imp r}\]
+\[\dfrac{A[t/x],\Gamma\seq\Delta}{\forall x\,A,\Gamma\seq\Delta}\rn{\forall l}\quad
+\dfrac{\Gamma\seq\Delta,A}{\Gamma\seq\Delta,\forall x\,A}\rn{\forall r}^{*}\]
+\[\dfrac{A,\Gamma\seq\Delta}{\exists x\,A,\Gamma\seq\Delta}\rn{\exists l}^{*}\quad
+\dfrac{\Gamma\seq\Delta,A[t/x]}{\Gamma\seq\Delta,\exists x\,A}\rn{\exists r}\]
+$^{*}$\,$x$ not free in the conclusion. \ Weakening: $\dfrac{\Gamma\seq\Delta}{A,\Gamma\seq\Delta}$, $\dfrac{\Gamma\seq\Delta}{\Gamma\seq\Delta,A}$. \ Cut: $\dfrac{\Gamma\seq\Delta,A\ \ A,\Gamma\seq\Delta}{\Gamma\seq\Delta}$.
+
+\textbf{Modal S4 sequent rules} ($\Gamma^{*}{=}\{\square B\in\Gamma\}$, $\Delta^{*}{=}\{\Diamond B\in\Delta\}$):
+\[\dfrac{A,\Gamma\seq\Delta}{\square A,\Gamma\seq\Delta}\rn{\square l}\quad
+\dfrac{\Gamma^{*}\seq\Delta^{*},A}{\Gamma\seq\Delta,\square A}\rn{\square r}\]
+\[\dfrac{A,\Gamma^{*}\seq\Delta^{*}}{\Diamond A,\Gamma\seq\Delta}\rn{\Diamond l}\quad
+\dfrac{\Gamma\seq\Delta,A}{\Gamma\seq\Delta,\Diamond A}\rn{\Diamond r}\]
+($\square r,\Diamond l$ discard non-$\square$/$\Diamond$ formulas --- apply first.)
+
+\textbf{Modal axioms.} K: $\square(A\imp B)\imp(\square A\imp\square B)$ $+$ necessitation $\frac{A}{\square A}$; \ T $\square A\imp A$ (refl); \ 4 $\square A\imp\square\square A$ (trans); \ B $A\imp\square\Diamond A$ (symm). S4$=$T4, S5$=$T4B. $\Diamond A\eq\neg\square\neg A$.
+
+\textbf{FOL quantifier equivalences.} $\neg\forall x A\eq\exists x\neg A$; $\neg\exists xA\eq\forall x\neg A$; pull out if $x\notin B$: $(\forall xA)\wedge B\eq\forall x(A\wedge B)$, etc.
+
+\end{multicols}
+\end{footnotesize}
+
+\end{document}
