@@ -1,0 +1,218 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{kw}{HTML}{8B0058}
+\definecolor{cmt}{HTML}{6A8F4B}
+\definecolor{str}{HTML}{B36B00}
+\definecolor{bg}{HTML}{FBFAF7}
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Gotcha,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\newcommand{\der}{\Rightarrow}
+\newcommand{\ders}{\overset{*}{\Rightarrow}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Formal Models of Language} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST --- Paper 7}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+Formal Models of Language sets one or two questions a year on \textbf{Paper 7}. Across \textbf{eight years of past papers (2018--2025, 15 questions)}, the tagged topic frequencies are:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+Context-free grammars \& parsing (Earley, parse trees) & 7 & 47\% \\
+Formal-language theory \& automata (Chomsky hierarchy) & 4 & 27\% \\
+Entropy \& information theory & 3 & 20\% \\
+Noisy-channel model (NLP) & 3 & 20\% \\
+Syntax trees \& tree-adjoining grammars & 3 & 20\% \\
+Formal vs.\ natural language & 2 & 13\% \\
+Regular expressions \& finite automata & 2 & 13\% \\
+Grammar induction (Gold's theorem) & 1 & 7\% \\
+Dependency parsing \& grammars & 1 & 7\% \\
+Categorial / lexicalised grammars & 1 & 7\% \\
+Statistical language models & 1 & 7\% \\
+Complexity \& human language processing & 1 & 7\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} Two clusters dominate. \textbf{(1)~Grammars, the Chomsky hierarchy and parsing} (CFGs, pumping lemmas, Earley, dependency/TAG/categorial) account for well over half the marks. \textbf{(2)~Information theory} (entropy, mutual information, the noisy channel) is the other reliable question, $\sim$40\% across its tags. Together they are $\sim$90\% of the paper. \emph{Vector-space models / word embeddings have \textbf{never} been examined (0/15)} --- a single paragraph of insurance is enough.
+
+This document is ordered that way: \textbf{grammars \& parsing first, then information theory, then the long tail}.
+
+\hrulefill
+
+\section{Grammars, the Chomsky hierarchy \& parsing (Tier 1)}
+
+\subsection{Phrase-structure grammars and the hierarchy}
+
+\begin{must}
+A \textbf{phrase-structure (generative) grammar} is a tuple $G=(\mathcal N,\Sigma,S,\mathcal P)$: non-terminals $\mathcal N$, terminals $\Sigma$ (with $\mathcal N\cap\Sigma=\varnothing$), start symbol $S\in\mathcal N$, and production rules $\mathcal P$ of the form $w\to v$ with $w\in(\Sigma\cup\mathcal N)^*\mathcal N(\Sigma\cup\mathcal N)^*$ (at least one non-terminal on the left). \\[2pt]
+A \textbf{derivation step} $w\der v$ rewrites one rule's LHS; $\ders$ is its reflexive-transitive closure, and $\mathcal L(G)=\{w\in\Sigma^*\mid S\ders w\}$.
+\end{must}
+
+\textbf{The Chomsky hierarchy} groups grammars by the shape of their rules; each type is a strict superset of the one above in expressive power, recognised by a more powerful machine.
+
+\begin{center}
+\begin{tabular}{clll c}
+\hline
+\textbf{Type} & \textbf{Class} & \textbf{Rule form} & \textbf{Machine} & \textbf{Recognition} \\
+\hline
+3 & regular & $A\to aB \mid a$ (or $A\to Ba$) & DFA / NFA & $O(n)$ \\
+2 & context-free & $A\to\alpha,\ \alpha\in(\mathcal N\cup\Sigma)^*$ & push-down automaton & $O(n^c)$ \\
+1 & context-sensitive & $\alpha A\beta\to\alpha\gamma\beta,\ \gamma\neq\epsilon$ & linear-bounded automaton & $O(c^n)$ \\
+0 & recursively enum. & $\alpha\to\beta$ (any) & Turing machine & undecidable \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{useful}
+\textbf{Closure properties (examinable as one-liners).} Every Chomsky class is closed under \emph{union} ($\mathcal L(G_1)\cup\mathcal L(G_2)$ is the same type). Every class is closed under \emph{intersection with a regular language} (regular $\cap$ CF $=$ CF). \textbf{Weak vs.\ strong equivalence:} two grammars are \emph{weakly} equivalent if they generate the same string set; \emph{strongly} equivalent if they also assign the same tree structures.
+\end{useful}
+
+\textbf{Machines (one line each).} A \textbf{DFA} $M=(\mathcal Q,\Sigma,\Delta,s,\mathcal F)$ accepts the regular languages; transition $\delta:\mathcal Q\times\Sigma\to\mathcal Q$. A \textbf{push-down automaton} adds a LIFO stack ($\delta$ reads state, input \emph{and} stack-top; transitions written $a:A/B$ = on $a$, pop $A$, push $B$) and accepts exactly the context-free languages. A \textbf{linear-bounded automaton} (bounded tape) gives context-sensitive; an unrestricted \textbf{Turing machine} gives recursively enumerable.
+
+\subsection{Pumping lemmas --- the standard ``prove it's not\dots'' tool}
+
+\begin{must}
+\textbf{Regular pumping lemma.} If $\mathcal L$ is regular then $\exists\,l$ s.t.\ every $w\in\mathcal L$ with $|w|\ge l$ can be written $w=u_1vu_2$ with
+$|v|\ge1$, $|u_1v|\le l$, and $u_1v^nu_2\in\mathcal L$ for \emph{all} $n\ge0$.\\[3pt]
+\textbf{Context-free pumping lemma.} If $\mathcal L$ is context-free then $\exists\,k$ s.t.\ every $w\in\mathcal L$ with $|w|\ge k$ splits as $w=u_1\,v\,u_2\,y\,u_3$ with $|vy|\ge1$, $|vu_2y|\le k$, and $u_1v^n u_2 y^n u_3\in\mathcal L$ for all $n\ge0$. (Two pumped regions, pumped \emph{together}.)
+\end{must}
+
+\textbf{Proof template (do it as a game).} To show $\mathcal L$ is \emph{not} regular: for every $l$, \emph{you} pick a witness $w\in\mathcal L$ with $|w|\ge l$; the adversary splits it as $u_1vu_2$ respecting the constraints; \emph{you} pick an $n$ (usually $n=0$ or $2$) making $u_1v^nu_2\notin\mathcal L$.
+
+\begin{plain}{Worked: a\textsuperscript{n}b\textsuperscript{n} is not regular}
+Pick $w=a^l b^l$. Any split with $|u_1v|\le l$ forces $v=a^r$, $r\ge1$. Then $u_1v^2u_2=a^{l+r}b^{l}\notin\mathcal L$. \quad
+For \emph{not context-free}, the canonical witness is $a^nb^nc^n$ with the CF lemma ($v,y$ can cover at most two of the three letters, so pumping unbalances the third).
+\end{plain}
+
+\begin{gotcha}
+The pumping lemma is a \textbf{necessary, not sufficient} condition --- you can only use it to prove a language is \emph{not} in a class, never to prove it \emph{is}. And the adversary chooses the split: your proof must work for \emph{every} legal $u_1vu_2$, so keep the witness general (use the bound $|u_1v|\le l$ to pin $v$ inside the $a$-block).
+\end{gotcha}
+
+\subsection{Parsing --- the single most examined topic}
+
+\textbf{Two meanings of ``parse.''} \emph{Recognition}: decide whether $w\in\mathcal L(G)$ (complexity per the hierarchy table). \emph{Structure}: recover the most useful constituent (phrase-structure) tree --- the usual NLP task. \textbf{Chomsky Normal Form} ($A\to BC$ or $A\to a$) is the precondition assumed by several parsing algorithms; every CFG has a weakly-equivalent CNF.
+
+\begin{must}
+\textbf{The Earley parser} is the headline algorithm. It is a top-down, dynamic-programming chart parser, $O(n^3)$, that handles \emph{any} CFG (including ambiguous ones) and recovers \emph{all} derivations.\\[3pt]
+State is a \textbf{dotted rule} $A\to\alpha\bullet\beta\,[i,j]$: rule $A\to\alpha\beta$, dot marking how much is parsed, spanning input positions $i$ to $j$. Initialise with $S\to\bullet\alpha\,[0,0]$; accept when $S\to\alpha\bullet\,[0,n]$ is in the chart.
+\end{must}
+
+The three operations, applied until the chart stops growing:
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Predict:} from $A\to\alpha\bullet B\beta\,[i,j]$ and rule $B\to\gamma$, add $B\to\bullet\gamma\,[j,j]$ (expand the next non-terminal top-down).
+  \item \textbf{Scan:} from $A\to\alpha\bullet a\,[i,j-1]$ with input $a_j=a$, add $A\to\alpha a\bullet\,[i,j]$ (consume a terminal).
+  \item \textbf{Complete:} from a finished $B\to\gamma\bullet\,[k,j]$ and a waiting $A\to\alpha\bullet B\beta\,[i,k]$, add $A\to\alpha B\bullet\beta\,[i,j]$ (a sub-tree is done; advance its parent).
+\end{itemize}
+Record a \textbf{history} per edge so the tree(s) can be reconstructed; shared sub-trees and \textbf{ambiguity packing} keep it polynomial despite exponentially many trees.
+
+\begin{useful}
+\textbf{Shift-reduce / LR($k$)} parsers (from Compiler Construction) recognise \emph{deterministic} languages with one analysis: \textsc{shift} a token onto the stack, \textsc{reduce} when the stack top matches a rule's RHS. They cannot cope with the inherent ambiguity of natural language without backtracking --- which is exactly why Earley (or a probabilistic parser) is used for NL.
+\end{useful}
+
+\subsection{Dependency grammars}
+
+A \textbf{dependency tree} has the words themselves as nodes and labelled \emph{head\,$\to$\,dependent} edges (e.g.\ \texttt{nsubj}, \texttt{dobj}, \texttt{nmod}). A valid tree is rooted and connected; \textbf{projective} if it can be drawn with no crossing edges. Formally $G_{dep}=(\Sigma,\mathcal D,s,\bot,\mathcal P)$ with direction markers $\mathcal D=\{\mathcal L,\mathcal R\}$.
+
+\begin{useful}
+\textbf{Shift-reduce dependency parsing.} Replace \textsc{reduce} with \textsc{left-arc} / \textsc{right-arc}, which combine the top two stack items, keep the \emph{head}, and record the dependency. In practice it is \textbf{grammarless / data-driven}: a classifier (features from stack+buffer, often word embeddings) picks the action, trained on a \textbf{dependency bank}; beam search avoids early wrong commitments. \emph{Projective} dependency grammars are weakly equivalent to CFGs (map via a notion of \emph{headedness}).
+\end{useful}
+
+\subsection{Tree-adjoining \& categorial grammars (mildly context-sensitive)}
+
+\begin{useful}
+\textbf{Tree-adjoining grammar (TAG)} rewrites \emph{trees}, not symbols: a set of \textbf{initial ($\alpha$) trees} and \textbf{auxiliary ($\beta$) trees}, combined by \textbf{substitution} (replace a non-terminal leaf with an $\alpha$-tree) and \textbf{adjunction} (splice a $\beta$-tree, whose root and \emph{foot} are the same non-terminal, into an internal node). Parsing is $O(n^6)$. TAG languages sit strictly between context-free and context-sensitive --- the \textbf{mildly context-sensitive} class --- argued to be just expressive enough for natural language (e.g.\ cross-serial dependencies).\\[3pt]
+\textbf{Categorial grammar} is lexicalised: each word carries \emph{types} built from primitives with $\backslash$ and $/$; parsing is type combination via \textbf{forward application} ($A/B\ \ B\Rightarrow A$) and \textbf{backward application} ($B\ \ A\backslash B\Rightarrow A$). Classic CG $=$ CFG in power; \textbf{combinatory} CG (adds composition + type-raising) reaches the mildly context-sensitive class.
+\end{useful}
+
+\section{Information theory \& language (Tier 1)}
+
+\begin{must}
+\textbf{Entropy} of a source $X$ over alphabet $\mathcal X$ (average information / bits per message):
+\[
+  H(X)=-\!\!\sum_{x\in\mathcal X}p(x)\log_2 p(x)
+  \qquad\bigl(\text{uniform: }H=\log_2 M\bigr).
+\]
+\textbf{Surprisal} of one message: $s(x)=-\log_2 p(x)$ --- rare events carry more information; entropy is the average surprisal.
+\end{must}
+
+\begin{useful}
+\textbf{The whole toolkit (state the formula, then interpret).}
+\begin{align*}
+\text{Conditional entropy} &: H(Y\mid X)=-\!\!\sum_{x,y}p(x,y)\log_2 p(y\mid x)\\
+\text{Joint entropy} &: H(X,Y)=-\!\!\sum_{x,y}p(x,y)\log_2 p(x,y)\\
+\text{Chain rule} &: H(X,Y)=H(X)+H(Y\mid X)\\
+\text{Mutual information} &: I(X;Y)=H(X)-H(X\mid Y)=H(Y)-H(Y\mid X)\\
+\text{Relative entropy (KL)} &: D(p\,\|\,q)=\sum_x p(x)\log_2\tfrac{p(x)}{q(x)}\\
+\text{Cross-entropy} &: H(X,q)=H(X)+D(p\,\|\,q)=-\!\sum_x p(x)\log_2 q(x)\\
+\text{Entropy rate} &: H_{rate}(L)=\lim_{n\to\infty}\tfrac1n H(X_1\dots X_n)
+\end{align*}
+Mutual information is the reduction in uncertainty about $X$ from knowing $Y$; equivalently $I(X;Y)=D\big(p(x,y)\,\|\,p(x)p(y)\big)$ --- distance from independence.
+\end{useful}
+
+\begin{must}
+\textbf{Noisy-channel model.} A channel $p(y\mid x)$ maps input to output; \textbf{capacity} $C=\max_{p(X)} I(X;Y)$ is the max error-free rate. The \textbf{NLP noisy-channel framework}: recover the most likely input given the observed output via Bayes,
+\[
+  \hat\imath=\arg\max_i p(i\mid o)=\arg\max_i \underbrace{p(o\mid i)}_{\text{channel model}}\;\underbrace{p(i)}_{\text{language model}} .
+\]
+$p(i)$ is usually an \textbf{$n$-gram} model (an $n$-gram conditions on the previous $n{-}1$ items; estimate by MLE $p_{mle}(w_1\dots w_n)=\frac{\mathrm{count}(w_1\dots w_n)}{\mathrm{count}(w_1\dots w_{n-1})}$). Applications: spelling correction, speech recognition, machine translation.
+\end{must}
+
+\begin{useful}
+\textbf{Information theory $\to$ language theories} (the ``why'' the course cares). \emph{Is language an efficient code?} word lengths track frequency / surprisal (Zipf). \emph{Uniform Information Density:} speakers spread information evenly across the signal, choosing variants that avoid spikes/troughs in surprisal. \emph{Ambiguity} can be beneficial when context disambiguates --- an efficient code reuses short forms.
+\end{useful}
+
+\section{The long tail (Tier 2/3)}
+
+\textbf{Formal vs.\ natural language} (2/15). Natural language is \emph{ambiguous}, \emph{productive/recursive}, and shows \emph{displacement}; formal languages are exact subsets of $\Sigma^*$. Key distinctions to deploy: \textbf{competence vs.\ performance}; \textbf{grammaticality vs.\ statistical frequency}; \textbf{weak vs.\ strong generative capacity}. The standard argument that NL is \emph{not} context-free is \textbf{cross-serial dependencies} (Swiss-German / Dutch), motivating mildly context-sensitive grammars (TAG/CCG).
+
+\textbf{Grammar induction} (1/15). \textbf{Gold's theorem} (identification in the limit): no \emph{superfinite} class of languages (all finite languages plus at least one infinite one --- hence the regular languages and above) is learnable from \emph{positive examples alone}. Consequences: learners need negative evidence, a prior/bias, or statistical/distributional cues. \emph{Learnable} classes and \emph{categorial-grammar} induction are the positive side.
+
+\textbf{Vector-space models} (0/15 --- insurance only). Words as vectors under the \textbf{distributional hypothesis} (``meaning $=$ company a word keeps''); \textbf{word2vec} (skip-gram / CBOW) learns dense embeddings; cosine similarity measures semantic relatedness. Newer syllabus content --- know the one-paragraph gist.
+
+\section*{Exam checklist}
+
+\begin{must}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Grammar \& hierarchy:} define $G=(\mathcal N,\Sigma,S,\mathcal P)$; reproduce the Type 0--3 rule-form table and its machines (DFA/PDA/LBA/TM) cold.
+  \item \textbf{Pumping:} state \emph{both} lemmas; run the $a^nb^n$ (regular) and $a^nb^nc^n$ (CF) proofs as an adversary game. Remember: necessary, not sufficient.
+  \item \textbf{Earley:} dotted rule $A\to\alpha\bullet\beta\,[i,j]$; the three steps \textbf{predict / scan / complete}; $O(n^3)$; recovers all trees via edge histories. Be ready to run it by hand on a 3--4 word sentence.
+  \item \textbf{Dependency/TAG/categorial:} head$\to$dependent trees + shift-reduce (left/right-arc, data-driven); TAG substitution/adjunction $=$ mildly context-sensitive ($O(n^6)$); categorial forward/backward application.
+  \item \textbf{Information theory:} $H(X)=-\sum p\log_2 p$, surprisal $-\log_2 p(x)$, $I(X;Y)=H(X)-H(X\mid Y)$, chain rule, KL/cross-entropy. Noisy channel: $\hat\imath=\arg\max_i p(o\mid i)p(i)$ with an $n$-gram $p(i)$.
+  \item \textbf{Theory link:} UID, Zipf, ambiguity-as-efficiency; Gold's theorem (no superfinite class learnable from positive data only); cross-serial dependencies $\Rightarrow$ NL is not context-free.
+\end{enumerate}
+\end{must}
+
+\end{document}

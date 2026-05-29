@@ -126,5 +126,8 @@ The frequency table at the top isn't decoration — it's the spine of the docume
 | Programming in C and C++ | `c_cpp_8020.tex` | 2018–2025, 16 questions |
 | Introduction to Computer Architecture | `comp_arch_8020.tex` | 2022–2025, 12 questions |
 | Compiler Construction | `compilers_8020.tex` | 2018–2025, 16 questions |
+| Formal Models of Language | `fml_8020.tex` | 2018–2025, 15 questions |
+| Further HCI | `fhci_8020.tex` | 2018–2025, 16 questions |
+| Economics, Law and Ethics | `ele_8020.tex` | 2018–2025, 15 questions |
 
 When the past-paper coverage shifts (e.g. new year added to `data/tripos_coverage.json`), regenerate the frequency tally and update the opening section before reusing the same LaTeX.

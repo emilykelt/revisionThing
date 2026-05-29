@@ -1,0 +1,207 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\newcommand{\pred}[1]{\textsc{#1}}
+\newcommand{\add}{\textsc{Add}}
+\newcommand{\del}{\textsc{Del}}
+\newcommand{\pre}{\textsc{Pre}}
+
+\newtcolorbox{defbox}[1]{colback=gray!5,colframe=gray!50!black,title={#1}}
+
+\title{\vspace{-1.5cm}AI Planning --- STRIPS, Partial-Order Planning, State Variables \& CSP\\[2pt]
+\large Concepts for Q3 (Evil Cat Robot), Q4 (Gorilla CSP), 2025 P7 Q2 (Evil Robot cave)}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1cm}
+
+These three questions all live in the \textbf{representation} half of the planning syllabus: how you \emph{describe} a planning problem (STRIPS, state variables), how you \emph{solve} it without committing to an order (partial-order planning), and how you \emph{translate} it into another formalism (CSP). State every definition as a standalone sentence before you use it --- that is where the marks are.
+
+%==================================================================
+\section*{1.\ \ STRIPS representation \hfill {\normalfont\itshape (Q3, first bullet)}}
+
+The cat/owner problem was given in \emph{situation calculus} (fluents indexed by a situation term, with successor-state and frame axioms). STRIPS drops the explicit logic and instead describes each action by what it \textbf{adds} and \textbf{deletes}. To convert: each fluent $F(\bar x, s)$ becomes a timeless predicate $F(\bar x)$; each action's successor-state axiom becomes an add-list and a delete-list.
+
+\begin{defbox}{STRIPS problem $= \langle$ states, operators, init, goal $\rangle$}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{State} --- a \emph{set of ground positive literals}. \textbf{Closed-world assumption}: any literal not in the set is false.
+  \item \textbf{Operator (action schema)} $\pred{a}(\bar x)$ has
+        \[ \pre(a)=\text{conjunction of literals},\quad \add(a),\ \del(a)=\text{lists of literals}. \]
+  \item \textbf{Initial state} --- a complete set of literals true at the start.
+  \item \textbf{Goal} --- a conjunction of literals (need not mention every fluent).
+\end{itemize}
+\end{defbox}
+
+\textbf{Applicability \& result (the bit examiners want stated precisely).} Action $a$ is applicable in state $s$ iff $\pre(a)^{+}\subseteq s$ and $\pre(a)^{-}\cap s=\varnothing$. The resulting state is
+\[
+  s' \;=\; \bigl(s \setminus \del(a)\bigr)\,\cup\,\add(a).
+\]
+Only listed literals change --- this is the \textbf{STRIPS assumption}, and it is what removes the need for explicit frame axioms.
+
+\textbf{Writing the cat problem in STRIPS.} For \emph{every} action in the situation-calculus version, give a schema, e.g.\ in the standard form:
+\begin{quote}\ttfamily
+Action(\,move(x,y),\\
+\hspace*{1em}Pre:  At(x) $\wedge$ Adjacent(x,y),\\
+\hspace*{1em}Add:  At(y),\\
+\hspace*{1em}Del:  At(x)\,)
+\end{quote}
+Use \emph{parameters} ($x,y$) so one schema covers many ground actions; keep static facts (e.g.\ \pred{Adjacent}) as preconditions. The deliverable is: the set of operator schemas $+$ the init literal set $+$ the goal conjunction --- exactly the input a partial-order planner expects.
+
+%==================================================================
+\section*{2.\ \ Partial-order planning (POP) \hfill {\normalfont\itshape (Q3, second bullet)}}
+
+POP works backwards from the goal, adding actions and committing to an ordering \textbf{only when there is a causal reason} (least commitment). The output is a partial order, not a sequence.
+
+\begin{defbox}{A plan is a 4-tuple $\langle A,\,O,\,L,\,B\rangle$}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item $A$ --- set of actions, including two dummies:
+        \pred{Start} (no preconditions; its effects $=$ the initial state) and
+        \pred{Finish} (no effects; its preconditions $=$ the goal).
+  \item $O$ --- ordering constraints $A_i \prec A_j$ (``$A_i$ before $A_j$'').
+  \item $L$ --- causal links $A_i \xrightarrow{\,p\,} A_j$: ``$A_i$ achieves precondition $p$ of $A_j$''.
+  \item $B$ --- binding constraints on the schema variables.
+\end{itemize}
+\end{defbox}
+
+\begin{defbox}{Open precondition / threat / resolution}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item An \textbf{open precondition} is a precondition with no causal link supporting it yet.
+  \item A causal link $A_i \xrightarrow{\,p\,} A_j$ is \textbf{threatened} by an action $A_k$ if $\neg p \in \add$/effects of $A_k$ \emph{and} $A_k$ could be ordered between $A_i$ and $A_j$. ($A_k$ is a \emph{clobberer}.)
+  \item Resolve a threat by adding an ordering constraint:
+        \textbf{demotion} $A_k \prec A_i$ (push the clobberer before the link) or
+        \textbf{promotion} $A_j \prec A_k$ (push it after).
+\end{itemize}
+\end{defbox}
+
+\textbf{Algorithm (POP).} Start with $A=\{\pred{Start},\pred{Finish}\}$, $O=\{\pred{Start}\prec\pred{Finish}\}$, and \pred{Finish}'s preconditions open. Repeat:
+\begin{enumerate}[leftmargin=*,itemsep=1pt]
+  \item Pick an open precondition $p$ of some action $A_j$.
+  \item Choose an action $A_i$ achieving $p$ --- either already in $A$ or a new instance of a schema. Add the causal link $A_i \xrightarrow{\,p\,} A_j$, add $A_i\prec A_j$ (and $\pred{Start}\prec A_i \prec \pred{Finish}$ for new actions).
+  \item For every threat to any causal link, resolve it by promotion or demotion; if neither is consistent, backtrack.
+\end{enumerate}
+Terminate when there are \textbf{no open preconditions} and $O\cup B$ is \textbf{consistent} (no cycle). The result is a \emph{complete, consistent} partial-order plan.
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50!black,title=Why POP --- least commitment]
+$n$ mutually independent actions have $n!$ total orders but POP keeps them as \emph{one} unordered set, exploring none of the permutations. It only orders a pair when a causal link would otherwise be clobbered.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50!black,title=``How many specific plans can be extracted?'']
+A \textbf{specific (totally ordered) plan} is any \textbf{linearisation} of the partial order: a topological sort of the action DAG consistent with $O$. So the count is the \textbf{number of topological orderings (linear extensions)} of the final partial order.\\[3pt]
+Method: draw the DAG from $O$; any action with all predecessors already placed may go next; multiply out the choices. If the solution fully orders the actions there is exactly \textbf{1}; each pair left genuinely unordered multiplies the count. State the number \emph{and} justify it by exhibiting the unordered actions.
+\end{tcolorbox}
+
+%==================================================================
+\section*{3.\ \ State-variable representation \hfill {\normalfont\itshape (2025 P7 Q2 a, b)}}
+
+Propositional STRIPS uses many mutually-exclusive booleans (\pred{At}$(1,1,1)$, \pred{At}$(1,1,2)$, \dots). The \textbf{state-variable} (SAS$^+$ / multi-valued) representation replaces each such set by \emph{one} finite-domain variable --- far more compact and the natural bridge to a CSP.
+
+\begin{defbox}{Elements of the state-variable representation (Q2a)}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item A set of \textbf{state variables} $V=\{v_1,\dots,v_n\}$, each with a finite \textbf{domain} $D_{v}$.
+  \item A \textbf{state} is a total assignment giving every $v$ a value in $D_v$.
+  \item \textbf{Actions}: precondition $=$ a set of \emph{tests} $v=d$; effect $=$ a set of \emph{assignments} $v:=d'$.
+  \item \textbf{Initial state} $=$ a full assignment; \textbf{goal} $=$ a \emph{partial} assignment (constrains some variables only).
+\end{itemize}
+\end{defbox}
+
+\textbf{For the cave (Q2b examples).} Variables such as
+$\pred{Loc}\in\{1,\dots,10\}^3$, $\pred{HasKey}\in\{\top,\bot\}$, $\pred{GoldFound}\in\{\top,\bot\}$.
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \emph{Traps / key dispensers} --- fixed facts about the map, so model as \textbf{rigid relations} (see §4): $\pred{Trap}(x,y,z)$, $\pred{KeyDispenser}(x,y,z)$, not state variables.
+  \item \emph{Obtaining a key} --- action: $\pre:\ \pred{KeyDispenser}(\pred{Loc})$; effect: $\pred{HasKey}:=\top$.
+  \item \emph{Escape from prison} --- action: $\pre:\ \pred{Loc}=(10,10,10)\wedge \pred{HasKey}=\top$; effect: $\pred{Loc}:=(1,1,1)$.
+\end{itemize}
+
+%==================================================================
+\section*{4.\ \ Rigid vs.\ fluent relations \hfill {\normalfont\itshape (2025 P7 Q2 c)}}
+
+\begin{defbox}{Definition}
+A \textbf{fluent} is a relation/variable whose truth \emph{changes between states} as actions are applied ($\pred{Loc}$, $\pred{HasKey}$). A \textbf{rigid relation} is \emph{fixed for the whole problem instance} and never changed by any action --- the static structure of the world (walls, which cells are adjacent in each direction, magic-path links, trap/dispenser positions).
+\end{defbox}
+
+\textbf{The key trick (what Q2c is testing).} Put a rigid relation \emph{in the precondition} of a single action schema so that one schema specialises into exactly the legal concrete actions. Define a directional adjacency rigid relation, e.g.\ $\pred{Right}(\ell,\ell')$ holding for just those pairs where $\ell'$ is the cell to the right of $\ell$ and there is no wall:
+\begin{quote}\ttfamily
+Action(\,goRight,\ Pre: Loc $=\ell\ \wedge$ Right($\ell,\ell'$),\ Effect: Loc := $\ell'$\,)
+\end{quote}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Four descriptions, one shape:} \pred{goLeft}, \pred{goRight}, \pred{goForward}, \pred{goBack} differ \emph{only} in which rigid relation (\pred{Left}/\pred{Right}/\pred{Forward}/\pred{Back}) they consult --- so you reuse a single effect schema four times.
+  \item \textbf{Walls handled for free:} a move into a wall simply has \emph{no} rigid tuple, so the action is not applicable --- no special case needed.
+  \item \textbf{Can't escape prison by moving:} give the prison cell \emph{no outgoing} directional tuples in the rigid relations. Then no \pred{go*} action applies there; leaving prison is only possible via the dedicated escape action (which requires the key). This is exactly the ``account for the fact that you can't escape just by moving'' clause.
+\end{itemize}
+
+%==================================================================
+\section*{5.\ \ Constraint satisfaction problems \hfill {\normalfont\itshape (Q4 gorilla; 2025 P7 Q2 d)}}
+
+\begin{defbox}{CSP $=\langle X, D, C\rangle$}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Variables} $X=\{x_1,\dots,x_n\}$.
+  \item \textbf{Domains} $D=\{D_1,\dots,D_n\}$, $x_i\in D_i$ (finite).
+  \item \textbf{Constraints} $C$: each $c\in C$ ranges over a subset of $X$ and lists the \emph{allowed} value-combinations.
+\end{itemize}
+A \textbf{solution} is a complete assignment satisfying every constraint. Constraints over two variables are \emph{binary}; the \textbf{constraint graph} has an edge per binary constraint. \textbf{Arc consistency} (AC-3) prunes domain values with no support across an arc, before/while searching.
+\end{defbox}
+
+\subsection*{Q4 --- encoding ``buy a gorilla and attach it to the spire'' as a CSP}
+
+The question is open (``add whatever actions, relations \dots you feel appropriate''); what is marked is that you produce well-formed \emph{variables + domains + constraints}. Using the given domains:
+\[
+\begin{aligned}
+D_1&=\{\texttt{climber}\}, &
+D_3&=\{\texttt{rope},\texttt{gorilla},\texttt{firstAidKit}\},\\
+D_2&=\{\texttt{home},\texttt{jokeShop},\texttt{hardwareStore},\texttt{spire}\}.
+\end{aligned}
+\]
+Introduce variables for \emph{where each item is acquired} and the \emph{final location}, e.g.\ $\pred{buyLoc}_{\texttt{rope}},\pred{buyLoc}_{\texttt{gorilla}}\in D_2$ and $\pred{finishAt}\in D_2$, plus the agent $\pred{who}\in D_1$. Constraints (rigid ``sold-at'' facts plus a goal constraint):
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \emph{availability} (unary): $\pred{buyLoc}_{\texttt{gorilla}}=\texttt{jokeShop}$, $\pred{buyLoc}_{\texttt{rope}}=\texttt{hardwareStore}$ --- each item only sold at its shop.
+  \item \emph{goal} (the attach action's precondition as a constraint): $\pred{finishAt}=\texttt{spire}$, and the climber must \emph{carry} \texttt{rope} and \texttt{gorilla} (and, sensibly, \texttt{firstAidKit}) --- encode ``carried'' as boolean variables forced true.
+  \item \emph{resource/ordering} constraints if you model time-steps: you can only carry an item after visiting its shop.
+\end{itemize}
+State clearly: variables, their domains, and each constraint as a relation --- that is a complete CSP encoding. (If you add a time index, it becomes the bounded-planning encoding below.)
+
+\subsection*{Q2d --- modelling \texttt{goRight} as part of a CSP (planning $\to$ CSP)}
+
+\begin{defbox}{Bounded-horizon planning as a CSP}
+Fix a plan length $T$. Create, for each step $t\in\{0,\dots,T\}$, a copy of every state variable $v^{t}$, and for each $t\in\{0,\dots,T-1\}$ an action variable $\pred{Act}^{t}$ ranging over the actions. Constraints:
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{init} $v^{0}=$ initial value; \textbf{goal} $v^{T}=$ goal value.
+  \item \textbf{precondition}: $\pred{Act}^{t}=a \Rightarrow \pre(a)$ holds in the $t$-layer.
+  \item \textbf{effect}: $\pred{Act}^{t}=a \Rightarrow$ the $(t{+}1)$-layer matches $a$'s assignments.
+  \item \textbf{frame}: variables not in $a$'s effect satisfy $v^{t+1}=v^{t}$.
+\end{itemize}
+A solution assignment \emph{is} a length-$T$ plan; a solver searches over $T$.
+\end{defbox}
+
+For \texttt{goRight} specifically, the constraint tying consecutive layers is
+\[
+  \pred{Act}^{t}=\texttt{goRight}\ \Longrightarrow\
+  \pred{Right}\bigl(\pred{Loc}^{t},\pred{Loc}^{t+1}\bigr)\ \wedge\
+  \pred{HasKey}^{t+1}=\pred{HasKey}^{t}\ \wedge\ \dots
+\]
+i.e.\ the rigid \pred{Right} relation constrains $\pred{Loc}^{t+1}$ to the right-neighbour of $\pred{Loc}^{t}$ (and is unsatisfiable at a wall), while the frame conjuncts copy every other variable forward. This is why the state-variable form is convenient: each action is just a constraint relating layer $t$ to layer $t{+}1$.
+
+%==================================================================
+\section*{Exam checklist}
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50!black,breakable]
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{STRIPS:} state $=$ set of literals (closed-world); action $=\langle\pre,\add,\del\rangle$; result $s'=(s\setminus\del)\cup\add$. To convert from situation calculus: fluent $\to$ predicate, successor-state axiom $\to$ add/delete lists, frame axioms vanish.
+  \item \textbf{POP:} plan $=\langle A,O,L,B\rangle$ with \pred{Start}/\pred{Finish}; causal links; threats resolved by \emph{promotion}/\emph{demotion}; stop when no open preconditions and $O$ acyclic.
+  \item \textbf{\#\,specific plans} $=$ number of \emph{linearisations} (topological sorts) of the partial order. $1$ if fully ordered; more for each unordered pair --- justify by naming the unordered actions.
+  \item \textbf{State variables:} finite-domain variables; state $=$ full assignment; goal $=$ partial assignment. More compact than booleans.
+  \item \textbf{Rigid vs fluent:} rigid $=$ never changes (map/walls/adjacency); fluent $=$ changes with actions. Put a rigid relation in the precondition to get \emph{four} \pred{go*} schemas from one shape, handle walls automatically, and block prison-escape-by-moving.
+  \item \textbf{CSP:} $\langle X,D,C\rangle$; solution $=$ satisfying complete assignment. Planning $\to$ CSP: layer the state variables over $T$ steps; each action is a constraint linking layer $t$ to $t{+}1$ (precondition $+$ effect $+$ frame).
+\end{enumerate}
+\end{tcolorbox}
+
+\end{document}

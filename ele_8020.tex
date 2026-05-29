@@ -1,0 +1,225 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{kw}{HTML}{8B0058}
+\definecolor{cmt}{HTML}{6A8F4B}
+\definecolor{str}{HTML}{B36B00}
+\definecolor{bg}{HTML}{FBFAF7}
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Gotcha,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Economics, Law \& Ethics} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST --- Paper 7}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+ELE sets two questions a year on \textbf{Paper 7}, usually one economics-leaning and one law/ethics-leaning. Across \textbf{eight years (2018--2025, 15 questions)} the frequencies are unusually \emph{flat} --- this is a breadth course:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+Game theory \& (micro)economics & 4 & 27\% \\
+Information asymmetry \& market failure & 3 & 20\% \\
+Economic models of technology markets & 3 & 20\% \\
+Legal frameworks for data \& technology & 3 & 20\% \\
+GDPR \& data protection & 3 & 20\% \\
+Philosophical approaches to ethics & 3 & 20\% \\
+Hacker ethics \& cybercrime law & 3 & 20\% \\
+Automated decision-making / AI ethics \& regulation & 4 & 27\% (combined) \\
+Intellectual property; privacy \& surveillance & 2 each & 13\% \\
+Auctions; monopolies; AI consequences & 1 each & 7\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} There is \textbf{no single dominant topic} --- the exam rewards \emph{breadth across three pillars}. \textbf{Economics} and \textbf{Ethics} are the heaviest, with \textbf{Law} close behind and the most \emph{factually precise} (memorise the statutes). The single most-examined topic is \textbf{game theory}, and \textbf{AI ethics / automated decision-making} is now the fastest-growing theme. Strategy: secure \emph{one strong answer in each pillar} --- you only need two questions, so depth in two pillars plus a safety net in the third is enough. Lecturer's angle (Hutchings/Clayton): a security-economics and cybercrime slant, hence the prominence of \emph{hacker ethics} and the \emph{Computer Misuse Act}.
+
+\hrulefill
+
+\section{Economics (heaviest pillar)}
+
+\subsection{Game theory \& auctions (the top single topic --- 27\%)}
+
+\begin{must}
+\textbf{Nash equilibrium:} a strategy profile where no player can do better by \emph{unilaterally} changing strategy. A \textbf{dominant strategy} is best regardless of others' choices.\\[3pt]
+\textbf{Prisoner's dilemma:} mutual defection is the unique Nash equilibrium yet is \emph{Pareto-dominated} by mutual cooperation --- individually rational, collectively bad. Models security under-investment, spam, doping, etc.
+\end{must}
+
+\begin{center}
+\begin{tabular}{c|cc}
+ & \textbf{Cooperate} & \textbf{Defect} \\
+\hline
+\textbf{Cooperate} & $(3,3)$ & $(0,5)$ \\
+\textbf{Defect} & $(5,0)$ & $(1,1)$ \\
+\end{tabular}
+\end{center}
+
+\textbf{Iterated games.} With repetition (unknown horizon), cooperation can be sustained --- \emph{tit-for-tat} (Axelrod) is nice, retaliatory, forgiving, clear. A known final round unravels by backward induction.
+
+\begin{useful}
+\textbf{Auctions.} Four canonical types: \emph{English} (ascending open), \emph{Dutch} (descending open), \emph{first-price sealed-bid}, \emph{second-price sealed-bid (Vickrey)}.
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Vickrey is truthful} (incentive-compatible): bidding your true value is a dominant strategy, because what you \emph{pay} is set by someone else's bid.
+  \item \textbf{Revenue-equivalence theorem:} under independent private values + risk-neutral bidders, all four yield the \emph{same expected revenue} to the seller.
+  \item \textbf{Winner's curse:} in \emph{common-value} auctions the winner is the one who most over-estimated --- rational bidders \emph{shade} their bids down.
+  \item \textbf{Mechanism design} (``reverse game theory'') engineers the rules so that self-interested play yields the desired outcome (e.g.\ spectrum auctions).
+\end{itemize}
+\end{useful}
+
+\subsection{Market failure \& asymmetric information (20\%)}
+
+\begin{must}
+A \textbf{market failure} is an allocation where the free market is not Pareto-efficient. The CS-relevant kinds:
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Externalities} --- costs/benefits fall on third parties (pollution; insecure machines $\to$ botnets). Remedy: tax/subsidy (Pigouvian), regulation, assign property rights (Coase).
+  \item \textbf{Public goods} --- non-rival \& non-excludable (open-source, security research) $\to$ free-riding, under-provision.
+  \item \textbf{Tragedy of the commons} --- shared resource overused because each user bears only part of the cost (IPv4 space, bandwidth, attention).
+  \item \textbf{Monopoly} --- price above marginal cost; deadweight loss; monopoly rents.
+\end{itemize}
+\end{must}
+
+\begin{useful}
+\textbf{Asymmetric information} (one side knows more):
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Adverse selection} (\emph{hidden information}, \emph{before} the deal) --- Akerlof's ``market for lemons'': bad products drive out good because buyers can't tell them apart. Fixes: \emph{signalling} (warranties, certificates), \emph{screening}.
+  \item \textbf{Moral hazard} (\emph{hidden action}, \emph{after} the deal) --- insured parties take more risk. Fixes: deductibles, monitoring, aligned incentives.
+\end{itemize}
+\textbf{Security economics} (Anderson): systems often fail because the party best placed to fix a problem is not the party who bears the cost --- \emph{misaligned incentives}, not bad crypto.
+\end{useful}
+
+\subsection{Economics of technology markets (20\%)}
+
+\begin{useful}
+Information goods have \textbf{high fixed / near-zero marginal cost} (Shapiro \& Varian, \emph{Information Rules}), so pricing is value-based, not cost-based.
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Network effects} --- a good's value rises with the number of users; \textbf{Metcalfe's law}: value $\propto n^2$. Drives \emph{positive feedback} and \emph{tipping} (winner-take-all, standards wars).
+  \item \textbf{Lock-in \& switching costs} --- proprietary formats, learning, data; total cost includes the cost to switch. Vendors engineer lock-in.
+  \item \textbf{Price discrimination} --- charging by willingness-to-pay: 1st degree (personalised), 2nd (\emph{versioning}, self-selection), 3rd (group/student pricing). \textbf{Bundling} (e.g.\ Office) extracts more surplus by smoothing valuations.
+  \item \textbf{Two-sided markets / discriminating monopolist / dominant-firm} models complete the toolkit.
+\end{itemize}
+\end{useful}
+
+\section{Law (most factually precise pillar)}
+
+\begin{gotcha}
+Law answers are marked on \textbf{naming the right statute and case}. ``There's a law against it'' scores nothing; ``s1 Computer Misuse Act 1990, as in \emph{R v Cuthbert}'' scores. Learn the Acts and one case each. (And remember: \emph{IANAL} --- this is UK law.)
+\end{gotcha}
+
+\subsection{Data protection: GDPR $\to$ DPA 2018 $\to$ DUAA 2025 (20\%)}
+
+\begin{must}
+\textbf{GDPR} (EU, in force 2018-05-25), implemented in the UK as the \textbf{Data Protection Act 2018}, now amended by the \textbf{Data (Use and Access) Act 2025 (DUAA)}. Protects the \textbf{data subject}. \textbf{Six principles:} data must be (1) fairly \& lawfully processed; (2) for limited, specified purposes; (3) adequate, relevant, not excessive; (4) accurate \& up to date; (5) not kept longer than necessary; (6) processed securely. Extra protection for \emph{sensitive} personal data.
+\end{must}
+
+\begin{useful}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Controller vs processor:} the controller decides \emph{how/why}; the processor acts on its behalf and has its own obligations.
+  \item \textbf{Lawful bases:} \emph{consent} (freely given, specific, informed, unambiguous --- no pre-ticked boxes), contract, legal compliance, vital interest, public interest, legitimate interest. Child under 13 needs parental consent.
+  \item \textbf{Data-subject rights:} be informed, access, rectification, \emph{erasure} (``right to be forgotten''), restrict, \emph{portability}, object, and rights over \emph{automated decision-making / profiling}.
+  \item \textbf{Obligations:} data protection \emph{by design \& by default}, DPIAs, breach notification \textbf{within 72 hours}, appoint a \emph{Data Protection Officer} (at-scale/public bodies). \textbf{Fines up to \texteuro20m or 4\% of global turnover} (BA $\to$ \pounds20m; Marriott $\to$ \pounds18.4m).
+\end{itemize}
+\end{useful}
+
+\subsection{Computer Misuse Act 1990 \& cybercrime (the ``hacker ethics'' tag --- 20\%)}
+
+\begin{must}
+\textbf{Computer Misuse Act 1990} (prompted by \emph{R v Gold \& Schifreen}, where Prestel hacking convictions under forgery law were overturned):
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{s1} --- unauthorised access (must \emph{know} it's unauthorised; need not be a specific machine or even in the UK).
+  \item \textbf{s2} --- s1 \emph{with intent} to commit a further offence (up to 5 years).
+  \item \textbf{s3} --- unauthorised modification (up to 10 years); written to criminalise \emph{virus-writing}, amended 2008 to cover \emph{denial of service} and to make making/distributing \emph{hacking tools} an offence (dual-use $\to$ hinges on \emph{intent} / ``likely to be used'').
+\end{itemize}
+\end{must}
+
+\begin{useful}
+\textbf{The test of ``unauthorised'':} ``\emph{if I were to ask, would they say yes?}'' (\emph{R v Lennon}, 2005 --- mail-bombing held a s3 offence). Other cases: \emph{R v Pile} (``Black Baron'', custodial for viruses); \emph{R v Bedworth} (``addiction'' defence, acquitted --- couldn't form intent); \emph{R v Cuthbert} (the ``tsunami hacker'', s1 for probing \texttt{../../} URLs); \emph{Allison/AMEX} (multi-level access can matter). The \textbf{Council of Europe / Budapest Convention} on cybercrime is the international framing.
+\end{useful}
+
+\subsection{Other law you should be able to name (20\% ``legal frameworks'' + IP)}
+
+\begin{useful}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Computer evidence:} \emph{Civil Evidence Act 1968} (computer records admissible, not hearsay); \emph{PACE 1984 s69} once required expert proof a machine worked --- repealed (Youth Justice \& Criminal Evidence Act 1999), so courts now \emph{presume} correct operation unless disputed.
+  \item \textbf{Interception:} \emph{Investigatory Powers Act 2016} (replaced RIPA 2000, post-Snowden) --- interception needs a \textbf{warrant signed by the Secretary of State}; intercept product is \emph{not} admissible in court; exceptions for both-party consent and \emph{lawful business practice} (must warn users). \emph{RIPA Part III} can \emph{demand decryption keys} (forgetting a key is a defence, but prosecution must prove you remember). Driven by \emph{Malone} (ECtHR) and Art 8 ECHR (privacy).
+  \item \textbf{Intellectual property:} copyright (automatic, software as a literary work), patents, trademarks, trade secrets, database right. (13\%)
+  \item \textbf{E-commerce:} Consumer Contracts Regs (identify seller, right to cancel); E-Commerce Directive (country-of-origin; \emph{ISP immunities}: hosting, caching, mere conduit); Rome II (which law), Brussels Regulation (which court).
+  \item \textbf{PECR 2003:} bans unsolicited marketing email to \emph{natural persons} (soft opt-in); \emph{cookies} need consent unless ``strictly necessary''.
+\end{itemize}
+\end{useful}
+
+\section{Ethics (joint-heaviest pillar)}
+
+\subsection{The philosophical frameworks (20\% --- state them, then apply)}
+
+\begin{must}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Consequentialism / utilitarianism} (Bentham, Mill) --- judge acts by \emph{outcomes}; greatest good for the greatest number. \emph{Act} vs \emph{rule} utilitarianism. Weakness: can justify harming a minority.
+  \item \textbf{Deontology} (Kant) --- judge by \emph{duties/rules}; the \emph{categorical imperative} (act only on a maxim you could will universal; treat people as \emph{ends}, never merely as means). Weakness: rigid, conflicting duties.
+  \item \textbf{Virtue ethics} (Aristotle) --- judge \emph{character}; what would a virtuous agent do?
+  \item \textbf{Rawlsian justice} --- principles chosen behind a \emph{veil of ignorance} (original position); the \emph{difference principle} (inequalities only if they benefit the worst-off).
+\end{itemize}
+\end{must}
+
+\begin{useful}
+\textbf{Professional \& research ethics:} the \textbf{ACM} and \textbf{BCS} codes of conduct (public interest first, competence, honesty); research ethics requires \emph{informed consent}, minimising harm, ethics-committee approval (cf.\ the Menlo/Belmont principles). Relevant to the Part II project evaluation.
+\end{useful}
+
+\subsection{Applied: AI ethics, privacy \& the hacker ethic (the growth area --- 27\%+)}
+
+\begin{useful}
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Algorithmic bias \& automated decisions:} training data encodes historical bias (predictive policing, hiring, credit). Ties to GDPR rights over automated decision-making (a right to \emph{meaningful information} about the logic). Themes: fairness, accountability, transparency, \emph{contestability}, the EU AI Act's risk tiers.
+  \item \textbf{Privacy \& surveillance:} mass vs targeted; the \emph{nothing-to-hide} fallacy; chilling effects; data minimisation as an ethical \emph{and} legal principle; the panopticon.
+  \item \textbf{The hacker ethic} (Levy): information wants to be free; mistrust authority; the hands-on imperative. Frames the \textbf{vulnerability-disclosure} debate --- \emph{full} vs \emph{responsible/coordinated} disclosure vs non-disclosure --- as a trade-off between pressuring vendors and arming attackers.
+  \item \textbf{Other contemporary issues:} censorship, targeted advertising, environmental impact (energy of large models), the ethics of LLMs.
+\end{itemize}
+\end{useful}
+
+\begin{gotcha}
+Ethics answers fail when they're just opinion. \textbf{Structure:} (1) state the issue and stakeholders; (2) analyse it through \emph{at least two named frameworks} (e.g.\ a utilitarian \emph{and} a deontological reading), showing they can disagree; (3) reach a reasoned conclusion. Connect to law where relevant (GDPR, CMA) and to economics (externalities, misaligned incentives) --- cross-pillar links score well in a course explicitly about their intersection.
+\end{gotcha}
+
+\section*{Exam checklist}
+
+\begin{must}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Game theory:} Nash equilibrium, dominant strategy, prisoner's dilemma (defection is Nash but Pareto-dominated), iterated games / tit-for-tat. Auctions: four types, \emph{Vickrey truthful}, revenue equivalence, winner's curse.
+  \item \textbf{Market failure:} externalities, public goods, tragedy of the commons, monopoly; \emph{adverse selection} (lemons, before) vs \emph{moral hazard} (after); misaligned-incentive security economics.
+  \item \textbf{Tech markets:} network effects + Metcalfe ($\propto n^2$), lock-in/switching costs, price discrimination (1st/2nd/3rd, versioning), bundling.
+  \item \textbf{Data protection:} GDPR $\to$ DPA 2018 $\to$ DUAA 2025; six principles; controller vs processor; lawful bases; subject rights (incl.\ erasure, portability, automated decisions); 72-hour breach; fines (\texteuro20m / 4\%).
+  \item \textbf{Cybercrime:} CMA 1990 s1/s2/s3 (+ 2008 amendments: DoS, tools); ``if I asked, would they say yes?''; cite a case (Gold \& Schifreen, Lennon, Cuthbert). Computer evidence (PACE s69 repealed $\to$ presumption); IPA 2016 interception (SoS warrant, not admissible); RIPA Part III key disclosure.
+  \item \textbf{Ethics:} define consequentialism / deontology (categorical imperative) / virtue / Rawls; ACM/BCS codes + research consent. Apply \emph{two} frameworks to an AI/privacy/disclosure case; link to law \& economics. Don't just give opinion.
+\end{enumerate}
+\end{must}
+
+\end{document}

@@ -1,0 +1,207 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{kw}{HTML}{8B0058}
+\definecolor{cmt}{HTML}{6A8F4B}
+\definecolor{str}{HTML}{B36B00}
+\definecolor{bg}{HTML}{FBFAF7}
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Gotcha,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Further Human--Computer Interaction} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST --- Paper 7}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+Further HCI sets two questions a year on \textbf{Paper 7}. Across \textbf{eight years (2018--2025, 16 questions)}, the tagged frequencies are strikingly concentrated:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+Cognitive Dimensions of Notations framework & 10 & 62\% \\
+Visual representation theory & 5 & 31\% \\
+Design \& evaluation methods & 5 & 31\% \\
+Bayesian / smart interaction & 3 & 19\% \\
+Empirical methods (Fitts, KLM, stats) & 3 & 19\% \\
+Graphical user interface design & 2 & 13\% \\
+Augmented \& virtual reality & 2 & 13\% \\
+Generative-AI interfaces & 2 & 13\% \\
+Attention Investment model & 2 & 13\% \\
+Probabilistic interfaces / HCI waves / voice / IDEs & 1 each & 6\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} \textbf{The Cognitive Dimensions framework appears in nearly two-thirds of all questions} --- usually ``apply the CDs to evaluate notation~$X$.'' If you revise one thing, revise that. \textbf{Visual representation} and \textbf{evaluation methods} are the next reliable pair ($\sim$30\% each). Critically, the trendy-looking topics --- AR/VR, generative-AI interfaces, voice --- are \emph{not} separate theory: the examiner expects you to analyse them \textbf{by analogy to the CDs, visual representation, and user/goal/task models}. So the three core frameworks cover $\sim$90\% of the paper, the fashionable questions included.
+
+This document is ordered that way: \textbf{the three frameworks first, then the quantitative methods, then context}.
+
+\hrulefill
+
+\section{The three frameworks (90\% of marks)}
+
+\subsection{Cognitive Dimensions of Notations (the headline --- 62\%)}
+
+\begin{must}
+The CDs (Green \& Blackwell) are a \textbf{broad-brush vocabulary for discussing the usability of a notation together with its environment} --- usability is a function of \emph{both}. They are built for \textbf{interaction spaces} (programming languages, APIs, spreadsheets, CAD) where task-based methods (Cognitive Walkthrough, KLM) suffer \textbf{``death by detail.''} Core premise: \textbf{there is no perfect notation} --- every design is a set of \textbf{trade-offs}, and improving one dimension typically degrades another. CDs give designers a shared language to \emph{discuss} those trade-offs, not a score.
+\end{must}
+
+\begin{plain}{The dimensions (be able to define and apply these)}
+\begin{itemize}[leftmargin=*,itemsep=0.5pt]
+  \item \textbf{Viscosity} --- resistance to change (small edit needs many actions).
+  \item \textbf{Hidden dependencies} --- important links between entities aren't visible.
+  \item \textbf{Premature commitment} --- forced to make decisions before the needed information is available.
+  \item \textbf{Secondary notation} --- meaning carried outside formal syntax (comments, layout, colour).
+  \item \textbf{Visibility} \& \textbf{juxtaposability} --- can you see / compare the parts you need at once?
+  \item \textbf{Closeness of mapping} --- how close the notation is to the domain it describes.
+  \item \textbf{Consistency} --- similar semantics expressed in similar forms.
+  \item \textbf{Diffuseness} --- verbosity; how much space an idea takes.
+  \item \textbf{Error-proneness} --- the notation invites mistakes.
+  \item \textbf{Hard mental operations} --- high cognitive load to work things out.
+  \item \textbf{Progressive evaluation} --- can you check incomplete work at any time?
+  \item \textbf{Provisionality} --- can you sketch / be vague while exploring?
+  \item \textbf{Role-expressiveness} --- is it easy to infer what each part is \emph{for}?
+  \item \textbf{Abstraction} --- the abstraction mechanisms available (and whether you're forced to use them).
+\end{itemize}
+\end{plain}
+
+\textbf{Notational activities \& the CDs ``profile.''} Which dimensions matter depends on what the user is doing: \emph{search}, \emph{incrementation} (add content, structure unchanged), \emph{modification}, \emph{transcription}, \emph{exploratory design} (incrementation $+$ modification, end-state unknown), \emph{collaboration}. A CDs \textbf{profile} emphasises the dimensions relevant to the dominant activity --- e.g.\ exploratory design cares about \emph{viscosity} and \emph{provisionality}; transcription cares about \emph{closeness of mapping}; search cares about \emph{visibility} and \emph{hidden dependencies}.
+
+\begin{gotcha}
+CDs are a \textbf{discussion vocabulary, not a metric} --- you don't ``score'' a notation. Don't recite all 14 mechanically: \textbf{pick the 4--6 dimensions relevant to the user's activity}, give a concrete example of each in the named notation, state the \textbf{trade-off}, and propose an \textbf{environment} fix (e.g.\ a refactoring tool reduces viscosity; folding improves visibility). That structure is what scores.
+\end{gotcha}
+
+\subsection{Visual representation (31\%)}
+
+\begin{must}
+Designing a visual display means choosing the \textbf{correspondence} between an \emph{invisible information structure} (elements $+$ relationships) and the visible \textbf{marks} on a surface. ``All visual representations are marks on a surface intended to correspond to things understood by the reader.''
+\end{must}
+
+\begin{useful}
+\textbf{The unified theory (use it to analyse any display).} The two surface dimensions can correspond to: \emph{physical space} (a map), \emph{object dimensions}, a \emph{pictorial perspective}, or \emph{abstract continuous scales} (time/quantity $\to$ graphs). The surface is partitioned into \textbf{regions} interpreted differently; within a region, elements are \textbf{aligned, grouped, connected or contained} to express relationships. Every correspondence must be understood \textbf{by convention or by explanation}.
+\end{useful}
+
+\textbf{The catalogue of conventions} (cite these by name):
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+  \item \textbf{Typography \& grids} --- screen text inherits centuries of paper convention; arrange within a grid.
+  \item \textbf{Maps \& graphs} --- \emph{quantitative correspondence} of a surface direction to a continuous quantity (Playfair).
+  \item \textbf{Schematic drawings} --- relative scale, \emph{annotations}, \emph{white space} marking interpretive breaks.
+  \item \textbf{Pictures \& the \emph{resemblance fallacy}} --- images rely on shared interpretive \emph{conventions}, not on simulating real perception; ``a good picture need not simulate visual experience.''
+  \item \textbf{Node-and-link diagrams} --- show \emph{connectivity}; node position is free, so it can carry \textbf{secondary notation} (London Underground map).
+  \item \textbf{Icons \& symbols} --- semiotics: pictorial / arbitrary / \emph{metonymic} (key $=$ locking) / \emph{mnemonic}.
+  \item \textbf{Visual metaphor} (the desktop) --- and its \textbf{critique}: theories of visual \emph{representation} explain the desktop better than ``metaphor''; strict analogy to physical objects becomes obstructive (General Magic, MS Bob failed).
+\end{itemize}
+
+\subsection{Design \& evaluation methods (31\%)}
+
+Design is \textbf{iterative}: \emph{divergent} phases (invention --- theory suggests new options) and \emph{convergent} phases (critique --- theory predicts what will work).
+
+\begin{must}
+Place every evaluation method on three axes: \textbf{Formative} (early, improve the design, open questions) vs \textbf{Summative} (late, test against criteria, closed questions); \textbf{Analytic} (apply a theory) vs \textbf{Empirical} (observe users); \textbf{Quantitative} vs \textbf{Qualitative}.
+\end{must}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+ & \textbf{Quantitative} & \textbf{Qualitative} \\
+\hline
+\textbf{Analytic}  & KLM / GOMS & Cognitive Walkthrough, Cognitive Dimensions \\
+\textbf{Empirical} & A/B tests, controlled trials (RCT) & think-aloud, interviews, field observation \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{useful}
+\textbf{Cognitive Walkthrough} (analytic, formative): for each step ask --- is the user's \emph{goal} clear, are the necessary \emph{actions available}, are they \emph{labelled} recognisably, does the system give \emph{feedback} of progress?\\[3pt]
+\textbf{Controlled experiments \& stats:} state a \textbf{null hypothesis} (no difference); a \textbf{significance test} (e.g.\ \emph{t-test}) checks whether the difference in means is beyond chance; report \textbf{effect size} and \textbf{confidence intervals}, not just significance. Use a non-parametric \textbf{sign test} for non-normal, \emph{within-subject} matched samples. An \textbf{RCT} needs a performance measure, a representative sample, and an experimental task; assess \textbf{internal} vs \textbf{external validity}.\\[3pt]
+\textbf{Analysing qualitative data:} \emph{categorical coding} (a coding frame; \textbf{inter-rater reliability} via Cohen's / Fleiss' \emph{Kappa}, $0.6$--$0.8 =$ ``substantial''); \emph{grounded theory} (open coding $\to$ memos $\to$ axial coding $\to$ constant comparison $\to$ \textbf{saturation}).
+\end{useful}
+
+\begin{gotcha}
+Know the \textbf{bad} techniques and name them: the \textbf{Hawthorne effect} (performance improves just because users are being studied), \textbf{experimental demand} (users try to please you), and \textbf{HiPPO} / introspective single-subject opinion. ``I find it more intuitive'' is not evidence. Match the method to the question: \emph{open} question $\Rightarrow$ qualitative/formative; \emph{closed} $\Rightarrow$ quantitative/summative.
+\end{gotcha}
+
+\section{Quantitative interaction (Tier 2)}
+
+\subsection{Designing smart systems / Bayesian interaction (19\%)}
+
+Smart interfaces (predictive text, recommenders, code completion) build a \textbf{probabilistic model of the user's intention}. Information gain of one event:
+\[
+  h(x) = \log_2\frac{1}{p(x)} = -\log_2 p(x).
+\]
+A uniform 27-key keyboard transfers $\approx 4.8$ bits/keypress, but English compresses to $\approx 2.1$ bits/char --- the gap measures the inefficiency of treating all keys as equally likely (Fitts's Law then says make frequent keys bigger).
+
+\begin{useful}
+\textbf{Bayesian text entry.} Rank the next token by its posterior given context, $p(w_i \mid w_1\dots w_{i-1})$; via Bayes this is $\propto p(\text{evidence}\mid w_i)\,p(w_i)$, where the \textbf{language model is the prior}. Because only \emph{ratios} are needed, the evidence normaliser cancels. \textbf{Adaptive UIs} go further --- dynamically relayout to maximise information gain --- but changing layouts costs relearning (a \textbf{power law of practice} trade-off). LLMs are sophisticated priors: they help a user only insofar as the user's goals match the prior the model encodes.
+\end{useful}
+
+\subsection{Efficient systems: Fitts, KLM (19\%)}
+
+\begin{must}
+\textbf{Fitts's Law} --- time to point at a target of width $W$ at distance $D$:
+\[
+  T = k\,\log_2\!\Big(\frac{2D}{W}\Big),
+\]
+the log term being the \textbf{index of difficulty}. Interpreted information-theoretically: the speed--accuracy trade-off is an information channel (selecting a small target from a wide range $=$ more information). \emph{Semantic pointing} warps the motor--pixel mapping to enlarge likely targets.
+\end{must}
+
+\textbf{Keystroke Level Model (KLM)} predicts \emph{expert} task time as a sum of unit operators: keystrokes, pointing (via Fitts), homing hand to mouse/keyboard ($\approx400$\,ms), and \textbf{mental preparation} ($\approx1350$\,ms); it ignores learning and error. \textbf{GOMS} (Goals/Operators/Methods/Selection) refines the mental-preparation estimate.
+
+\subsection{Attention Investment \& emerging interaction spaces (13\% each)}
+
+\begin{useful}
+\textbf{Attention Investment} (a model of abstraction use / end-user programming): automating a task means writing an \textbf{abstract specification} (e.g.\ a regex). The user weighs \textbf{cost} (attention spent programming) $+$ \textbf{risk} (bugs $\to$ more manual fix-up) against \textbf{payoff} (future attention saved). This is why non-programmers rationally prefer repeated manual action --- \emph{bounded rationality} applies.\\[3pt]
+\textbf{Emerging topics, answered through the core frameworks.} \emph{AR/VR} is still a \textbf{visual representation} (marks/correspondences --- and arguably escapes the desktop \emph{metaphor} problem). \emph{Generative-AI / conversational agents}: ask whether they build a \textbf{user / goal / task model}, and --- crucially --- whether the user can \emph{see, test, or modify} it. \emph{IoT / ubicomp}: where is the \textbf{notation} for configuring future action? Analyse all three with CDs $+$ visual representation $+$ attention investment.
+\end{useful}
+
+\section{Context (Tier 3 --- a paragraph each)}
+
+\textbf{Three waves of HCI.} \emph{1st (1980s):} cognitive science / human factors; goal $=$ \emph{efficiency} on well-defined tasks. \emph{2nd (1990s):} social science --- \emph{ethnography}, contextual inquiry, participatory design; systems as socio-technical. \emph{3rd (2000s):} culture \& creativity --- \emph{user experience}, \emph{discretionary} use, \emph{speculative design}; evaluate via meaning, not just efficiency. Be able to place a piece of research in its wave.
+
+\textbf{Goal-oriented interaction \& decision models.} Model interaction as \textbf{search} toward a goal; but users show \textbf{bounded rationality} / \emph{satisficing}, modelled by \textbf{prospect theory} (utility weighted by likelihood) and \textbf{heuristics \& biases} (availability, representativeness, loss aversion, bandwagon). \textbf{Persuasive design}/nudge tries to change goals (risk: \emph{paternalism}). \textbf{Wicked problems} (Rittel \& Webber): no definitive formulation, no stopping rule, solutions good/bad not true/false, every attempt counts.
+
+\textbf{Designing meaningful systems.} \emph{Design ethnography} --- holistic, in-context study of activities \emph{and} artefacts; ``thick'' description; \textbf{mixed methods} combine qualitative depth with quantitative breadth.
+
+\section*{Exam checklist}
+
+\begin{must}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Cognitive Dimensions:} define the framework (notation $+$ environment; no perfect notation; trade-offs); know the dimensions; map them to the user's \emph{activity profile}; remember \emph{secondary notation}. To answer ``evaluate notation $X$'': pick 4--6 relevant dimensions, give concrete examples, name the trade-offs, propose an environment fix. \emph{Discuss, don't score.}
+  \item \textbf{Visual representation:} correspondence between an invisible information structure and marks on a surface; the unified theory (2 dims $\to$ space/object/perspective/abstract scale; regions; align/group/connect/contain; by convention or explanation); the \emph{resemblance fallacy}; critique a real display.
+  \item \textbf{Evaluation:} the formative/summative $\times$ analytic/empirical $\times$ quant/qual cube; Cognitive Walkthrough steps; null hypothesis / t-test / effect size / validity; coding $+$ Kappa $+$ grounded theory; name the Hawthorne effect, experimental demand, HiPPO.
+  \item \textbf{Smart / Bayesian:} $h(x)=\log_2\frac1{p(x)}$; rank next token by $p(w\mid\text{context})\propto p(\text{ev}\mid w)p(w)$ with the language model as prior; adaptive-UI trade-off.
+  \item \textbf{Efficient:} Fitts $T=k\log_2(2D/W)$ (index of difficulty); KLM operators (expert, no error/learning); GOMS.
+  \item \textbf{Attention Investment} $=$ cost $+$ risk vs payoff of abstraction. \textbf{Emerging topics} (AR/VR, GenAI, voice): answer via visual representation $+$ CDs $+$ user/goal/task models --- not as separate theory.
+\end{enumerate}
+\end{must}
+
+\end{document}
