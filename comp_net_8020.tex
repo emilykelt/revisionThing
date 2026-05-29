@@ -1,0 +1,171 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\definecolor{good}{HTML}{15803D}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam trap,breakable}
+\newtcolorbox{out}{colback=warn!8,colframe=warn!80!black,boxrule=1pt,arc=2pt,
+  fonttitle=\bfseries,title=NOT examinable in 25/26 --- do not revise these,breakable}
+\newtcolorbox{newm}{colback=good!8,colframe=good!65!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=New emphasis this year,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Computer Networking} \\[2pt] \large The 80/20 Revision Guide --- 2025/26 syllabus}
+\author{\small Part IB --- Cambridge CST --- Paper 5}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is weighted (read first)}
+
+\textbf{New lecturer / exam setter this year.} This guide is built on the \textbf{lecturer's own 2025/26 fine-grained syllabus and clarifications}, \emph{not} on past-paper frequency --- with a new setter, old papers are an unreliable guide to emphasis and question style. The governing principle the lecturer gave is: \textbf{everything lectured is examinable; anything marked ``not lectured 25/26'' is out.} Textbook reading is the relevant sections of \emph{Kurose \& Ross} and \emph{Peterson \& Davie} cited per topic in the course pages.
+
+\begin{out}
+These appear in old papers / the supervision sheet but were \textbf{not lectured this year} --- skip them:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{TCP 3-way handshake / connection establishment \& teardown}; the ``TCP equation'' window integration; buffer-sizing theory.
+  \item The \textbf{four TCP ARQ timers} and \textbf{silly window syndrome} (worksheet Q22).
+  \item \textbf{DNSSEC} and \textbf{Secure DNS}; cookies; dark web; P2P file sharing; email; \textbf{DASH}.
+  \item \textbf{IPv6 details} --- Neighbour Discovery, \textbf{SLAAC} (only the first two IPv6 slides count); \textbf{IP multicast}; \textbf{IP fragmentation}.
+  \item Physical-layer \textbf{block diagrams / power budgets}; GF(2) arithmetic detail of CRC; HomePlug; Bluetooth; data-centre networks; Viterbi; AutoNET.
+  \item Specific \textbf{iterative-vs-recursive DNS resolution} patterns (see the depth note under Application).
+\end{itemize}
+\end{out}
+
+\begin{newm}
+Emphasised this year but light/absent in old papers --- make sure you can discuss these:
+\textbf{QUIC / HTTP 2,3} (the \emph{roles}: avoiding head-of-line blocking, avoiding round-trips, security); \textbf{CUBIC} and \textbf{ECN}; \textbf{CDN} (three approaches, Akamai-style overlay, eager push, reverse vs forward proxies); \textbf{fair queuing} / fairness; \textbf{VLAN, VPN, tunnelling} and ``layer-order violations''; \textbf{spanning tree}.
+\end{newm}
+
+\hrulefill
+
+\section{Transport layer (Tier 1)}
+
+\begin{must}
+Core functions: \textbf{port multiplexing/demultiplexing}, \textbf{reliable delivery}, \textbf{end-to-end flow control}, \textbf{congestion avoidance}. UDP $=$ thin (ports $+$ checksum, connectionless); TCP $=$ reliable bytestream over IP's narrow waist.\\[2pt]
+\textbf{Reliable conveyance:} sequence numbers $+$ acks $+$ timeouts; \textbf{Go-Back-N} (cumulative ack, retransmit window) vs \textbf{Selective Repeat} (per-packet ack/buffer) --- know the trade-off (SR less wasteful, more state).\\[2pt]
+\textbf{Sliding window:} sender limited by $\min(\text{cwnd},\text{rwnd})$ --- congestion window vs receiver window.
+\end{must}
+
+\begin{must}[title=Congestion control]
+\textbf{AIMD} --- additive increase ($+1$ MSS/RTT), multiplicative decrease ($\times\tfrac12$ on loss); this sawtooth is what makes competing flows converge to a \textbf{fair} share. \textbf{Slow start} --- cwnd grows \emph{exponentially} (doubles per RTT) up to \emph{ssthresh}, then AIMD. \textbf{Fast recovery} on triple-duplicate-ack. \textbf{CUBIC} --- window a cubic function of time since the last loss (probes high-bandwidth links faster than classic AIMD). \textbf{ECN} --- routers \emph{mark} packets (instead of dropping) to signal congestion early.
+\end{must}
+
+\begin{useful}
+\textbf{RTT \& jitter} measured by the sender (used to set timeouts). \textbf{Fairness:} one definition lectured (e.g.\ max--min / equal share); \textbf{fair queuing} enforces it in the router rather than relying on cooperative end-hosts. End-to-end vs hop-by-hop reliability (the end-to-end argument). \textbf{TLS} --- key points only, no protocol detail.
+\end{useful}
+
+\begin{gotcha}
+The \textbf{3-way handshake is OUT this year} --- don't lead a TCP answer with SYN/SYN-ACK/ACK. Focus on \emph{reliability mechanisms} (SR/GBN, sliding window) and \emph{congestion control} (AIMD/slow-start/CUBIC/ECN), which is where the marks now are.
+\end{gotcha}
+
+\section{Link layer \& LANs (Tier 1)}
+
+\begin{must}
+\textbf{Framing} and \textbf{MAC addressing} (flat 48-bit, local scope). \textbf{Error detection}: \emph{checksums} and \emph{CRC} (know what they do; \textbf{no GF(2) arithmetic detail needed}); brief \textbf{Hamming-distance} error \emph{correction}; erasure channels.\\[2pt]
+\textbf{Media access control} on a shared medium --- three families: \emph{turn-taking}, \emph{polling}, \emph{contention}.
+\end{must}
+
+\begin{must}[title=Multiple-access protocols]
+\textbf{ALOHA} (transmit anytime; $\sim$18\% max efficiency) $\to$ \textbf{slotted ALOHA} ($\sim$37\%) $\to$ \textbf{CSMA} (listen before talk) $\to$ \textbf{CSMA/CD} (Ethernet: detect collisions, jam, \textbf{exponential backoff} with a growing \emph{contention window}). \\[2pt]
+\textbf{Wireless} can't detect collisions well: \textbf{hidden} and \textbf{exposed terminal} problems $\Rightarrow$ \textbf{RTS/CTS} handshake (collision \emph{avoidance}, the basis of Wi-Fi/CSMA/CA).
+\end{must}
+
+\begin{useful}
+\textbf{Switched L2:} migration from shared medium to learning \textbf{switches}; the \textbf{spanning-tree} protocol prevents loops in a bridged topology. \textbf{VLAN} --- several virtual LANs over one physical LAN (security/convenience, cheaper than an air gap; needs configuration). The PHY$\to$DLL interface (Tx/Rx clock, data, frame-start, RSSI/carrier-detect) and whether a link is \textbf{duplex vs half-duplex} (duplex $=$ a pair of simplex channels) matter; physical-layer block diagrams do not.
+\end{useful}
+
+\section{Network layer (Tier 1)}
+
+\begin{must}[title=Addressing \& forwarding]
+\textbf{Naming vs addressing vs routing vs forwarding}. \textbf{IP addressing}, \textbf{subnetting}, and \textbf{longest-prefix match} at the router. Router block diagram and the \textbf{trade-offs of where to put buffers}. \textbf{ICMP} and \textbf{traceroute}; \textbf{ARP} (IP$\to$MAC on a LAN). IPv6: \emph{first two slides only} --- exists, larger addresses; \textbf{no Neighbour Discovery/SLAAC detail}.
+\end{must}
+
+\begin{must}[title=Routing]
+\textbf{Forwarding} (per-packet, local table lookup) vs \textbf{routing} (computing the tables). Intra-domain protocols:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Link State} (e.g.\ OSPF): each router floods link costs, then runs \emph{Dijkstra} on the full map.
+  \item \textbf{Distance Vector} (e.g.\ RIP): \emph{Bellman--Ford}, exchange distance estimates with neighbours; watch count-to-infinity.
+\end{itemize}
+Know the response to disruptions, and \textbf{hierarchic vs flat} routing (why the Internet is hierarchical).
+\end{must}
+
+\begin{useful}[title=Middleboxes --- the ``four-sentence'' depth the lecturer asked for]
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{NAT} --- a middlebox with the \emph{same} network layer each side; translates local IPs (10.x / 192.168.x) to one/few public IPs using the \textbf{port space}.
+  \item \textbf{Firewall} --- refuses connections per security rules (e.g.\ no incoming TCP); commonly \emph{bundled} with NAT.
+  \item \textbf{VPN} --- \textbf{tunnelling} / deliberate layer-order violation to give the illusion of being on a local LAN while elsewhere.
+  \item \textbf{Gateway} --- a per-application middlebox \emph{above} the network layer, with \emph{different} network layers each side (vs the old ``border gateway router'', which is just a router between autonomous domains).
+\end{itemize}
+\textbf{DHCP} (examinable, core idea only): dynamic allocation of IP addresses from a \emph{pool} (vs manual), over a \textbf{broadcast subnet}; a MAC usually gets the \emph{same} address as before within a 1--2 week timeout. \emph{Not} SLAAC.
+\end{useful}
+
+\section{Application layer (Tier 1 --- big new emphasis)}
+
+\begin{must}[title=DNS]
+A distributed, \textbf{hierarchic} system of \textbf{caches and delegated authorities} (with many ad-hoc local edits). Know the \textbf{resource-record 4-field structure} (name, type, value, TTL) and the record \textbf{types}: \textbf{A}, \textbf{MX}, \textbf{CNAME}, \textbf{NS}. \texttt{gethostbyname}. \textbf{Load balancing} via \textbf{anycast} (and how anycast can be abused by filling routing tables to steer queries to a local/ISP-preferred server), caching, and \textbf{soft state}.
+\end{must}
+
+\begin{gotcha}
+For DNS the lecturer does \textbf{not} want memorised iterative-vs-recursive resolution patterns. He wants: (1) the purpose of the record types; (2) the core principle (hierarchy of caches $+$ delegated authorities); (3) the ability to \emph{reason about} feasible resolution/anycast use-patterns yourself. \textbf{DNSSEC is out.}
+\end{gotcha}
+
+\begin{must}[title=HTTP and content delivery]
+\textbf{HTTP 1.0 vs 1.1} (persistent connections); \textbf{conditional GET} (\texttt{If-Modified-Since} $\to$ 304). \textbf{Web caches/proxies} --- \emph{forward} (near client) vs \emph{reverse} (near server) positioning; eager \textbf{push} of content. \textbf{CDN} --- the \emph{three distinctive approaches}, the Akamai-style \textbf{overlay network}, and multiple sites per server.\\[2pt]
+\textbf{QUIC / HTTP 2,3} (numbering unimportant; \emph{roles} are): stream multiplexing to avoid \textbf{head-of-line blocking}, \textbf{0-RTT} setup to avoid round-trips, and built-in \textbf{security/encryption} (runs over UDP).
+\end{must}
+
+\begin{useful}
+\textbf{Multimedia:} P2P vs client/server; CBR vs VBR (JPEG/MPEG familiarity assumed); \textbf{dynamic playout-buffer sizing} to absorb jitter; SIP mentioned. (DASH is \emph{out}.)
+\end{useful}
+
+\section{Foundations \& architecture (Tier 2)}
+
+\begin{must}[title=Foundations]
+\textbf{Sharing/multiplexing:} spatial (SDM), \textbf{TDM}, \textbf{FDM}, \textbf{WDM}. \textbf{Directionality:} simplex / duplex / half-duplex; \textbf{cast modes:} unicast / multicast / broadcast / anycast. \textbf{Switching:} circuit vs packet; connection-oriented vs connectionless. \textbf{Traffic:} mean vs peak rate, burstiness, and \textbf{statistical multiplexing gain} (why packet switching wins for bursty traffic). \textbf{Performance:} speed of light, \textbf{RTT}, \textbf{bandwidth--delay product}, utilisation, queuing delay.
+\end{must}
+
+\begin{useful}[title=Architecture \& philosophy]
+\textbf{Modularity, layering, abstraction}; the \textbf{OSI} reference model; and crucially \emph{when layering is harmful} (it can hide information needed for performance). The \textbf{Internet narrow waist} (everything over IP). The \textbf{end-to-end argument} vs \textbf{middleboxes}. First mention of \textbf{VLANs} and \textbf{tunnelling} as deliberate layering violations.
+\end{useful}
+
+\begin{useful}[title=Physical layer (Tier 3 --- minimal for CS)]
+The lecturer notes most L1 detail is \emph{engineering}, not CS. Know only: the basic \textbf{channel-capacity} idea (Shannon $C=B\log_2(1+S/N)$; Nyquist for a noiseless channel), \textbf{cable vs wireless} differences, the \textbf{names/distinguishing features} of the schemes presented, the \textbf{PHY$\to$DLL interface signals} (Tx/Rx clock, data, frame-start, write-gate/power, RSSI, coding-violation/FEC metrics), \textbf{duplex vs half-duplex}, and multi-channel support (CDMA/FDM). \emph{Skip} block diagrams and power budgets.
+\end{useful}
+
+\section*{Exam checklist}
+
+\begin{must}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Transport:} mux/demux, UDP vs TCP; GBN vs SR; sliding window $=\min(\text{cwnd},\text{rwnd})$; \textbf{AIMD} (sawtooth $\to$ fairness), slow-start, fast recovery, \textbf{CUBIC}, \textbf{ECN}; fair queuing. \emph{Not} the 3-way handshake.
+  \item \textbf{Link:} framing, MAC addresses, CRC/checksum (no GF(2)); ALOHA $\to$ slotted $\to$ CSMA $\to$ CSMA/CD (backoff); hidden/exposed terminals $\to$ RTS/CTS; switches $+$ spanning tree; VLAN.
+  \item \textbf{Network:} subnetting $+$ longest-prefix match; router buffers/trade-offs; ICMP/traceroute/ARP; \textbf{DHCP} (pool, broadcast, same-addr-within-timeout); routing \textbf{Link State (OSPF/Dijkstra)} vs \textbf{DV (RIP/Bellman--Ford)}; hierarchic routing. IPv6 exists (no SLAAC/ND).
+  \item \textbf{Middleboxes (4-sentence depth):} NAT (port translation, same L3 each side), firewall (rule-based refusal, bundled with NAT), VPN (tunnelling/layer violation), gateway (per-app, different L3 each side).
+  \item \textbf{Application:} DNS (record types A/MX/CNAME/NS, hierarchy of caches $+$ delegation, anycast, soft state --- \emph{not} resolution patterns, \emph{not} DNSSEC); HTTP 1.0/1.1, conditional GET, forward/reverse proxies, \textbf{CDN} (3 approaches, overlay, push); \textbf{QUIC/HTTP2-3} (avoid HOL blocking, avoid round-trips, security).
+  \item \textbf{Foundations:} TDM/FDM/WDM, cast modes, circuit vs packet, \textbf{statistical multiplexing gain}, RTT \& \textbf{bandwidth--delay product}; layering/OSI/narrow-waist/end-to-end, when layering hurts.
+\end{enumerate}
+\end{must}
+
+\end{document}
