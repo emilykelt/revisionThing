@@ -1,0 +1,222 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam trap,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\newcommand{\cn}[1]{\underline{#1}}     % Church numeral
+\newcommand{\lam}{\lambda}
+\newcommand{\bred}{\to_\beta}
+\newcommand{\breds}{\twoheadrightarrow_\beta}
+\newcommand{\beq}{=_\beta}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Computation Theory} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST --- Paper 6}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+Computation Theory sets two questions a year on \textbf{Paper 6}. Across \textbf{2018--2025 (16 questions)}:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+$\lambda$-calculus \& $\lambda$-definability & 6+6 & 38\% (each tag) \\
+Register machines & 5 & 31\% \\
+Computability / (un)decidability / r.e.\ sets & 4 & 25\% \\
+Primitive \& partial recursive functions & 2 & 12\% \\
+Church--Turing thesis; fixed-point theorems & 2 each & 12\% \\
+Turing machines; G\"odel numbering & 1 each & 6\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} \textbf{$\lambda$-calculus is the single biggest theme} --- it shows up almost every year as ``$\beta$-reduce this'', ``show $f$ is $\lambda$-definable'', or ``what is the $\mathbf Y$ combinator''. \textbf{Register machines} are next (program them; the universal machine; the halting proof). Then \textbf{computability} (undecidability by diagonalisation / reduction). \textbf{Turing machines barely appear (6\%)} --- know the definition and that they're \emph{equivalent} to register machines, but don't over-invest. Everything hangs off one fact: \textbf{all the models compute the same functions} --- so the course is really about that single notion of ``computable'' and its limits. Write \emph{definitions first}; these questions reward precision.
+
+\hrulefill
+
+\section{The one big idea: equivalent models of computation}
+
+\begin{must}
+The course introduces several formalisations of ``algorithm'' and proves them \textbf{all equivalent}:
+\[
+\text{register-machine computable} = \text{Turing computable} = \text{partial recursive} = \lambda\text{-definable}.
+\]
+This shared class is what we call \textbf{computable}. The \textbf{Church--Turing thesis} (not a theorem --- it can't be, ``algorithm'' being informal) asserts: \emph{every intuitively-computable function is in this class.}
+\end{must}
+
+The payoff is undecidability: because programs can be \textbf{coded as data} (G\"odel numbering), a single \emph{universal} machine can run any program, and a diagonal argument then exhibits problems \emph{no} program can solve --- the \textbf{Halting Problem}, and via it Hilbert's \emph{Entscheidungsproblem} and Hilbert's 10th Problem.
+
+\section{$\lambda$-calculus (Tier 1 --- the spine)}
+
+\begin{must}[title=Syntax, alpha, beta]
+\textbf{$\lambda$-terms:} variables $x$; \textbf{abstraction} $(\lam x.M)$; \textbf{application} $(M\,M')$. Application is left-assoc; $\lam x\,y.M$ abbreviates $\lam x.\lam y.M$.\\[2pt]
+\textbf{Free/bound:} $\lam x$ binds $x$ in its body; $FV(\lam x.M)=FV(M)\setminus\{x\}$. A \textbf{combinator} is a closed term, e.g.\ $\mathrm I=\lam x.x$, $\mathrm K=\lam x\,y.x$.\\[2pt]
+\textbf{$\alpha$-equivalence:} rename bound variables ($\lam x.x =_\alpha \lam y.y$) --- terms equal up to bound names.\\[2pt]
+\textbf{$\beta$-reduction:} a redex $(\lam x.M)\,N \bred M[N/x]$ (capture-avoiding substitution). $\breds$ is many-step; $\beq$ adds expansion (symmetry).
+\end{must}
+
+\begin{gotcha}
+\textbf{Substitution is capture-avoiding.} Before substituting $N$ for $x$ in $M$, $\alpha$-rename so no free variable of $N$ is captured by a binder in $M$. E.g.\ $(\lam y.x)[y/x]$ must first rename: $=_\alpha(\lam z.x)[y/x]=\lam z.y$, \emph{not} $\lam y.y$.
+\end{gotcha}
+
+\begin{useful}
+\textbf{Normal forms \& confluence.} A term is in \textbf{$\beta$-normal form} if it has no redex. \textbf{Church--Rosser:} $\breds$ is \emph{confluent} --- if $M\breds M_1$ and $M\breds M_2$ then both reduce to a common $M'$. Consequence: a $\beta$-normal form is \textbf{unique up to $\alpha$} if it exists. Some terms have none: $\Omega=(\lam x.x\,x)(\lam x.x\,x)\bred\Omega$ loops forever. \textbf{Normal-order} (leftmost-outermost) reduction \emph{always} reaches the normal form if one exists --- so reduction order matters: $(\lam x.y)\,\Omega\bred y$ if you reduce the outer redex first, but loops if you reduce $\Omega$.
+\end{useful}
+
+\subsection{Encoding data (memorise these)}
+
+\begin{must}[title=Church numerals and basic combinators]
+\[
+\cn n \equiv \lam f\,x.\,\underbrace{f(\cdots(f}_{n}\,x)\cdots)=\lam f\,x.f^n x
+\qquad
+\mathbf{Succ}\equiv\lam n\,f\,x.\,f\,(n\,f\,x)
+\]
+\[
+\mathbf{True}\equiv\lam x\,y.x,\quad \mathbf{False}\equiv\lam x\,y.y,\quad \mathbf{If}\equiv\lam f\,x\,y.f\,x\,y
+\]
+\[
+\mathbf{Pair}\equiv\lam x\,y\,f.f\,x\,y,\quad \mathbf{Fst}\equiv\lam p.p\,\mathbf{True},\quad \mathbf{Snd}\equiv\lam p.p\,\mathbf{False}
+\]
+Note $\mathbf{False}=_\alpha\cn0$. Addition is $\lam m\,n\,f\,x.\,m\,f\,(n\,f\,x)$.
+\end{must}
+
+\begin{plain}{Worked: Succ of 1 reduces to 2}
+$\mathbf{Succ}\,\cn1 = (\lam n f x.f(nfx))(\lam fx.fx)\breds \lam fx.f((\lam fx.fx)fx)\breds\lam fx.f(fx)=\cn2$. \quad
+And $\mathbf{Fst}(\mathbf{Pair}\,M\,N)\breds(\lam f.fMN)\mathbf{True}\breds\mathbf{True}\,M\,N\breds M$.
+\end{plain}
+
+\subsection{Recursion via the fixed-point combinator}
+
+\begin{must}
+$\lambda$-calculus has no built-in recursion --- you get it from a \textbf{fixed-point combinator}. For \emph{every} term $M$ there is a $y$ with $M\,y\beq y$. \textbf{Curry's} combinator:
+\[
+\mathbf Y \equiv \lam f.\big(\lam x.f(x\,x)\big)\big(\lam x.f(x\,x)\big),
+\qquad
+\mathbf Y\,M \beq M\,(\mathbf Y\,M).
+\]
+So a recursive definition $h=\Phi(h)$ is solved by $h=\mathbf Y\,\Phi$ --- this is how primitive recursion and minimisation are encoded in $\lambda$-calculus.
+\end{must}
+
+\subsection{$\lambda$-definability (the 38\% definition --- get it exact)}
+
+\begin{must}
+$f\in\mathbb N^n\rightharpoonup\mathbb N$ is \textbf{$\lambda$-definable} if some closed term $F$ \emph{represents} it: for all $\vec x$,
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item if $f(\vec x)=y$ \ then \ $F\,\cn{x_1}\cdots\cn{x_n}\beq\cn y$;
+  \item if $f(\vec x){\uparrow}$ (undefined) \ then \ $F\,\cn{x_1}\cdots\cn{x_n}$ has \textbf{no $\beta$-normal form}.
+\end{itemize}
+\textbf{Theorem.} A partial function is \textbf{computable iff $\lambda$-definable}. (Proof skeleton: every partial recursive function is $\lambda$-definable --- basic functions, composition, primitive recursion via $\mathbf Y$, minimisation; and $\lambda$-definable $\Rightarrow$ register-machine computable.)
+\end{must}
+
+\begin{gotcha}
+The \emph{undefined} case is the subtle one: you must ensure the term has \textbf{no normal form} when $f$ is undefined (not just that it returns something odd). This is why composing partial functions needs care --- force each argument sub-term to fully reduce (e.g.\ apply $\mathrm I\,\mathrm I$) so that a non-terminating argument makes the whole term non-terminating.
+\end{gotcha}
+
+\section{Register machines (Tier 1)}
+
+\begin{must}[title=Definition]
+Finitely many registers $R_0,R_1,\dots$ (each holds a natural number) and a program: a finite list of labelled instructions, each of the form
+\[
+\begin{aligned}
+R^{+}\to L' \ &: \ \text{add 1 to }R,\text{ goto }L';\\
+R^{-}\to L',L'' \ &: \ \text{if }R{>}0\text{ subtract 1, goto }L';\text{ else goto }L'';\\
+\textsf{HALT} \ &: \ \text{stop.}
+\end{aligned}
+\]
+A \textbf{configuration} is $(\ell,r_0,\dots,r_n)$ (current label $+$ register contents). Computation is the deterministic sequence of configurations; it \textbf{halts} at \textsf{HALT} or at a label with no instruction. Determinism $\Rightarrow$ a program computes a \textbf{partial function}.
+\end{must}
+
+\begin{useful}
+\textbf{Programming idioms.} You can't read a register without emptying it, so \textbf{copying $S$ to $D$} needs a temp $T$: empty $D$; decrement $S$ while incrementing both $D$ and $T$; then move $T$ back to $S$. Graphical notation: one node per instruction, $\textsf{START}\to[L_0]$, arrows for jumps ($R^{-}$ has two out-arrows). Be ready to (a) trace a given machine, (b) write one for a small function (addition, copy, multiplication).
+\end{useful}
+
+\begin{useful}
+\textbf{Coding \& the universal machine.} Encode pairs/lists/programs as single numbers (\textbf{G\"odel numbering}, e.g.\ $\langle x,y\rangle=2^x(2y+1)$, lists by nested pairs). Then a program is a number $e$, and there is a \textbf{universal register machine} $U$ that, given $e$ and (coded) input, simulates program $e$ --- i.e.\ computes $\varphi_e$, the function of the $e$-th program. ``Code as data'' is the whole basis of undecidability.
+\end{useful}
+
+\section{Computability \& undecidability (Tier 1/2)}
+
+\begin{must}[title=Decidable, undecidable, r.e.]
+Fix an enumeration $\varphi_0,\varphi_1,\dots$ of all computable (1-argument) partial functions.
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item A set $S\subseteq\mathbb N$ is \textbf{decidable} if its characteristic function is computable (an algorithm answers ``$x\in S$?'' and always halts).
+  \item $S$ is \textbf{recursively enumerable (r.e.)} if it is the domain of a computable partial function --- a machine halts on exactly the members of $S$.
+  \item $S$ is decidable iff both $S$ and its complement are r.e.
+\end{itemize}
+\end{must}
+
+\begin{must}[title=The Halting Problem is undecidable]
+There is no total computable $H$ with $H(A,D)=1$ iff program $A$ halts on input $D$. \textbf{Proof (diagonalisation).} Suppose $H$ exists. Build
+\[
+C:\ \text{``on input }A,\text{ compute }H(A,A);\ \text{if }H(A,A)=0\text{ return }1,\text{ else loop forever.''}
+\]
+Then $C(A){\downarrow}\iff H(A,A)=0\iff A(A){\uparrow}$. Apply $C$ to its own code $C$: $C(C){\downarrow}\iff C(C){\uparrow}$ --- contradiction. So $H$ cannot exist.
+\end{must}
+
+\begin{useful}
+\textbf{Undecidability by reduction.} To show a new problem $P$ undecidable, \emph{reduce} the Halting Problem to it: show a decider for $P$ would give a decider for Halting. The same trick (via coding Halting instances as arithmetic statements $\Phi_{A,D}$ with ``$\Phi_{A,D}$ provable $\iff A(D){\downarrow}$'') settles Hilbert's \emph{Entscheidungsproblem}; Hilbert's 10th (Diophantine equations) fell the same way (Matiyasevich, via register machines). An \textbf{uncomputable function} also drops straight out: $g(x)=\varphi_x(x)+1$ if $\varphi_x(x){\downarrow}$ can't be computable (it would differ from every $\varphi_x$).
+\end{useful}
+
+\section{Recursive functions (Tier 2)}
+
+\begin{must}
+\textbf{Primitive recursive (PRIM)} $=$ the smallest class containing the \emph{basic functions} --- zero $\mathbf 0$, successor $\mathrm{succ}$, projections $\mathrm{proj}^n_i$ --- and closed under
+\textbf{composition} and \textbf{primitive recursion}:
+\[
+h(\vec x,0)=f(\vec x),\qquad h(\vec x,y{+}1)=g(\vec x,y,h(\vec x,y)).
+\]
+\textbf{Partial recursive} $=$ PRIM closed also under \textbf{minimisation} $\mu y[\,f(\vec x,y)=0\,]$ (search for the least $y$ --- may not halt $\Rightarrow$ partial). \textbf{Partial recursive $=$ computable.}
+\end{must}
+
+\begin{useful}
+\textbf{Ackermann's function} is \emph{total} and computable but \textbf{not primitive recursive} --- it grows faster than any p.r.\ function. So PRIM $\subsetneq$ total computable: primitive recursion alone can't capture all algorithms; minimisation (unbounded search) is what adds the missing power (and the possibility of non-termination).
+\end{useful}
+
+\section{Turing machines \& Church--Turing (Tier 3 --- low yield)}
+
+\begin{useful}
+A \textbf{Turing machine} has a two-way infinite tape, a head that reads/writes one cell and moves L/R, and a finite control. \textbf{Turing computable $=$ register-machine computable} (each simulates the other), which is the evidence for the \textbf{Church--Turing thesis}. This course de-emphasises TMs (only $\sim$6\% of questions) in favour of register machines and $\lambda$-calculus --- know the definition and the equivalence, and move on.
+\end{useful}
+
+\section*{Exam checklist}
+
+\begin{must}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Equivalence \& Church--Turing:} RM $=$ TM $=$ partial recursive $=$ $\lambda$-definable $=$ ``computable''; the thesis is not provable.
+  \item \textbf{$\lambda$-calculus:} $\alpha$/$\beta$, \emph{capture-avoiding} substitution, normal form, Church--Rosser (unique NF), normal-order reduction, $\Omega$ non-termination. Encodings: $\cn n=\lam fx.f^n x$, $\mathbf{Succ}$, booleans, $\mathbf{Pair/Fst/Snd}$. $\mathbf Y\,M\beq M(\mathbf Y\,M)$.
+  \item \textbf{$\lambda$-definability:} $F\,\cn{\vec x}\beq\cn{f(\vec x)}$ when defined, \emph{no $\beta$-NF} when undefined; computable $\iff$ $\lambda$-definable.
+  \item \textbf{Register machines:} instructions $R^{+}\to L'$, $R^{-}\to L',L''$, \textsf{HALT}; configurations; copy-via-temp idiom; coding programs as numbers; universal machine computes $\varphi_e$.
+  \item \textbf{Undecidability:} decidable vs r.e.\ (decidable $\iff$ $S$ and $\overline S$ both r.e.); the Halting diagonal proof ($C(C){\downarrow}\iff C(C){\uparrow}$); undecidability \emph{by reduction}; the uncomputable $\varphi_x(x)+1$.
+  \item \textbf{Recursive functions:} basic functions $+$ composition $+$ primitive recursion $=$ PRIM; $+$ minimisation $=$ partial recursive $=$ computable; Ackermann is total computable but not p.r.
+\end{enumerate}
+\end{must}
+
+\end{document}
