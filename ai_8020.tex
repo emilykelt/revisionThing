@@ -1,0 +1,156 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam trap,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Artificial Intelligence} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST --- Paper 7 (Dr S.\ Holden)}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+Two questions a year. Across \textbf{2018--2025 (16 questions)} the per-question tag frequencies are:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+Constraint satisfaction (CSP) & 5 & 31\% \\
+Neural networks / backprop / gradient descent / activations & 6 (cluster) & $\sim$38\% \\
+Heuristic search (A*) & 4 & 25\% \\
+Planning: state-variable representation & 4 & 25\% \\
+Boolean satisfiability (SAT) & 3 & 19\% \\
+Planning graphs / partial-order planning & 3 & 19\% \\
+Uninformed search; game playing; knowledge representation & rare & $<$6\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} Four themes own this paper: \textbf{CSP (+SAT)}, the \textbf{neural-network cluster}, \textbf{heuristic search (A*)}, and \textbf{planning} (especially the state-variable representation). Strikingly, \textbf{uninformed search, minimax/$\alpha$-$\beta$ game playing, and knowledge representation almost never appear} in recent papers --- know them lightly, don't over-invest.\\[2pt]
+\textbf{This guide focuses on neural networks and heuristic search} (the high-yield topics not yet in your notes). For \textbf{planning (STRIPS, partial-order, state-variable representation) and CSP encoding}, your companion notes \texttt{planning\_strips\_csp.pdf} already cover the constructions in depth --- this guide adds the \emph{CSP algorithms} and \emph{planning graphs} and points back to those notes for the rest.
+
+\hrulefill
+
+\section{Neural networks (Tier 1 --- biggest cluster, most new value)}
+
+\begin{must}[title=From perceptron to MLP]
+\textbf{Supervised learning} fits a function to labelled data (\emph{curve fitting} for regression, \emph{classification} for discrete labels). A \textbf{perceptron} computes $y=g(\mathbf w\cdot\mathbf x + b)$ --- a \emph{linear} decision boundary. The perceptron learning rule nudges weights on misclassification. \textbf{Limitation:} a single layer can only separate \emph{linearly separable} data (it cannot learn XOR) --- this motivates the \textbf{multilayer perceptron (MLP)}: hidden layers of non-linear units compose to represent non-linear boundaries.
+\end{must}
+
+\begin{must}[title=Activation \& error functions]
+\textbf{Activation} $g$ must be non-linear (else layers collapse to one linear map):
+\[
+\text{sigmoid } \sigma(x)=\tfrac{1}{1+e^{-x}}\ \ (\sigma'=\sigma(1-\sigma)),\qquad \tanh,\qquad \text{ReLU } \max(0,x).
+\]
+\textbf{Error (loss)} for outputs $y_k$ vs targets $t_k$: sum-squared error $E=\tfrac12\sum_k (y_k-t_k)^2$ (regression) or cross-entropy (classification). Training $=$ minimise $E$ over the weights.
+\end{must}
+
+\begin{must}[title=Gradient descent \& backpropagation (the derivation examiners want)]
+\textbf{Gradient descent:} update each weight against the gradient, $w \leftarrow w - \eta\,\dfrac{\partial E}{\partial w}$ ($\eta$ the learning rate). \textbf{Backpropagation} computes those gradients efficiently by the chain rule:
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Forward pass:} compute each unit's weighted input $\mathrm{in}_j=\sum_i w_{ij}a_i$ and activation $a_j=g(\mathrm{in}_j)$.
+  \item \textbf{Output layer:} $\delta_k=(a_k-t_k)\,g'(\mathrm{in}_k)$.
+  \item \textbf{Backpropagate:} for a hidden unit $j$, $\delta_j=g'(\mathrm{in}_j)\sum_k w_{jk}\,\delta_k$ (sum over units it feeds).
+  \item \textbf{Update:} $\Delta w_{ij}=-\eta\,a_i\,\delta_j$.
+\end{enumerate}
+The whole point: $\partial E/\partial w_{ij}=a_i\delta_j$, and the $\delta$'s are reused layer-by-layer, so one backward pass gives \emph{all} gradients.
+\end{must}
+
+\begin{gotcha}
+Be ready to \textbf{derive} $\delta$ for one weight from $E$ using the chain rule, and to state \emph{why} a non-linear activation is essential and \emph{why} a single perceptron fails on XOR. Know $\sigma'=\sigma(1-\sigma)$ cold --- it appears in every backprop derivation. Watch sign conventions ($a_k-t_k$ vs $t_k-a_k$) and keep them consistent.
+\end{gotcha}
+
+\section{Heuristic search \& A* (Tier 1 --- 25\%)}
+
+\begin{must}
+A* expands the node with least $f(n)=g(n)+h(n)$: $g$ $=$ cost so far, $h$ $=$ heuristic estimate to goal.
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Admissible:} $h(n)\le h^*(n)$ (never overestimates) $\Rightarrow$ \textbf{tree-search} A* is \emph{optimal}.
+  \item \textbf{Consistent (monotone):} $h(n)\le c(n,a,n')+h(n')$ $\Rightarrow$ \textbf{graph-search} A* is optimal ($f$ non-decreasing along any path). Consistency $\Rightarrow$ admissibility.
+\end{itemize}
+A* is optimally efficient (no algorithm expands fewer nodes for a given $h$). Be ready to \textbf{prove optimality}: if a suboptimal goal $G_2$ were expanded before optimal $G$, admissibility gives $f(G_2)>f(G)\ge f(n)$ for a node $n$ on the optimal path --- contradiction.
+\end{must}
+
+\begin{useful}
+\textbf{Variants:} \textbf{IDA*} (iterative-deepening on the $f$-cost bound --- linear memory), \textbf{recursive best-first search} (RBFS, linear memory, backs up $f$-values). \textbf{Local search} when only the goal state matters: \emph{hill-climbing} (greedy, gets stuck in local optima --- escape via random restarts / simulated annealing), and \textbf{gradient descent} as continuous-space hill-climbing (links straight to NN training). \textbf{Designing heuristics:} relax the problem (drop constraints) for an admissible $h$ --- see \texttt{planning\_strips\_csp.pdf}'s heuristics notes.
+\end{useful}
+
+\section{Constraint satisfaction \& SAT (Tier 1 --- 31\% + 19\%)}
+
+\begin{must}[title=CSP solving algorithms]
+A CSP is $\langle$variables, domains, constraints$\rangle$ (formulation/encoding covered in \texttt{planning\_strips\_csp.pdf}). Solve by \textbf{backtracking} DFS over assignments, boosted by:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Forward checking:} after assigning a variable, prune inconsistent values from the domains of its unassigned neighbours; backtrack when a domain empties.
+  \item \textbf{Arc consistency (AC-3):} maintain a queue of arcs; \emph{revise} arc $(X_i,X_j)$ by deleting values of $X_i$ with no support in $X_j$; if a domain changes, re-enqueue its neighbours' arcs. Runs to a fixpoint; can be run as preprocessing or interleaved (MAC).
+  \item \textbf{Heuristics:} \emph{minimum-remaining-values} (MRV) and \emph{degree} for variable order; \emph{least-constraining-value} for value order.
+  \item \textbf{Backjumping:} on failure, jump back to the variable that caused the conflict (not just the previous one).
+\end{itemize}
+\end{must}
+
+\begin{useful}
+\textbf{SAT} is the Boolean special case (variables true/false, clauses in CNF). It's solved by \textbf{DPLL} (unit propagation, pure-literal elimination, case split) --- see \texttt{logic\_8020.pdf} for the full algorithm. Many AI problems (planning, CSP) are encoded \emph{into} SAT and handed to a solver; the AI exam often pairs CSP with SAT.
+\end{useful}
+
+\section{Planning (Tier 1 --- state-variable rep 25\%, graphs 19\%)}
+
+\begin{useful}
+Your \texttt{planning\_strips\_csp.pdf} already covers, in depth: \textbf{STRIPS} ($\langle$Pre, Add, Del$\rangle$, closed-world, $s'=(s\setminus\mathrm{Del})\cup\mathrm{Add}$), \textbf{partial-order planning} (causal links, threats, promotion/demotion, counting linearisations), the \textbf{state-variable representation} (finite-domain variables, rigid vs fluent relations --- the most-examined planning topic), and \textbf{planning $\to$ CSP}. Revise those from that document.
+\end{useful}
+
+\begin{must}[title=Planning graphs / GRAPHPLAN (the bit to add)]
+A \textbf{planning graph} alternates \emph{state levels} (literals) and \emph{action levels}, built forward in polynomial time. It records \textbf{mutex} (mutually exclusive) relations:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item actions are mutex if one deletes a precondition/effect of the other (interference), or their preconditions are mutex (competing needs);
+  \item literals are mutex if all ways of achieving them are pairwise mutex.
+\end{itemize}
+\textbf{GRAPHPLAN:} expand the graph until all goal literals appear non-mutex at some level, then \emph{extract} a plan by backward search; if extraction fails, expand another level. The graph also yields an admissible heuristic (the level at which a goal first appears is a lower bound on cost) for heuristic planners.
+\end{must}
+
+\section{Lighter topics (Tier 2/3 --- know, don't over-invest)}
+
+\begin{useful}
+\textbf{Uninformed search:} BFS (complete, optimal for unit costs, $O(b^d)$ space), DFS ($O(bm)$ space, not optimal), \textbf{iterative deepening} (DFS's space with BFS's optimality --- the practical default). Tree vs graph search (graph search keeps an explored set to avoid revisiting). \\[2pt]
+\textbf{Game playing:} \textbf{minimax} for two-player zero-sum games; \textbf{$\alpha$-$\beta$ pruning} prunes branches that cannot affect the result (best-case halves the effective depth, $O(b^{m/2})$, given good move ordering). Be able to \emph{trace} $\alpha$-$\beta$ on a small tree. \\[2pt]
+\textbf{Knowledge representation:} semantic networks, frames \& rules, inheritance; \textbf{forward chaining} (data-driven) vs \textbf{backward chaining} (goal-driven); first-order logic and \textbf{situation calculus} (the $\mathrm{Result}(a,s)$ fluent framing that STRIPS replaces).
+\end{useful}
+
+\section*{Exam checklist}
+
+\begin{must}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Neural networks:} perceptron $=$ linear boundary (fails XOR) $\to$ MLP; non-linear activation essential; $\sigma'=\sigma(1-\sigma)$; SSE loss; \textbf{gradient descent} $w\leftarrow w-\eta\,\partial E/\partial w$; \textbf{backprop} (forward pass; $\delta_k=(a_k-t_k)g'$; $\delta_j=g'\sum w\delta$; $\Delta w_{ij}=-\eta a_i\delta_j$) --- be able to derive it.
+  \item \textbf{A*:} $f=g+h$; \emph{admissible} $h\le h^*$ $\Rightarrow$ tree-search optimal; \emph{consistent} $h(n)\le c+h(n')$ $\Rightarrow$ graph-search optimal; prove optimality; IDA*/RBFS; hill-climbing local optima.
+  \item \textbf{CSP:} backtracking $+$ forward checking $+$ \textbf{AC-3} (revise arcs to a fixpoint) $+$ MRV/degree/LCV $+$ backjumping. SAT via DPLL (see logic guide); AI often pairs CSP with SAT.
+  \item \textbf{Planning:} STRIPS / partial-order / \textbf{state-variable representation} (from \texttt{planning\_strips\_csp.pdf}); \textbf{planning graphs} (mutexes: interference, competing needs) and \textbf{GRAPHPLAN} (expand to non-mutex goals, then extract); planning-graph level $=$ admissible heuristic.
+  \item \textbf{Lighter:} BFS/DFS/IDS (completeness/optimality/complexity); minimax $+$ $\alpha$-$\beta$ ($O(b^{m/2})$, trace it); forward vs backward chaining; situation calculus.
+\end{enumerate}
+\end{must}
+
+\end{document}
