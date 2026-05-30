@@ -1,0 +1,192 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{must}{colback=hi!8,colframe=hi!75!black,boxrule=0.7pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam-critical,breakable}
+\newtcolorbox{useful}{colback=accent!6,colframe=accent!60!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Worth knowing,breakable}
+\newtcolorbox{gotcha}{colback=warn!6,colframe=warn!70!black,boxrule=0.6pt,arc=2pt,
+  fonttitle=\bfseries,title=Exam trap,breakable}
+\newtcolorbox{plain}[1]{colback=gray!5,colframe=gray!50!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=#1,breakable}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Concurrent and Distributed Systems} \\[2pt] \large The 80/20 Revision Guide}
+\author{\small Part IB --- Cambridge CST --- Paper 5 (Dr M.\ Kleppmann)}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+
+\section*{How this guide is organised}
+
+The course is \textbf{two halves} --- \emph{Concurrent Systems} (one machine, shared memory) and \emph{Distributed Systems} (many machines, message passing) --- and the two Paper-5 questions span both. Across \textbf{2018--2025 (16 questions)}:
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+\textbf{Topic} & \textbf{Appearances} & \textbf{Share} \\
+\hline
+Synchronization (semaphores, monitors, locks) & 7 & 44\% \\
+Fault tolerance \& system models & 6 & 38\% \\
+Message passing / RPC / broadcast & 5 & 31\% \\
+Concurrency primitives \& atomicity & 5 & 31\% \\
+Distributed consistency models & 4 & 25\% \\
+Logical clocks; deadlock; replication/SMR & 3 each & 19\% \\
+Leader election; transactions; time sync; resource policies & 2 each & 12\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{80/20 verdict.} On the concurrent side, \textbf{synchronization} (monitors/semaphores) and \textbf{concurrency primitives} dominate; deadlock and transactions are the next tier. On the distributed side, \textbf{fault models}, \textbf{message passing/RPC}, \textbf{logical clocks}, and \textbf{replication/consistency} are the spine. The defining idea of the distributed half: \textbf{unbounded delay $+$ partial failure} make it fundamentally different from concurrency --- you can't tell ``crashed'' from ``slow''.
+
+\hrulefill
+
+\section*{PART A --- Concurrent Systems}
+
+\section{Concurrency primitives \& atomicity (Tier 1 --- 31\%)}
+
+\begin{must}
+Threads share memory and are \textbf{interleaved} (and preempted) arbitrarily $\Rightarrow$ \textbf{race conditions}. A \textbf{critical section} needs \textbf{mutual exclusion}. \textbf{Atomicity:} an operation appears indivisible. Software-only mutual exclusion is hard (Lamport's \textbf{bakery algorithm} does it without special instructions); in practice we use \textbf{hardware atomics}:
+\[
+\textbf{test-and-set},\quad \textbf{compare-and-swap (CAS)},\quad \textbf{load-linked/store-conditional (LL/SC)}.
+\]
+A correct lock needs mutual exclusion, progress (no deadlock), and bounded waiting.
+\end{must}
+
+\section{Synchronization primitives (Tier 1 --- 44\%, the biggest topic)}
+
+\begin{must}[title=Semaphores]
+A \textbf{semaphore} holds a count with atomic $\mathrm{wait}$ (P: decrement, block if $<0$) and $\mathrm{signal}$ (V: increment, wake one). \textbf{Binary} (mutex) vs \textbf{counting}. Used for mutual exclusion \emph{and} condition synchronization, e.g.\ \textbf{producer--consumer} with a bounded buffer: a mutex $+$ an ``empty slots'' semaphore $+$ a ``full slots'' semaphore.
+\end{must}
+
+\begin{must}[title=Monitors and condition variables]
+A \textbf{monitor} bundles shared state with procedures under \emph{automatic} mutual exclusion (only one thread active inside). \textbf{Condition variables} let a thread \texttt{wait} (release the monitor and block) and \texttt{signal} (wake a waiter) on a named condition. Maintain a \textbf{monitor invariant} that holds whenever the lock is free.
+\end{must}
+
+\begin{gotcha}
+\textbf{Hoare vs Mesa signalling} is the classic exam point. Under \textbf{Hoare} semantics the signalled thread runs \emph{immediately} (so the condition still holds). Under \textbf{Mesa} semantics (Java, pthreads) the signaller keeps running and the waiter is merely made runnable --- the condition may be false again by the time it runs. \textbf{Therefore always re-test in a \texttt{while} loop, never an \texttt{if}:} \verb|while (!cond) wait();|. Java's \texttt{notify}/\texttt{notifyAll}, pthreads, OpenMP and Cilk are all Mesa-style.
+\end{gotcha}
+
+\section{Deadlock \& liveness (Tier 2 --- 19\%)}
+
+\begin{must}
+\textbf{Deadlock} requires all \textbf{four Coffman conditions} simultaneously: \emph{mutual exclusion}, \emph{hold-and-wait}, \emph{no preemption}, \emph{circular wait}. Strategies:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Prevention} --- deny one condition (e.g.\ a global \emph{lock ordering} kills circular wait).
+  \item \textbf{Avoidance} --- the Banker's algorithm: only grant a request if a safe sequence still exists.
+  \item \textbf{Detection \& recovery} --- find a cycle in the \textbf{resource-allocation graph}, then abort/roll back.
+\end{itemize}
+Also know \textbf{livelock} (threads active but make no progress) and \textbf{priority inversion} (low-priority holder blocks high-priority thread; fix with \emph{priority inheritance}).
+\end{must}
+
+\section{Transactions \& concurrency control (Tier 2 --- 12\%)}
+
+\begin{must}
+\textbf{ACID:} Atomicity, Consistency, Isolation, Durability. \textbf{Serializability} is the gold standard for isolation: a concurrent execution is correct if equivalent to \emph{some} serial order --- test by checking the \textbf{precedence (conflict) graph} is acyclic. Achieve it by:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Two-phase locking (2PL)} --- acquire all locks (growing phase) before releasing any (shrinking); \emph{strict} 2PL holds write locks to commit (avoids cascading aborts).
+  \item \textbf{Timestamp ordering} --- order transactions by timestamp, abort out-of-order accesses.
+  \item \textbf{Optimistic concurrency control (OCC)} --- execute on a private copy, then \emph{validate} for conflicts at commit; good under low contention.
+\end{itemize}
+\end{must}
+
+\begin{useful}
+\textbf{Recovery \& lock-free.} \textbf{Write-ahead logging (WAL)} $+$ \textbf{checkpoints} give durability/atomicity: log before applying, replay (redo) committed and roll back (undo) uncommitted on crash. \textbf{Lock-free} data structures use CAS retry loops (progress without locks --- no deadlock, but watch the ABA problem); \textbf{HTM/STM} (hardware/software transactional memory) offer optimistic atomic blocks.
+\end{useful}
+
+\section*{PART B --- Distributed Systems}
+
+\section{System models \& fault tolerance (Tier 1 --- 38\%)}
+
+\begin{must}
+The two things that make distribution hard: \textbf{unbounded message delay} and \textbf{partial failure} (some nodes fail while others continue; you cannot distinguish a crashed node from a slow one or a lost message).
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Timing models:} \emph{synchronous} (bounded delay/clock skew), \emph{asynchronous} (no bounds), \emph{partially synchronous} (bounds hold eventually) --- the realistic one.
+  \item \textbf{Fault models:} \emph{crash-stop}, \emph{crash-recovery}, and \emph{Byzantine} (arbitrary/malicious) --- increasing difficulty.
+\end{itemize}
+\textbf{Two Generals problem:} agreement is \emph{impossible} over an unreliable channel --- no finite protocol guarantees both sides know they agree. Motivates ``best-effort $+$ retries $+$ idempotence''.
+\end{must}
+
+\section{RPC \& communication (Tier 1 --- 31\%)}
+
+\begin{must}
+\textbf{Remote procedure call} makes a network call look like a local one: an \textbf{IDL} defines the interface, stubs \textbf{marshal}/unmarshal arguments. But the abstraction \emph{leaks} because of partial failure --- a lost reply is indistinguishable from a crashed server. Hence delivery semantics:
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{at-least-once} --- retry on no reply; needs \emph{idempotent} operations;
+  \item \textbf{at-most-once} --- never re-execute (reply may be lost);
+  \item \textbf{exactly-once} --- achievable only with de-duplication $+$ persistence.
+\end{itemize}
+\end{must}
+
+\begin{useful}
+\textbf{Other models:} the \textbf{actor} model and \textbf{CSP}/tuple-spaces pass messages instead of sharing memory (no locks). \textbf{Broadcast/multicast} abstractions are built on best-effort messaging $+$ retransmission --- see logical clocks for their ordering guarantees.
+\end{useful}
+
+\section{Time \& logical clocks (Tier 1/2 --- 19\%)}
+
+\begin{must}
+Physical clocks drift; \textbf{NTP} synchronises them but never perfectly, so \textbf{don't use wall-clock time to order events}. Use \textbf{causality}: the \textbf{happens-before} relation $a\to b$ (same process order, or send-before-receive, transitively).
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Lamport clocks:} a single counter; $a\to b \Rightarrow L(a)<L(b)$, but \emph{not} the converse --- gives a consistent \emph{total} order, not causality detection.
+  \item \textbf{Vector clocks:} one entry per process; $a\to b \iff V(a)<V(b)$ --- \emph{characterise} causality, so they detect concurrent events.
+\end{itemize}
+\end{must}
+
+\begin{useful}
+\textbf{Broadcast ordering} (increasing strength): \textbf{FIFO} (messages from one sender in order) $\subseteq$ \textbf{causal} (respects happens-before) $\subseteq$ \textbf{total-order} (all nodes deliver in the \emph{same} order --- the key primitive for replication). \textbf{Gossip} spreads updates epidemically for scalability.
+\end{useful}
+
+\section{Replication \& consistency (Tier 1/2 --- 25\% + 19\%)}
+
+\begin{must}
+\textbf{State-machine replication (SMR):} run the same deterministic state machine on every replica and feed them the \emph{same} commands via \textbf{total-order broadcast} $\Rightarrow$ identical state. \textbf{Leader-based replication} funnels writes through a leader. \textbf{Quorums:} with $N$ replicas, reads $R$ and writes $W$ overlap iff $R+W>N$.\\[2pt]
+\textbf{Consistency models:} \textbf{linearizability} (strongest --- every operation appears to take effect atomically at a point between its call and return; reads see the latest write) vs \textbf{eventual consistency} (replicas converge if updates stop). \textbf{Read-after-write} sits between.
+\end{must}
+
+\begin{gotcha}
+\textbf{CAP theorem} (state it carefully): during a \emph{network partition} you must choose \textbf{consistency} (linearizability) \emph{or} \textbf{availability} --- not both. It says nothing when there's no partition. Don't confuse \textbf{linearizability} (a \emph{recency} guarantee on single objects) with \textbf{serializability} (a \emph{transaction-isolation} guarantee). \textbf{Spanner} uses \textbf{TrueTime} (bounded-uncertainty GPS/atomic clocks) to get external consistency by \emph{waiting out} the uncertainty.
+\end{gotcha}
+
+\begin{useful}
+\textbf{ABD algorithm:} linearizable read/write register on crash-prone replicas via majority quorums (read-then-write-back). \textbf{CRDTs} (conflict-free replicated data types): operations designed to \emph{commute}, so replicas converge without coordination --- the basis of \textbf{collaborative text editing}. \textbf{Two-phase commit (2PC):} atomic commit across nodes (prepare $\to$ commit/abort) --- but it \emph{blocks} if the coordinator crashes (not fault-tolerant; consensus fixes this).
+\end{useful}
+
+\section{Consensus (Tier 2 --- 12\%)}
+
+\begin{must}
+\textbf{Consensus:} all nodes agree on one value (agreement, validity, termination). \textbf{FLP impossibility:} \emph{no deterministic} consensus algorithm guarantees termination in an \emph{asynchronous} system with even \emph{one} crash fault. We escape it in practice via \textbf{partial synchrony} (timeouts) or randomisation. \textbf{Raft:} a leader-based algorithm --- \emph{leader election} (randomised election timeouts $+$ terms) then \emph{log replication} (leader appends, replicates to a majority, commits) --- chosen for understandability over Paxos. 2PC is \emph{not} consensus (it blocks); consensus tolerates coordinator failure.
+\end{must}
+
+\section*{Exam checklist}
+
+\begin{must}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Primitives:} race conditions, mutual exclusion, atomicity; test-and-set / CAS / LL-SC; bakery algorithm.
+  \item \textbf{Synchronization:} semaphores (producer--consumer), monitors $+$ condition variables; \textbf{Hoare vs Mesa} signalling $\Rightarrow$ \texttt{while} not \texttt{if}.
+  \item \textbf{Deadlock:} four Coffman conditions; prevention (lock ordering) / avoidance (Banker's) / detection (RAG cycle); livelock; priority inversion $\to$ inheritance.
+  \item \textbf{Transactions:} ACID; serializability via acyclic precedence graph; 2PL (strict), timestamp ordering, OCC; WAL $+$ checkpoints; lock-free CAS.
+  \item \textbf{Distributed models:} unbounded delay $+$ partial failure; sync/async/partially-sync; crash-stop/crash-recovery/Byzantine; two generals.
+  \item \textbf{RPC:} marshalling, IDL, partial failure $\Rightarrow$ at-least-once (idempotent) / at-most-once / exactly-once.
+  \item \textbf{Clocks:} happens-before; Lamport (total order, not causality) vs vector (characterises causality); FIFO $\subseteq$ causal $\subseteq$ total-order broadcast.
+  \item \textbf{Replication/consistency:} SMR via total-order broadcast; quorums $R+W>N$; linearizability vs eventual; \textbf{CAP} (only during a partition); CRDTs commute; 2PC blocks.
+  \item \textbf{Consensus:} agreement/validity/termination; \textbf{FLP} (async $+$ 1 crash); escape via partial synchrony; \textbf{Raft} (election $+$ log replication).
+  \end{enumerate}
+\end{must}
+
+\end{document}

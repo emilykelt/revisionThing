@@ -133,5 +133,6 @@ The frequency table at the top isn't decoration — it's the spine of the docume
 | Computation Theory | `comp_theory_8020.tex` | 2018–2025, 16 questions |
 | Computer Networking | `comp_net_8020.tex` | 2025/26 lecturer syllabus (new setter — NOT old-paper frequency) |
 | Artificial Intelligence | `ai_8020.tex` | 2018–2025, 16 questions (cross-refs planning_strips_csp) |
+| Concurrent and Distributed Systems | `conc_dist_8020.tex` | 2018–2025, 16 questions |
 
 When the past-paper coverage shifts (e.g. new year added to `data/tripos_coverage.json`), regenerate the frequency tally and update the opening section before reusing the same LaTeX.
