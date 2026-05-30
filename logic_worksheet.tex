@@ -1,0 +1,213 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{sol}{colback=gray!6,colframe=gray!55!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=Solution,breakable,left=4pt,right=4pt,top=3pt,bottom=3pt}
+\newcommand{\hint}[1]{\par{\small\textcolor{accent}{\textit{Hint.}}\ \textit{#1}}\par\smallskip}
+\newcommand{\warm}[1]{\smallskip\textbf{\textcolor{hi}{Warm-up #1.}}\ }
+\newcommand{\exam}{\smallskip\textbf{\textcolor{warn}{Exam-style.}}\ }
+\newcommand{\seq}{\Rightarrow}
+\newcommand{\imp}{\rightarrow}
+\newcommand{\rn}[1]{\;({#1})}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Logic and Proof --- Algorithm Worksheet}\\[2pt]
+\large Run-by-hand problems, hints \& solutions for each algorithm in \texttt{logic\_8020}}
+\author{\small Part IB --- Cambridge CST --- Paper 6}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+\textit{Cover each Solution box and attempt the problem first. Logic \& Proof rewards showing every step of these algorithms.}
+
+\hrulefill
+
+\section{CNF / clause-form conversion}
+
+\warm{1} Eliminate the connective in $A\imp B$.
+\hint{$A\imp B\equiv \neg A\vee B$.}
+\begin{sol}$\neg A\vee B$.\end{sol}
+
+\warm{2} Put $\neg(A\wedge B)$ into negation normal form.
+\hint{de Morgan.}
+\begin{sol}$\neg A\vee\neg B$.\end{sol}
+
+\exam Convert $(P\vee Q)\imp(R\wedge S)$ to a clause set; and Skolemise $\forall x\,\exists y\,\forall z\,\exists w\,P(x,y,z,w)$, dropping quantifiers.
+\hint{CNF: eliminate $\imp$, push $\neg$ in, distribute $\vee$ over $\wedge$. Skolemise: each $\exists$ under $\forall x_1\dots x_k$ becomes a Skolem function $f(x_1,\dots,x_k)$ of exactly those universally-bound variables.}
+\begin{sol}
+$(P\vee Q)\imp(R\wedge S)\equiv \neg(P\vee Q)\vee(R\wedge S)\equiv(\neg P\wedge\neg Q)\vee(R\wedge S)$. Distribute:
+\[(\neg P\vee R)\wedge(\neg P\vee S)\wedge(\neg Q\vee R)\wedge(\neg Q\vee S).\]
+Clauses: $\{\neg P,R\},\{\neg P,S\},\{\neg Q,R\},\{\neg Q,S\}$.\\[3pt]
+Skolemisation: $\exists y$ is under $\forall x$ only $\Rightarrow y=f(x)$; $\exists w$ is under $\forall x,\forall z$ $\Rightarrow w=g(x,z)$. Drop the $\forall$s:
+\[P\big(x,\,f(x),\,z,\,g(x,z)\big).\]
+\end{sol}
+
+\section{DPLL}
+
+\warm{1} Apply unit propagation to $\{P,Q\},\{\neg P\}$.
+\hint{The unit $\{\neg P\}$ forces $P=$ false: drop clauses containing $\neg P$, delete $P$ from the rest.}
+\begin{sol}$\{Q\}$ remains (then it's a unit forcing $Q$).\end{sol}
+
+\warm{2} Find a pure literal in $\{\neg P,Q\},\{\neg P,R\},\{\neg Q,\neg R\}$.
+\hint{A literal whose complement never appears.}
+\begin{sol}$\neg P$ is pure ($P$ never occurs positively). Delete the clauses containing it.\end{sol}
+
+\exam Use DPLL to decide $\{A,B\},\{\neg A,C\},\{\neg B,C\},\{\neg C\}$ (i.e.\ is $(A\vee B)\wedge(A\imp C)\wedge(B\imp C)\wedge\neg C$ satisfiable?).
+\hint{Start with the unit $\{\neg C\}$.}
+\begin{sol}
+\[
+\begin{array}{lll}
+\{A,B\}\ \{\neg A,C\}\ \{\neg B,C\}\ \{\neg C\} & & \text{initial}\\
+\{A,B\}\ \{\neg A\}\ \{\neg B\} & & \text{unit }\neg C\\
+\{B\}\ \{\neg B\} & & \text{unit }\neg A\ (\text{from }\{A,B\}\text{ drop }A)\\
+\square & & \text{unit }\neg B\ \Rightarrow\ \{B\}\ \text{empties}
+\end{array}
+\]
+Empty clause derived $\Rightarrow$ \textbf{unsatisfiable}. Hence $((A\imp C)\wedge(B\imp C))\imp((A\vee B)\imp C)$ is a theorem.
+\end{sol}
+
+\section{Resolution (propositional)}
+
+\warm{1} Resolve $\{P,Q\}$ and $\{\neg P,R\}$.
+\hint{Cancel the complementary pair $P/\neg P$, union the rest.}
+\begin{sol}$\{Q,R\}$.\end{sol}
+
+\warm{2} Resolve $\{P\}$ and $\{\neg P\}$.
+\hint{Nothing left after cancelling.}
+\begin{sol}The empty clause $\square$ (a contradiction).\end{sol}
+
+\exam Prove by resolution that $\{P\imp Q,\ Q\imp R,\ P\}\models R$.
+\hint{Negate the goal $R$, convert everything to clauses, resolve to $\square$.}
+\begin{sol}
+Clauses: $\{\neg P,Q\},\{\neg Q,R\},\{P\},\{\neg R\}$ (last is the negated goal).
+\[
+\frac{\{P\}\ \ \{\neg P,Q\}}{\{Q\}}\qquad
+\frac{\{Q\}\ \ \{\neg Q,R\}}{\{R\}}\qquad
+\frac{\{R\}\ \ \{\neg R\}}{\square}
+\]
+$\square$ reached $\Rightarrow$ the entailment holds.
+\end{sol}
+
+\section{Unification \& first-order resolution}
+
+\warm{1} Unify $f(x,a)$ and $f(b,y)$.
+\hint{Unify argument-wise.}
+\begin{sol}$\{b/x,\ a/y\}$.\end{sol}
+
+\warm{2} Factor the clause $\{P(x),P(a)\}$.
+\hint{Unify the two literals.}
+\begin{sol}$\sigma=\{a/x\}$ gives the factor $\{P(a)\}$ (a shorter, useful clause).\end{sol}
+
+\exam Use first-order resolution to prove $Q(a)$ from $\forall x\,(P(x)\imp Q(x))$ and $P(a)$.
+\hint{Clausify (rename variables apart), negate the goal, resolve with a most general unifier each step.}
+\begin{sol}
+Clauses: $\{\neg P(x),Q(x)\}$, $\{P(a)\}$, $\{\neg Q(a)\}$ (negated goal).
+\[
+\frac{\{P(a)\}\ \ \{\neg P(x),Q(x)\}}{\{Q(a)\}}\ \sigma=\{a/x\}
+\qquad
+\frac{\{Q(a)\}\ \ \{\neg Q(a)\}}{\square}
+\]
+$\square\Rightarrow Q(a)$ follows. (Always rename apart before resolving, and use the \emph{occurs check} in unification.)
+\end{sol}
+
+\section{Binary Decision Diagrams}
+
+\warm{1} Give the ROBDD of the single variable $P$, and of $\neg P$.
+\hint{One decision node; negation just swaps the leaves.}
+\begin{sol}$P$: node on $P$ with true-child $\mathbf 1$, false-child $\mathbf 0$. $\neg P$: same node with leaves swapped ($\mathbf 0$/$\mathbf 1$).\end{sol}
+
+\warm{2} When is a decision node deleted during reduction?
+\hint{Irredundancy.}
+\begin{sol}When its true- and false-children are identical (the test is irrelevant) --- replace the node by that common child.\end{sol}
+
+\exam Build the ROBDD for $(P\wedge Q)\vee(\neg P\wedge R)$ with ordering $P<Q<R$. Then state how you'd use BDDs to check whether two formulas are equivalent.
+\hint{This is ``if $P$ then $Q$ else $R$'' --- a multiplexer. Test $P$ first; on each branch you're left with a single remaining variable.}
+\begin{sol}
+\[
+\underbrace{P}_{\text{root}}:\quad \text{if } P \to (\,Q: \mathbf 1/\mathbf 0\,),\quad \text{else} \to (\,R:\mathbf 1/\mathbf 0\,).
+\]
+i.e.\ node $P$; its true-branch is a node on $Q$ (true$\to\mathbf 1$, false$\to\mathbf 0$); its false-branch is a node on $R$ (true$\to\mathbf 1$, false$\to\mathbf 0$). Already reduced: the $Q$- and $R$-nodes have distinct children, and $P$'s two children differ.\\[3pt]
+\textbf{Equivalence check:} build both ROBDDs under the \emph{same} variable ordering; they are logically equivalent \emph{iff} the two diagrams are identical (with hashing/sharing, iff their root pointers are equal). A tautology reduces to $\mathbf 1$, an unsatisfiable formula to $\mathbf 0$.
+\end{sol}
+
+\section{Fourier--Motzkin variable elimination}
+
+\warm{1} Eliminate $x$ from $\{x\le 5,\ x\ge 2\}$.
+\hint{Pair the lower bound with the upper bound.}
+\begin{sol}$2\le 5$ (true) $\Rightarrow$ satisfiable ($x\in[2,5]$).\end{sol}
+
+\warm{2} Eliminate $x$ from $\{x\le 3,\ x\ge 7\}$.
+\hint{Same, but check the resulting inequality.}
+\begin{sol}$7\le 3$ (false) $\Rightarrow$ unsatisfiable.\end{sol}
+
+\exam Decide satisfiability of $\{\,x\le y,\ y\le z,\ z\le x-1\,\}$.
+\hint{Rewrite as lower/upper bounds and eliminate one variable at a time; a cyclic chain should produce a contradiction.}
+\begin{sol}
+From $z\le x-1$: lower bound $x\ge z+1$; upper bound $x\le y$. Eliminate $x$: $z+1\le y$. Now $\{z+1\le y,\ y\le z\}$. Eliminate $y$: lower $y\ge z+1$, upper $y\le z$ $\Rightarrow z+1\le z\Rightarrow 1\le 0$. \textbf{Contradiction $\Rightarrow$ unsatisfiable} (the constraints say $x\le y\le z\le x-1$, impossible).
+\end{sol}
+
+\section{Sequent calculus}
+
+\warm{1} Is the sequent $A\seq A$ provable?
+\hint{Basic sequent.}
+\begin{sol}Yes --- it is a \emph{basic} (axiom) sequent: the same formula on both sides.\end{sol}
+
+\warm{2} Which rule reduces $\Gamma\seq\Delta,\ A\wedge B$, and how many premises does it have?
+\hint{Right rule for $\wedge$.}
+\begin{sol}$(\wedge r)$, with \emph{two} premises: $\Gamma\seq\Delta,A$ and $\Gamma\seq\Delta,B$.\end{sol}
+
+\exam Give backward sequent-calculus proofs of (a) $\seq (A\wedge B)\imp(B\wedge A)$ and (b) $\seq \forall x\,(P(x)\wedge Q(x))\imp\forall x\,P(x)$.
+\hint{(a) $(\imp r)$ then $(\wedge l)$ and $(\wedge r)$. (b) Apply $(\imp r)$, then $(\forall r)$ \emph{before} $(\forall l)$ (the $\forall r$ proviso ``$x$ not free in the conclusion'' must hold), then $(\wedge l)$.}
+\begin{sol}
+(a)
+\[
+\frac{\dfrac{A,B\seq B,A}{A\wedge B\seq B,A}\rn{\wedge l}\ \ \text{and}\ \ \dfrac{A,B\seq A}{\dots}}
+{\dfrac{A\wedge B\seq B\wedge A}{\seq(A\wedge B)\imp(B\wedge A)}\rn{\imp r}}\rn{\wedge r}
+\]
+i.e.\ $(\imp r)$ moves $A\wedge B$ left; $(\wedge l)$ splits it into $A,B$; $(\wedge r)$ splits the goal $B\wedge A$ into two basic sequents $A,B\seq B$ and $A,B\seq A$.\\[3pt]
+(b)
+\[
+\frac{\dfrac{\dfrac{P(x),Q(x)\seq P(x)}{P(x)\wedge Q(x)\seq P(x)}\rn{\wedge l}}{\forall x(P(x)\wedge Q(x))\seq P(x)}\rn{\forall l}}
+{\dfrac{\forall x(P(x)\wedge Q(x))\seq\forall x\,P(x)}{\seq\forall x(P(x)\wedge Q(x))\imp\forall x\,P(x)}\rn{\imp r}}\rn{\forall r}
+\]
+Crucially $(\forall r)$ is applied first (introducing a fresh $x$ not free below), then $(\forall l)$ instantiates the assumption at that same $x$; $(\wedge l)$ then gives a basic sequent.
+\end{sol}
+
+\section{Modal S4 sequent proof}
+
+\warm{1} State the $(\square r)$ rule, including its side condition.
+\hint{It discards formulas that don't begin with the right modality.}
+\begin{sol}
+$\dfrac{\Gamma^{*}\seq\Delta^{*},A}{\Gamma\seq\Delta,\square A}\rn{\square r}$, where $\Gamma^{*}=\{\square B\in\Gamma\}$ and $\Delta^{*}=\{\Diamond B\in\Delta\}$ --- all non-$\square$ left formulas and non-$\Diamond$ right formulas are thrown away.
+\end{sol}
+
+\exam Prove the distribution axiom $\square(A\imp B),\ \square A\ \seq\ \square B$ in S4.
+\hint{Apply $(\square r)$ \emph{first} (so the $\square$ assumptions survive into $\Gamma^{*}$); then strip the boxes with $(\square l)$ and finish with $(\imp l)$.}
+\begin{sol}
+\[
+\frac{\dfrac{\dfrac{\overline{A\seq A,B}\quad \overline{B,A\seq B}}{A\imp B,\,A\seq B}\rn{\imp l}}
+{\dfrac{\square(A\imp B),\,\square A\seq B}{\ }}\rn{\square l\ (\times2)}}
+{\square(A\imp B),\,\square A\seq\square B}\rn{\square r}
+\]
+Reading top-down: $(\square r)$ reduces the goal $\square B$ to $B$, keeping $\Gamma^{*}=\{\square(A\imp B),\square A\}$ (both begin with $\square$, so they survive); $(\square l)$ strips each box to give $A\imp B,\ A\seq B$; $(\imp l)$ splits into the two basic sequents $A\seq A,B$ and $B,A\seq B$.
+\end{sol}
+
+\vspace{0.3cm}
+\begin{center}\textit{Re-run DPLL, resolution, a BDD, Fourier--Motzkin, and one sequent proof cold before the exam.}\end{center}
+
+\end{document}

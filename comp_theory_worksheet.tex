@@ -1,0 +1,171 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{sol}{colback=gray!6,colframe=gray!55!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=Solution,breakable,left=4pt,right=4pt,top=3pt,bottom=3pt}
+\newcommand{\hint}[1]{\par{\small\textcolor{accent}{\textit{Hint.}}\ \textit{#1}}\par\smallskip}
+\newcommand{\warm}[1]{\smallskip\textbf{\textcolor{hi}{Warm-up #1.}}\ }
+\newcommand{\exam}{\smallskip\textbf{\textcolor{warn}{Exam-style.}}\ }
+\newcommand{\cn}[1]{\underline{#1}}
+\newcommand{\lam}{\lambda}
+\newcommand{\bred}{\to_\beta}
+\newcommand{\breds}{\twoheadrightarrow_\beta}
+\newcommand{\beq}{=_\beta}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Computation Theory --- Exam-Checklist Worksheet}\\[2pt]
+\large Problems, hints \& solutions for each point of the \texttt{comp\_theory\_8020} checklist}
+\author{\small Part IB --- Cambridge CST --- Paper 6}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+\textit{Cover each Solution box first. These questions reward precise definitions and correct constructions.}
+
+\hrulefill
+
+\section{Equivalence \& the Church--Turing thesis}
+
+\warm{1} Name the formalisations of ``algorithm'' that the course proves equivalent.
+\hint{Three machine/function models plus one from Church.}
+\begin{sol}Register machines, Turing machines, partial recursive functions, and $\lambda$-definable functions --- all compute the same class (``computable'').\end{sol}
+
+\warm{2} Is the Church--Turing thesis a theorem? Justify.
+\hint{What kind of statement is ``every algorithm is\dots''?}
+\begin{sol}No. ``Intuitively computable'' is informal, so the thesis can't be proved; it's a well-supported \emph{claim}, evidenced by the convergence of independently-defined models on the same function class.\end{sol}
+
+\exam Explain what the equivalence of these models means, and why it underpins the proof that some problems are undecidable.
+\hint{Two payoffs: robustness of ``computable'', and ``programs as data''.}
+\begin{sol}
+\textbf{Meaning:} each model computes \emph{exactly the same} set of partial functions $\mathbb N\rightharpoonup\mathbb N$; a construction in one transfers to the others. So ``computable'' is \emph{model-independent} --- we can prove results in whichever model is most convenient (register machines for coding, $\lambda$-calculus for higher-order constructions).\\[2pt]
+\textbf{Why undecidability follows:} because programs can be \textbf{coded as numbers} (data), a single \emph{universal} machine can run any program, and a \textbf{diagonal} argument then exhibits a problem (the Halting Problem) that \emph{no} machine in the class decides --- and by the equivalence, no algorithm at all.
+\end{sol}
+
+\section{$\lambda$-calculus}
+
+\warm{1} $\beta$-reduce $(\lam x.x\,x)(\lam y.y)$ to normal form.
+\hint{Substitute the argument for $x$, then reduce.}
+\begin{sol}$(\lam x.x\,x)(\lam y.y)\bred (\lam y.y)(\lam y.y)\bred \lam y.y=\mathrm I$.\end{sol}
+
+\warm{2} Compute $(\lam y.x)[y/x]$ correctly.
+\hint{Substituting $y$ for $x$ would be \emph{captured} by the binder $\lam y$ --- rename first.}
+\begin{sol}$\alpha$-rename the bound $y$ first: $(\lam z.x)[y/x]=\lam z.y$ \;(\emph{not} $\lam y.y$). Substitution is capture-avoiding.\end{sol}
+
+\exam Reduce $\mathbf{Succ}\,\cn1$ to normal form and confirm it is $\cn2$; then explain why $\Omega=(\lam x.x\,x)(\lam x.x\,x)$ has no normal form, and what the Church--Rosser theorem guarantees.
+\hint{$\mathbf{Succ}=\lam n f x.f\,(n\,f\,x)$ and $\cn1=\lam f x.f\,x$, $\cn2=\lam f x.f\,(f\,x)$.}
+\begin{sol}
+\[
+\mathbf{Succ}\,\cn1=(\lam n f x.f(nfx))(\lam fx.fx)\bred \lam fx.f\big((\lam fx.fx)\,f\,x\big)\breds \lam fx.f(fx)=\cn2.
+\]
+$\Omega\bred(\lam x.xx)(\lam x.xx)=\Omega$ --- every reduction reproduces $\Omega$, so it \emph{never} reaches a redex-free term; no normal form. \textbf{Church--Rosser (confluence):} if $M\breds M_1$ and $M\breds M_2$ then both reduce to a common term; consequently a normal form, \emph{if it exists}, is unique up to $\alpha$-equivalence (and normal-order reduction will find it).
+\end{sol}
+
+\section{$\lambda$-definability}
+
+\warm{1} State the two conditions for a closed term $F$ to represent a partial function $f$.
+\hint{One for ``defined'', one for ``undefined''.}
+\begin{sol}If $f(\vec x){=}y$ then $F\,\cn{x_1}\cdots\cn{x_n}\beq\cn y$; if $f(\vec x){\uparrow}$ then $F\,\cn{x_1}\cdots\cn{x_n}$ has \emph{no $\beta$-normal form}.\end{sol}
+
+\warm{2} State the theorem relating computability and $\lambda$-definability.
+\hint{Iff.}
+\begin{sol}A partial function is computable \emph{iff} it is $\lambda$-definable.\end{sol}
+
+\exam Show that addition is $\lambda$-definable: take $P\equiv\lam m\,n\,f\,x.\,m\,f\,(n\,f\,x)$ and verify $P\,\cn m\,\cn n\beq\cn{m{+}n}$.
+\hint{Use $\cn k\,f\,x\beq f^k x$, and $f^m(f^n x)=f^{m+n}x$.}
+\begin{sol}
+\[
+\begin{aligned}
+P\,\cn m\,\cn n
+&\beq \lam f\,x.\ \cn m\,f\,(\cn n\,f\,x)\\
+&\beq \lam f\,x.\ \cn m\,f\,(f^{n}x)\\
+&\beq \lam f\,x.\ f^{m}(f^{n}x)\\
+&\beq \lam f\,x.\ f^{\,m+n}x\ =\ \cn{m{+}n}.
+\end{aligned}
+\]
+So $P$ represents $+$; since $+$ is total, the ``undefined'' clause is vacuous. (For partial functions you must additionally ensure non-termination on undefined inputs.)
+\end{sol}
+
+\section{Register machines}
+
+\warm{1} Write the three instruction forms of a register machine.
+\hint{Increment-and-jump, decrement-or-branch, halt.}
+\begin{sol}$R^{+}\to L'$ (add 1 to $R$, go to $L'$); $R^{-}\to L',L''$ (if $R{>}0$ subtract 1 and go to $L'$, else go to $L''$); $\textsf{HALT}$.\end{sol}
+
+\warm{2} Why does copying register $S$ into $D$ require a temporary register?
+\hint{What does reading $S$ do to it?}
+\begin{sol}You can only inspect $S$ by decrementing it (which destroys it). So you decrement $S$ into \emph{both} $D$ and a temp $T$, then move $T$ back to restore $S$.\end{sol}
+
+\exam Write a register machine that sets $R_0 := R_1 + R_2$ (you may destroy $R_1,R_2$; assume $R_0=0$ initially). Give the labelled program.
+\hint{Repeatedly decrement $R_1$ while incrementing $R_0$; then do the same for $R_2$.}
+\begin{sol}
+\[
+\begin{aligned}
+L_0&:\ R_1^{-}\to L_1,\,L_2 \qquad &&\text{(drain }R_1\text{ into }R_0)\\
+L_1&:\ R_0^{+}\to L_0\\
+L_2&:\ R_2^{-}\to L_3,\,L_4 \qquad &&\text{(drain }R_2\text{ into }R_0)\\
+L_3&:\ R_0^{+}\to L_2\\
+L_4&:\ \textsf{HALT}
+\end{aligned}
+\]
+On halting, $R_0=R_1^{\text{init}}+R_2^{\text{init}}$ and $R_1=R_2=0$.
+\end{sol}
+
+\section{Undecidability}
+
+\warm{1} Define ``decidable set'' and ``recursively enumerable (r.e.) set''.
+\hint{One always halts; the other halts on members.}
+\begin{sol}\textbf{Decidable:} its characteristic function is computable (an algorithm answers ``$x\in S$?'' and always halts). \textbf{r.e.:} it is the domain of a computable partial function (a machine halts on exactly the members of $S$).\end{sol}
+
+\warm{2} Complete: a set $S$ is decidable iff \underline{\hspace{3cm}}.
+\hint{Think about $S$ and its complement.}
+\begin{sol}\dots iff both $S$ and its complement $\overline S$ are r.e.\end{sol}
+
+\exam Prove the Halting Problem is undecidable by diagonalisation; then sketch how undecidability of another problem follows by reduction.
+\hint{Assume a total decider $H$, build a machine that contradicts it on its own code.}
+\begin{sol}
+Suppose a total computable $H$ exists with $H(A,D)=1$ iff program $A$ halts on input $D$. Define
+\[
+C(A):\ \text{compute }H(A,A);\ \text{if }H(A,A)=0\text{ return }1,\ \text{else loop forever.}
+\]
+Then $C(A){\downarrow}\iff H(A,A)=0\iff A(A){\uparrow}$. Feed $C$ its own code: $C(C){\downarrow}\iff C(C){\uparrow}$ --- contradiction. So no such $H$ exists.\\[3pt]
+\textbf{By reduction:} to show ``does $P$ halt on empty input?'' is undecidable, map any Halting instance $(A,D)$ to a program $P_{A,D}$ that ignores its input and runs $A$ on $D$. Then $P_{A,D}$ halts on empty input iff $A$ halts on $D$. A decider for the empty-input problem would thus decide Halting --- impossible.
+\end{sol}
+
+\section{Recursive functions}
+
+\warm{1} Name the three basic functions of the primitive recursive functions.
+\hint{Constant, increment, select.}
+\begin{sol}Zero ($\mathbf 0$), successor ($\mathrm{succ}$), and the projections ($\mathrm{proj}^n_i$).\end{sol}
+
+\warm{2} Which closure operation turns primitive recursive into \emph{partial} recursive?
+\hint{Unbounded search.}
+\begin{sol}Minimisation, $\mu y\,[f(\vec x,y)=0]$ (search for the least such $y$; may not halt $\Rightarrow$ partial).\end{sol}
+
+\exam Define addition by primitive recursion from $\mathrm{succ}$; then explain why Ackermann's function is computable but \emph{not} primitive recursive.
+\hint{Primitive recursion: base case on $0$, step uses the previous value. For Ackermann, think about growth rate vs the p.r.\ functions.}
+\begin{sol}
+\[
+\mathrm{add}(x,0)=x,\qquad \mathrm{add}(x,y{+}1)=\mathrm{succ}\big(\mathrm{add}(x,y)\big).
+\]
+\textbf{Ackermann:} it is \emph{total} and clearly \emph{computable} (a terminating, well-founded recursion). But it grows faster than \emph{every} primitive recursive function --- one can show that for any p.r.\ $f$ there is an argument beyond which Ackermann dominates $f$ (a diagonal argument over an enumeration of the p.r.\ functions). Hence it cannot itself be p.r. \textbf{Moral:} primitive recursion (bounded loops) does not capture all total computable functions; minimisation / unbounded recursion is strictly more powerful.
+\end{sol}
+
+\vspace{0.3cm}
+\begin{center}\textit{Re-do the Halting proof, a $\beta$-reduction, and the register-machine program cold before the exam.}\end{center}
+
+\end{document}

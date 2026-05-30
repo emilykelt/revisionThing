@@ -1,0 +1,135 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{sol}{colback=gray!6,colframe=gray!55!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=Solution,breakable,left=4pt,right=4pt,top=3pt,bottom=3pt}
+\newcommand{\hint}[1]{\par{\small\textcolor{accent}{\textit{Hint.}}\ \textit{#1}}\par\smallskip}
+\newcommand{\warm}[1]{\smallskip\textbf{\textcolor{hi}{Warm-up #1.}}\ }
+\newcommand{\exam}{\smallskip\textbf{\textcolor{warn}{Exam-style.}}\ }
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Artificial Intelligence --- Exam-Checklist Worksheet}\\[2pt]
+\large Problems, hints \& solutions for each point of the \texttt{ai\_8020} checklist}
+\author{\small Part IB --- Cambridge CST --- Paper 7}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+\textit{Cover each Solution box first. The backprop derivation and the A* optimality proof are the two ``do-it-cold'' set-pieces.}
+
+\hrulefill
+
+\section{Neural networks}
+
+\warm{1} Why must a network's activation function be non-linear?
+\hint{What is a composition of linear maps?}
+\begin{sol}A composition of linear maps is itself linear, so any number of linear layers collapses to one --- it could only ever represent a linear boundary (and so couldn't learn XOR). Non-linearity is what gives MLPs their expressive power.\end{sol}
+
+\warm{2} For the sigmoid $\sigma(x)=\tfrac1{1+e^{-x}}$, express $\sigma'(x)$ in terms of $\sigma$.
+\hint{Differentiate; the answer is famously self-referential.}
+\begin{sol}$\sigma'(x)=\sigma(x)\,(1-\sigma(x))$.\end{sol}
+
+\exam With error $E=\tfrac12\sum_k (a_k-t_k)^2$, output activations $a_k=g(\mathrm{in}_k)$ and $\mathrm{in}_k=\sum_j w_{jk}a_j$, derive the gradient $\partial E/\partial w_{jk}$ for an output-layer weight and hence the update rule; then state the hidden-layer $\delta$, and explain why a single perceptron cannot learn XOR.
+\hint{Chain rule through $a_k$ and $\mathrm{in}_k$. Define $\delta_k=\partial E/\partial \mathrm{in}_k$.}
+\begin{sol}
+\[
+\frac{\partial E}{\partial w_{jk}}=\underbrace{\frac{\partial E}{\partial a_k}}_{(a_k-t_k)}\cdot\underbrace{\frac{\partial a_k}{\partial \mathrm{in}_k}}_{g'(\mathrm{in}_k)}\cdot\underbrace{\frac{\partial \mathrm{in}_k}{\partial w_{jk}}}_{a_j}=a_j\,\delta_k,\quad \delta_k=(a_k-t_k)\,g'(\mathrm{in}_k).
+\]
+\textbf{Update:} $w_{jk}\leftarrow w_{jk}-\eta\,a_j\delta_k$. \textbf{Hidden unit} $j$: $\delta_j=g'(\mathrm{in}_j)\sum_k w_{jk}\,\delta_k$ (sum over the units $j$ feeds), and $\Delta w_{ij}=-\eta\,a_i\delta_j$. One backward sweep of $\delta$'s yields every gradient.\\[3pt]
+\textbf{XOR:} its four points $(0,0)\!\to\!0,(1,1)\!\to\!0,(0,1)\!\to\!1,(1,0)\!\to\!1$ are \emph{not linearly separable} --- no single straight line puts both $1$-outputs on one side --- so a single linear-threshold unit cannot classify them. A hidden layer (composing two linear separators) can.
+\end{sol}
+
+\section{Heuristic search (A*)}
+
+\warm{1} Write $f(n)$ and define an \emph{admissible} heuristic.
+\hint{$g$ is cost-so-far.}
+\begin{sol}$f(n)=g(n)+h(n)$; $h$ is admissible if $h(n)\le h^*(n)$ for all $n$ (never overestimates the true remaining cost).\end{sol}
+
+\warm{2} Define a \emph{consistent} (monotone) heuristic.
+\hint{A triangle-inequality on the heuristic.}
+\begin{sol}$h(n)\le c(n,a,n')+h(n')$ for every edge $n\to n'$. Consistency implies admissibility, and makes $f$ non-decreasing along any path.\end{sol}
+
+\exam State which property guarantees A* optimality for tree-search vs graph-search, and \emph{prove} that tree-search A* with an admissible heuristic returns an optimal solution.
+\hint{Suppose a suboptimal goal is about to be expanded; compare its $f$ to that of a frontier node on the optimal path.}
+\begin{sol}
+\textbf{Tree-search} A* is optimal if $h$ is \emph{admissible}; \textbf{graph-search} A* is optimal if $h$ is \emph{consistent} (else you may re-expand nodes / accept a worse path).\\[3pt]
+\textbf{Proof (tree-search, admissible $h$).} Let $C^*$ be the optimal cost and suppose a suboptimal goal $G_2$ (with $g(G_2)>C^*$) is about to be expanded. Since $h(G_2)=0$, $f(G_2)=g(G_2)>C^*$. Let $n$ be a node on an optimal path to the optimal goal that is still on the frontier. By admissibility, $f(n)=g(n)+h(n)\le g(n)+h^*(n)=C^*$. Hence $f(n)\le C^*<f(G_2)$, so A* would expand $n$ before $G_2$ --- contradicting that $G_2$ was chosen. Therefore no suboptimal goal is ever expanded. $\square$\\[3pt]
+\textbf{Also:} IDA*/RBFS give A*-style optimality in \emph{linear} memory; greedy hill-climbing on $h$ alone is not optimal (local optima, plateaux).
+\end{sol}
+
+\section{Constraint satisfaction (CSP)}
+
+\warm{1} After assigning a variable, what does \emph{forward checking} do?
+\hint{Look at unassigned neighbours.}
+\begin{sol}It removes from each unassigned neighbour's domain any value inconsistent with the new assignment; if a domain becomes empty, backtrack immediately.\end{sol}
+
+\warm{2} In AC-3, when is a value removed from $D(X_i)$ while revising arc $(X_i,X_j)$?
+\hint{``Support''.}
+\begin{sol}When that value has \emph{no support} --- no value in $D(X_j)$ satisfies the constraint between $X_i$ and $X_j$ with it.\end{sol}
+
+\exam Solve, by backtracking with forward checking, the CSP: variables $A,B,C$, each domain $\{r,g\}$, constraints $A\ne B$, $B\ne C$, $A\ne C$. Show the search and conclude.
+\hint{This is 2-colouring a triangle. Watch a domain empty out.}
+\begin{sol}
+\begin{itemize}[leftmargin=*,itemsep=0pt]
+  \item Assign $A=r$. Forward-check: $A\ne B\Rightarrow$ remove $r$ from $B$ ($D(B)=\{g\}$); $A\ne C\Rightarrow D(C)=\{g\}$.
+  \item Assign $B=g$. Forward-check $B\ne C\Rightarrow$ remove $g$ from $C$ $\Rightarrow D(C)=\varnothing$. \textbf{Dead end} --- backtrack. $B$ has no other value $\Rightarrow$ backtrack to $A$.
+  \item Assign $A=g$: symmetric, same empty-domain failure.
+\end{itemize}
+\textbf{No solution} --- a triangle (odd cycle) is not 2-colourable. Forward checking caught the failure as soon as $C$'s domain emptied, without a full assignment.
+\end{sol}
+
+\section{Planning}
+
+\warm{1} What are the three components of a STRIPS action?
+\hint{What must hold; what becomes true; what becomes false.}
+\begin{sol}Precondition, add-list, delete-list. (Applying $a$ in state $s$: $s'=(s\setminus\mathrm{Del})\cup\mathrm{Add}$.)\end{sol}
+
+\warm{2} In a planning graph, when are two actions \emph{mutex} by interference?
+\hint{One undoes something the other needs/produces.}
+\begin{sol}When one action deletes a precondition or an (add-)effect of the other.\end{sol}
+
+\exam ``Have cake and eat it'': init $\{\mathit{Have}\}$; actions \textsc{Eat} (pre $\mathit{Have}$; add $\mathit{Eaten}$; del $\mathit{Have}$) and \textsc{Bake} (pre $\neg\mathit{Have}$; add $\mathit{Have}$); goal $\{\mathit{Have},\mathit{Eaten}\}$. Build the planning graph far enough to find a plan, explaining the mutex that forces expansion.
+\hint{At the first action level only \textsc{Eat} (and persistence ``no-ops'') apply. Check whether both goals appear \emph{non-mutex} at the next state level.}
+\begin{sol}
+$S_0=\{\mathit{Have},\neg\mathit{Eaten}\}$. \\
+$A_0$: \textsc{Eat} (pre $\mathit{Have}$) plus persistence no-ops for $\mathit{Have}$ and $\neg\mathit{Eaten}$. \\
+$S_1=\{\mathit{Have},\neg\mathit{Have},\mathit{Eaten},\neg\mathit{Eaten}\}$. Both goal literals $\mathit{Have}$ and $\mathit{Eaten}$ are present --- but they are \textbf{mutex}: $\mathit{Eaten}$ is produced only by \textsc{Eat}, which \emph{deletes} $\mathit{Have}$, whereas $\mathit{Have}$ here comes from the persistence no-op; those two actions interfere. So the goal can't be extracted at level 1 $\Rightarrow$ expand again.\\
+$A_1$ now also has \textsc{Bake} (pre $\neg\mathit{Have}$, available after \textsc{Eat}); at $S_2$, $\mathit{Have}$ (from \textsc{Bake}) and $\mathit{Eaten}$ (persisted) are \emph{no longer} mutex. Extract the plan: \textbf{\textsc{Eat} then \textsc{Bake}}. (The planning graph also gives an admissible heuristic: the first level at which all goals appear non-mutex lower-bounds the plan length.)
+\end{sol}
+
+\section{Lighter topics (search, games, logic)}
+
+\warm{1} Which uninformed search is complete and optimal for unit step-costs but uses $O(b^d)$ memory?
+\hint{Explores level by level.}
+\begin{sol}Breadth-first search. (Iterative deepening gets the same guarantees in $O(bd)$ memory.)\end{sol}
+
+\warm{2} What is the best-case time complexity of minimax with $\alpha$-$\beta$ pruning, and what does it mean?
+\hint{Compare to plain minimax $O(b^m)$.}
+\begin{sol}$O(b^{m/2})$ with perfect move ordering --- effectively \emph{doubling} the depth searchable in the same time.\end{sol}
+
+\exam Trace $\alpha$-$\beta$ on this tree (root MAX; two MIN children; leaves left-to-right). $B$'s leaves: $3,12,8$. $C$'s leaves: $2,\,?,\,?$. Show the value returned and which leaves are pruned. Then state the difference between forward and backward chaining.
+\hint{Evaluate $B$ fully to set $\alpha$; then evaluate $C$'s first leaf and compare to $\alpha$.}
+\begin{sol}
+$B$ (MIN) $=\min(3,12,8)=3$, so at the root $\alpha=3$. Now explore $C$ (MIN): its first leaf is $2$, so $C\le 2$. Since $2\le\alpha=3$, $C$ can only \emph{lower} the MIN and can never beat $B$ --- \textbf{prune $C$'s remaining leaves} ($\beta$-cutoff). Root $=\max(3,\le 2)=\boxed{3}$, and the second and third leaves of $C$ are never examined.\\[3pt]
+\textbf{Chaining:} \emph{forward} chaining is \textbf{data-driven} --- start from known facts, fire rules to derive new facts until the goal appears. \emph{Backward} chaining is \textbf{goal-driven} --- start from the goal, find rules that conclude it, and recursively try to establish their premises.
+\end{sol}
+
+\vspace{0.3cm}
+\begin{center}\textit{Re-derive backprop and the A* optimality proof cold, and re-run the AC-3/forward-checking and $\alpha$-$\beta$ traces, before Paper 7.}\end{center}
+
+\end{document}
