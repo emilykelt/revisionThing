@@ -1,0 +1,438 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{array}
+\tcbuselibrary{breakable,skins}
+
+\definecolor{hi}{HTML}{D63A6F}
+\definecolor{accent}{HTML}{1F4E79}
+\definecolor{warn}{HTML}{B91C1C}
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+
+\newtcolorbox{sol}{colback=gray!6,colframe=gray!55!black,boxrule=0.5pt,arc=2pt,
+  fonttitle=\bfseries,title=Solution,breakable,left=4pt,right=4pt,top=3pt,bottom=3pt}
+
+\newcommand{\hint}[1]{\par{\small\textcolor{accent}{\textit{Hint.}}\ \textit{#1}}\par\smallskip}
+\newcommand{\warm}[1]{\smallskip\textbf{\textcolor{hi}{Warm-up #1.}}\ }
+\newcommand{\exam}{\smallskip\textbf{\textcolor{warn}{Exam-style.}}\ }
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\vspace{-1.5cm}\textbf{Compiler Construction --- Exam-Checklist Worksheet}\\[2pt]
+\large Problems, hints \& solutions for every point of the \texttt{compilers\_8020} checklist}
+\author{\small Part IB --- Cambridge CST --- Paper 4}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-0.8cm}
+\textit{Work each problem before reading its Solution box (cover it with a sheet of paper). Warm-ups build the mechanics; the exam-style problem is the real thing.}
+
+\hrulefill
+
+%==================================================================
+\section{Thompson's construction (regex $\to$ NFA)}
+
+\warm{1} Draw the Thompson NFA for the regex \texttt{ab}.
+\hint{Concatenation links two sub-NFAs with an $\epsilon$-edge from the first's accept to the second's start.}
+\begin{sol}
+$\to(0)\xrightarrow{a}(1)\xrightarrow{\epsilon}(2)\xrightarrow{b}(3)\!\!*$. Start $0$, single accept $3$.
+\end{sol}
+
+\warm{2} Draw the Thompson NFA for \texttt{a|b}.
+\hint{Alternation adds a fresh start with $\epsilon$-edges into each branch, and a fresh accept that both branches $\epsilon$-into.}
+\begin{sol}
+Fresh start $s$; $s\xrightarrow{\epsilon}(1)\xrightarrow{a}(2)$ and $s\xrightarrow{\epsilon}(3)\xrightarrow{b}(4)$; then $(2)\xrightarrow{\epsilon}f$, $(4)\xrightarrow{\epsilon}f$. Accept $f$.
+\end{sol}
+
+\exam Construct the Thompson NFA for \texttt{(a|b)*abb}.
+\hint{Build \texttt{a|b} first, wrap it in the Kleene-star pattern (fresh start/accept, $\epsilon$ to enter the loop, $\epsilon$ to skip, $\epsilon$ back-edge), then concatenate $a$, $b$, $b$.}
+\begin{sol}
+Let $N$ be the \texttt{a|b} NFA (start $s_1$, accept $f_1$). Star it: fresh $s_0,f_0$ with
+$s_0\xrightarrow{\epsilon}s_1$, $s_0\xrightarrow{\epsilon}f_0$ (skip), $f_1\xrightarrow{\epsilon}s_1$ (loop), $f_1\xrightarrow{\epsilon}f_0$. Then concatenate:
+\[
+f_0\xrightarrow{\epsilon}\bullet\xrightarrow{a}\bullet\xrightarrow{\epsilon}\bullet\xrightarrow{b}\bullet\xrightarrow{\epsilon}\bullet\xrightarrow{b}\;(\text{accept}).
+\]
+$\sim$11 states; many $\epsilon$-edges. The construction is purely mechanical --- one start, one accept, one operator at a time.
+\end{sol}
+
+%==================================================================
+\section{Subset construction (NFA $\to$ DFA with $\epsilon$-closures)}
+
+\warm{1} For the NFA $0\xrightarrow{\epsilon}1$, $0\xrightarrow{a}2$, $1\xrightarrow{b}3$, compute $\epsilon\text{-closure}(\{0\})$.
+\hint{Include the state itself plus everything reachable by $\epsilon$-edges (transitively).}
+\begin{sol}
+$\epsilon\text{-closure}(\{0\})=\{0,1\}$.
+\end{sol}
+
+\warm{2} For that same NFA, compute $\mathrm{move}(\{0,1\},a)$ then its $\epsilon$-closure.
+\hint{$\mathrm{move}(S,x)=$ states reachable from any state in $S$ on exactly one $x$-edge; then $\epsilon$-close.}
+\begin{sol}
+$\mathrm{move}(\{0,1\},a)=\{2\}$; $\epsilon\text{-closure}(\{2\})=\{2\}$.
+\end{sol}
+
+\exam Run the subset construction on your \texttt{(a|b)*abb} NFA. Give the DFA states (as sets of NFA states) and the transition table; mark the accepting state.
+\hint{The DFA start is $\epsilon\text{-closure}(\{\text{NFA start}\})$. Repeatedly: for each unmarked DFA state $S$ and input $x$, $T=\epsilon\text{-closure}(\mathrm{move}(S,x))$ is a (possibly new) DFA state. A DFA state accepts iff it contains an NFA accept state.}
+\begin{sol}
+The well-known result is the 5-state DFA recognising ``ends in \texttt{abb}'':
+\begin{center}
+\begin{tabular}{c|cc}
+DFA state & on \texttt{a} & on \texttt{b}\\\hline
+$A$ (start) & $B$ & $A$\\
+$B$ (seen \texttt{a}) & $B$ & $C$\\
+$C$ (seen \texttt{ab}) & $B$ & $D$\\
+$D$ (seen \texttt{abb}) $*$ & $B$ & $A$\\
+\end{tabular}
+\end{center}
+Each DFA state is the $\epsilon$-closure of a set of NFA states. Note every state has a defined move on both inputs (because of the \texttt{*} self-loop), and only $D$ accepts. The classic ``trap'' is forgetting that on a mismatch you don't go to a dead state --- you fall back to the longest matching prefix (e.g.\ $C\xrightarrow{a}B$, not to start).
+\end{sol}
+
+%==================================================================
+\section{FIRST and FOLLOW sets}
+
+We use the standard expression grammar throughout items 3--4:
+\[
+E\to TE' \quad E'\to{+}TE'\mid\epsilon \quad T\to FT' \quad T'\to{*}FT'\mid\epsilon \quad F\to(E)\mid \texttt{id}
+\]
+
+\warm{1} Compute $\mathrm{FIRST}(F)$ and $\mathrm{FIRST}(T)$.
+\hint{$\mathrm{FIRST}(\alpha)$ is the set of terminals that can begin a string derived from $\alpha$. For $T\to FT'$, $\mathrm{FIRST}(T)=\mathrm{FIRST}(F)$ since $F$ can't be empty.}
+\begin{sol}
+$\mathrm{FIRST}(F)=\{\,(\,,\texttt{id}\}$; $\mathrm{FIRST}(T)=\mathrm{FIRST}(E)=\{\,(\,,\texttt{id}\}$.
+\end{sol}
+
+\warm{2} Compute $\mathrm{FIRST}(E')$ and $\mathrm{FIRST}(T')$.
+\hint{These have an $\epsilon$-production, so $\epsilon\in\mathrm{FIRST}$.}
+\begin{sol}
+$\mathrm{FIRST}(E')=\{+,\epsilon\}$; $\mathrm{FIRST}(T')=\{*,\epsilon\}$.
+\end{sol}
+
+\exam Compute the full FOLLOW sets for $E,E',T,T',F$.
+\hint{Rules: $\$\in\mathrm{FOLLOW}(\text{start})$. For $A\to\alpha B\beta$, add $\mathrm{FIRST}(\beta)\setminus\{\epsilon\}$ to $\mathrm{FOLLOW}(B)$; if $\beta\Rightarrow^*\epsilon$ (or $\beta$ empty), add $\mathrm{FOLLOW}(A)$ to $\mathrm{FOLLOW}(B)$.}
+\begin{sol}
+\[
+\begin{aligned}
+\mathrm{FOLLOW}(E)&=\{\$,)\}\\
+\mathrm{FOLLOW}(E')&=\mathrm{FOLLOW}(E)=\{\$,)\}\\
+\mathrm{FOLLOW}(T)&=(\mathrm{FIRST}(E')\setminus\{\epsilon\})\cup\mathrm{FOLLOW}(E)=\{+,\$,)\}\\
+\mathrm{FOLLOW}(T')&=\mathrm{FOLLOW}(T)=\{+,\$,)\}\\
+\mathrm{FOLLOW}(F)&=(\mathrm{FIRST}(T')\setminus\{\epsilon\})\cup\mathrm{FOLLOW}(T)=\{*,+,\$,)\}
+\end{aligned}
+\]
+\end{sol}
+
+%==================================================================
+\section{LL(1) table; conflicts; running the parser}
+
+\warm{1} A grammar is LL(1) iff, for each non-terminal, the predict sets of its alternatives are disjoint. State the disjointness condition for $A\to\alpha\mid\beta$.
+\hint{Two parts --- one always, one only when an alternative is nullable.}
+\begin{sol}
+$\mathrm{FIRST}(\alpha)\cap\mathrm{FIRST}(\beta)=\varnothing$; and if (say) $\beta\Rightarrow^*\epsilon$ then $\mathrm{FIRST}(\alpha)\cap\mathrm{FOLLOW}(A)=\varnothing$.
+\end{sol}
+
+\warm{2} Which table cell(s) get the production $E'\to+TE'$?
+\hint{Put $A\to\gamma$ in $M[A,t]$ for each $t\in\mathrm{FIRST}(\gamma)$.}
+\begin{sol}
+$\mathrm{FIRST}(+TE')=\{+\}$, so only $M[E',+]=E'\to+TE'$.
+\end{sol}
+
+\exam Build the LL(1) table for the expression grammar and trace parsing \texttt{id + id * id}.
+\hint{For $A\to\alpha$: add to $M[A,t]$ for $t\in\mathrm{FIRST}(\alpha)$; if $\epsilon\in\mathrm{FIRST}(\alpha)$ also add for $t\in\mathrm{FOLLOW}(A)$. Parse with an explicit stack: if top is a terminal, match; if a non-terminal, expand using $M$.}
+\begin{sol}
+Key cells: $M[E,\texttt{id}]=M[E,(]=E\to TE'$; $M[E',+]=E'\to+TE'$; $M[E',\$]=M[E',)]=E'\to\epsilon$;
+$M[T,\texttt{id}]=M[T,(]=T\to FT'$; $M[T',*]=T'\to*FT'$; $M[T',+]=M[T',\$]=M[T',)]=T'\to\epsilon$;
+$M[F,\texttt{id}]=F\to\texttt{id}$, $M[F,(]=F\to(E)$.\\[3pt]
+Trace (stack top on the right; input \texttt{id+id*id\$}):
+\begin{center}\small
+\begin{tabular}{ll}
+Stack & Action\\\hline
+$E\$$ & expand $E\to TE'$\\
+$E'T\$$ & expand $T\to FT'$\\
+$E'T'F\$$ & expand $F\to\texttt{id}$, match \texttt{id}\\
+$E'T'\$$ & $T'\to\epsilon$ (lookahead \texttt{+})\\
+$E'\$$ & $E'\to+TE'$, match \texttt{+}\\
+$E'T\$$ & $T\to FT'$, $F\to\texttt{id}$, match \texttt{id}\\
+$E'T'\$$ & $T'\to*FT'$, match \texttt{*}, $F\to\texttt{id}$, match \texttt{id}\\
+$E'T'\$$ & $T'\to\epsilon$, $E'\to\epsilon$\\
+$\$$ & accept\\
+\end{tabular}
+\end{center}
+\end{sol}
+
+%==================================================================
+\section{Eliminating left recursion \& left-factoring}
+
+\warm{1} Eliminate the immediate left recursion in $A\to A\alpha\mid\beta$.
+\hint{Introduce a tail non-terminal $A'$.}
+\begin{sol}
+$A\to\beta A'$, \quad $A'\to\alpha A'\mid\epsilon$.
+\end{sol}
+
+\warm{2} Left-factor $A\to a b\mid a c$.
+\hint{Pull out the common prefix \texttt{a}.}
+\begin{sol}
+$A\to a A'$, \quad $A'\to b\mid c$.
+\end{sol}
+
+\exam Transform $E\to E+T\mid T$ to remove left recursion, and left-factor the statement grammar
+$S\to \texttt{if}\,E\,\texttt{then}\,S\,\texttt{else}\,S\mid \texttt{if}\,E\,\texttt{then}\,S\mid \texttt{other}$.
+\hint{First problem: apply the $A\to A\alpha\mid\beta$ rule with $\alpha={+}T$, $\beta=T$. Second: the two \texttt{if} alternatives share the prefix \texttt{if E then S}; factor it and push the optional \texttt{else} into a new non-terminal (whose $\epsilon$/\texttt{else} choice is the source of the dangling-else ambiguity).}
+\begin{sol}
+\textbf{Left recursion:} $E\to TE'$, $E'\to+TE'\mid\epsilon$.\\[2pt]
+\textbf{Left-factoring:}
+\[
+S\to \texttt{if}\,E\,\texttt{then}\,S\,S'\mid\texttt{other},\qquad
+S'\to \texttt{else}\,S\mid\epsilon.
+\]
+Note this is now left-factored but still ambiguous: $M[S',\texttt{else}]$ has both $S'\to\texttt{else}\,S$ and (via FOLLOW) $S'\to\epsilon$ --- the dangling-else conflict, conventionally resolved by preferring \texttt{else} (match to nearest \texttt{if}).
+\end{sol}
+
+%==================================================================
+\section{LR(0) item-set DFA (closure, GOTO, canonical collection)}
+
+Items 6--8 use the augmented grammar
+\[
+S'\to S,\qquad S\to A\,A,\qquad A\to a\,A\mid b.
+\]
+
+\warm{1} Compute $\mathrm{closure}(\{S'\to{\bullet}S\})$.
+\hint{If an item has a dot before non-terminal $B$, add $B\to\bullet\gamma$ for every production of $B$; repeat to a fixpoint.}
+\begin{sol}
+$\{\,S'\to{\bullet}S,\ S\to{\bullet}AA,\ A\to{\bullet}aA,\ A\to{\bullet}b\,\}$.
+\end{sol}
+
+\warm{2} Compute $\mathrm{GOTO}(I_0,a)$ where $I_0$ is that closure.
+\hint{Advance the dot past every $a$ in $I_0$, then take the closure.}
+\begin{sol}
+From $A\to{\bullet}aA$: $A\to a{\bullet}A$; closure adds $A\to{\bullet}aA,\ A\to{\bullet}b$. So $I_3=\{A\to a{\bullet}A,\ A\to{\bullet}aA,\ A\to{\bullet}b\}$.
+\end{sol}
+
+\exam Build the full canonical collection of LR(0) item sets and the GOTO graph.
+\hint{Start from $I_0$, and for each state and each grammar symbol compute GOTO, creating new states as needed, until no new states appear.}
+\begin{sol}
+\begin{center}\small
+\begin{tabular}{ll}
+$I_0$ & $S'\to{\bullet}S,\ S\to{\bullet}AA,\ A\to{\bullet}aA,\ A\to{\bullet}b$\\
+$I_1$ & $S'\to S{\bullet}$ \hfill (GOTO $I_0,S$)\\
+$I_2$ & $S\to A{\bullet}A,\ A\to{\bullet}aA,\ A\to{\bullet}b$ \hfill (GOTO $I_0,A$)\\
+$I_3$ & $A\to a{\bullet}A,\ A\to{\bullet}aA,\ A\to{\bullet}b$ \hfill (GOTO $I_0/I_2/I_3,a$)\\
+$I_4$ & $A\to b{\bullet}$ \hfill (GOTO on $b$)\\
+$I_5$ & $S\to AA{\bullet}$ \hfill (GOTO $I_2,A$)\\
+$I_6$ & $A\to aA{\bullet}$ \hfill (GOTO $I_3,A$)\\
+\end{tabular}
+\end{center}
+GOTOs: $I_0\!:S{\to}I_1,A{\to}I_2,a{\to}I_3,b{\to}I_4$; \ $I_2\!:A{\to}I_5,a{\to}I_3,b{\to}I_4$; \ $I_3\!:A{\to}I_6,a{\to}I_3,b{\to}I_4$.
+\end{sol}
+
+%==================================================================
+\section{SLR(1) parse table \& conflicts}
+
+\warm{1} For a complete item $A\to\alpha{\bullet}$ in state $I_k$, on which lookaheads do you place ``reduce $A\to\alpha$''?
+\hint{SLR uses FOLLOW.}
+\begin{sol}
+On every terminal in $\mathrm{FOLLOW}(A)$ (and $A\to\alpha{\bullet}$ for the start production gives \emph{accept} on \$).
+\end{sol}
+
+\warm{2} In the ambiguous grammar $E\to E{+}E\mid\texttt{id}$, a state contains both $E\to E{+}E{\bullet}$ and $E\to E{\bullet}{+}E$. With \texttt{+} as lookahead, what conflict arises?
+\hint{One item says reduce, the other can shift.}
+\begin{sol}
+A \textbf{shift/reduce conflict}: $+\in\mathrm{FOLLOW}(E)$ asks to \emph{reduce} $E\to E{+}E$, while $E\to E{\bullet}{+}E$ asks to \emph{shift} \texttt{+}. (This is left/right-associativity ambiguity; precedence declarations resolve it.)
+\end{sol}
+
+\exam Build the SLR(1) ACTION/GOTO table for the $S\to AA,\ A\to aA\mid b$ automaton; state whether it is conflict-free.
+\hint{$\mathrm{FOLLOW}(S)=\{\$\}$, $\mathrm{FOLLOW}(A)=\{a,b,\$\}$. Shift terminals per GOTO; reduce complete items on their FOLLOW set; accept $S'\to S{\bullet}$ on \$.}
+\begin{sol}
+\begin{center}\small
+\begin{tabular}{c|ccc|cc}
+state & \texttt{a} & \texttt{b} & \$ & $S$ & $A$\\\hline
+0 & s3 & s4 & & 1 & 2\\
+1 & & & acc & &\\
+2 & s3 & s4 & & & 5\\
+3 & s3 & s4 & & & 6\\
+4 & r($A{\to}b$) & r($A{\to}b$) & r($A{\to}b$) & &\\
+5 & & & r($S{\to}AA$) & &\\
+6 & r($A{\to}aA$) & r($A{\to}aA$) & r($A{\to}aA$) & &\\
+\end{tabular}
+\end{center}
+\textbf{Conflict-free} --- no cell holds two actions (this grammar is in fact LR(0); SLR's FOLLOW restriction isn't even needed here).
+\end{sol}
+
+%==================================================================
+\section{Running a shift-reduce parser}
+
+\warm{1} Configuration: stack \texttt{0 a 3}, input \texttt{b\$}, using the table above. What is the next move?
+\hint{Read $\mathrm{ACTION}[3,b]$.}
+\begin{sol}
+$\mathrm{ACTION}[3,b]=s4$: shift \texttt{b}, push state 4. Stack becomes \texttt{0 a 3 b 4}.
+\end{sol}
+
+\exam Trace the shift-reduce parse of \texttt{abb} with the table above.
+\hint{Shift pushes (symbol, state). Reduce $A\to\beta$ pops $2|\beta|$ entries, then pushes $A$ and $\mathrm{GOTO}[\text{exposed state},A]$.}
+\begin{sol}
+\begin{center}\small
+\begin{tabular}{lll}
+Stack & Input & Action\\\hline
+0 & abb\$ & s3\\
+0 a 3 & bb\$ & s4\\
+0 a 3 b 4 & b\$ & reduce $A\to b$; GOTO(3,A)=6\\
+0 a 3 A 6 & b\$ & reduce $A\to aA$; GOTO(0,A)=2\\
+0 A 2 & b\$ & s4\\
+0 A 2 b 4 & \$ & reduce $A\to b$; GOTO(2,A)=5\\
+0 A 2 A 5 & \$ & reduce $S\to AA$; GOTO(0,S)=1\\
+0 S 1 & \$ & \textbf{accept}\\
+\end{tabular}
+\end{center}
+\end{sol}
+
+%==================================================================
+\section{Translating to stack-machine bytecode}
+
+Assume a stack machine with \texttt{PUSH n}, \texttt{LOAD x}, \texttt{STORE x}, \texttt{ADD/SUB/MUL}, \texttt{LT} (pushes 1 if $2$nd${<}$top), \texttt{CJUMP L} (pop; jump to \texttt{L} if 0/false), \texttt{JUMP L}, \texttt{CALL f}, \texttt{RET}.
+
+\warm{1} Translate \texttt{2 + 3 * 4}.
+\hint{Post-order: operands before operator; \texttt{*} binds tighter.}
+\begin{sol}
+\texttt{PUSH 2; PUSH 3; PUSH 4; MUL; ADD} \ (leaves 14 on the stack).
+\end{sol}
+
+\warm{2} Translate the assignment \texttt{x = a + b}.
+\hint{Evaluate the RHS onto the stack, then store.}
+\begin{sol}
+\texttt{LOAD a; LOAD b; ADD; STORE x}.
+\end{sol}
+
+\exam Translate \texttt{if x < y then f(x) else g(y)} to bytecode with labels.
+\hint{Evaluate the condition, \texttt{CJUMP} to the else-label when false, emit the then-branch followed by a \texttt{JUMP} past the else-branch, then the else-branch under its label.}
+\begin{sol}
+\begin{verbatim}
+      LOAD x
+      LOAD y
+      LT
+      CJUMP Lelse     ; if not (x<y), go to else
+      LOAD x
+      CALL f
+      JUMP Lend
+Lelse: LOAD y
+      CALL g
+Lend:  ...            ; result of whichever branch on the stack
+\end{verbatim}
+The two labels are the heart of it: one to skip into the else-branch, one to skip over it. Nested \texttt{if}s just nest the same pattern with fresh labels.
+\end{sol}
+
+%==================================================================
+\section{Tail calls \& TCO}
+
+\warm{1} In \texttt{f(x) = g(x) + 1} and \texttt{h(x) = k(x)}, which call is a tail call?
+\hint{A call is in tail position if its result is \emph{immediately} returned with no pending work.}
+\begin{sol}
+\texttt{k(x)} in \texttt{h} is a tail call. \texttt{g(x)} in \texttt{f} is not --- the \texttt{+1} is pending after it returns.
+\end{sol}
+
+\exam Define ``tail call'' and explain TCO at the machine level; rewrite \texttt{sum(n,acc)} for a list/range as tail-recursive and say why it now runs in constant stack space.
+\hint{A non-tail recursion leaves a stack frame per call (work pending after the recursive call). TCO turns the call into a jump that \emph{reuses} the current frame.}
+\begin{sol}
+\textbf{Tail call:} a call that is the last action of its caller --- the caller will do nothing with the result except return it, so nothing on the caller's frame is needed afterwards.\\[2pt]
+\textbf{TCO at machine level:} instead of \texttt{CALL} (push return address + new frame) followed by \texttt{RET}, the compiler overwrites the current arguments in place and \texttt{JUMP}s to the callee's entry, \emph{reusing} the existing frame. Stack depth stays $O(1)$ instead of $O(n)$.\\[2pt]
+\textbf{Tail-recursive sum:}
+\begin{verbatim}
+sum(n, acc) = if n == 0 then acc else sum(n-1, acc+n)
+\end{verbatim}
+The recursive call is the whole \texttt{else} (no pending \texttt{+} afterwards, because the addition is done \emph{before} the call, in the argument). So each call replaces the current frame --- constant stack. (Contrast \texttt{sum(n)=n+sum(n-1)}, where \texttt{+} is pending $\Rightarrow$ $O(n)$ frames.)
+\end{sol}
+
+%==================================================================
+\section{Garbage collection schemes}
+
+\warm{1} Match each scheme to its mechanism: reference counting / mark-and-sweep / copying / generational.
+\hint{Counts, reachability scan, two semispaces, age-based.}
+\begin{sol}
+\textbf{Reference counting} --- per-object count of incoming references, freed at 0. \textbf{Mark-and-sweep} --- trace reachable objects from roots (mark), reclaim the rest (sweep). \textbf{Copying} --- copy live objects from \emph{from-space} to \emph{to-space}, then flip. \textbf{Generational} --- segregate by age; collect the young generation often, old rarely.
+\end{sol}
+
+\warm{2} Why can't reference counting reclaim a cycle?
+\hint{Think of two objects pointing only at each other.}
+\begin{sol}
+Mutually-referencing objects keep each other's counts $\ge1$ even when unreachable from the roots, so their counts never hit 0. (Fix: a backup tracing collector, or weak references.)
+\end{sol}
+
+\exam Give one pro and one con of each of the four schemes, then recommend one for a workload with \emph{many short-lived allocations and some cyclic data}, justifying your choice.
+\hint{Lean on the weak generational hypothesis (most objects die young) and on which schemes handle cycles / fragmentation / pause times.}
+\begin{sol}
+\begin{center}\small
+\begin{tabular}{lll}
+Scheme & Pro & Con\\\hline
+Reference counting & incremental, prompt reclaim & misses cycles; count overhead\\
+Mark-and-sweep & collects cycles; no copying & fragmentation; stop-the-world pause\\
+Copying & compacts (no fragmentation); fast alloc & needs $2\times$ heap; copies live data\\
+Generational & matches real lifetimes; short pauses & write barrier; cross-gen bookkeeping\\
+\end{tabular}
+\end{center}
+\textbf{Recommendation: generational}, with a \emph{copying} collector for the young generation. Short-lived objects die in the nursery, so most are reclaimed by a cheap, frequent copying collection of a small space; the rare survivors are promoted. A tracing-based design (unlike reference counting) reclaims the cyclic data correctly. This is exactly why production VMs (JVM, V8) use generational GC.
+\end{sol}
+
+%==================================================================
+\section{Exceptions implementation}
+
+\warm{1} What does ``stack unwinding'' mean?
+\hint{What happens to the frames between the \texttt{throw} and the \texttt{catch}?}
+\begin{sol}
+Popping the stack frames of the functions between the throw site and the matching handler --- running any cleanup (destructors / \texttt{finally}) for each frame as it is discarded.
+\end{sol}
+
+\exam Describe how exceptions are implemented: handler frames, the exception pointer, and unwinding; then contrast with zero-cost table-based exceptions.
+\hint{The simple scheme keeps a runtime linked list of active handlers; the modern scheme moves the cost off the common (no-exception) path using side tables.}
+\begin{sol}
+\textbf{Dynamic-registration scheme:} entering a \texttt{try} pushes a \emph{handler frame} (which exception types it catches $+$ the handler address) onto a linked list; a global \textbf{exception pointer} points at the current (innermost) handler. \texttt{throw} walks this list from the exception pointer outwards: for each frame it \emph{unwinds} (pops the frame, running destructors/finally) until it finds a handler whose type matches, then transfers control there. Cost is paid on \emph{every} \texttt{try} entry/exit, even when nothing is thrown.\\[2pt]
+\textbf{Zero-cost (table-based) scheme:} no runtime registration. The compiler emits static \textbf{side tables} mapping each code range (PC) to its handlers and cleanup actions. The happy path costs \emph{nothing}; only on a \texttt{throw} does the runtime consult the tables and unwind. Trade-off: larger binary, slower throw. Modern C++/Rust use this.
+\end{sol}
+
+%==================================================================
+\section{Standard optimisations}
+
+\warm{1} Give the example transformation for \emph{constant folding} and \emph{strength reduction}.
+\hint{Evaluate at compile time; replace a costly op with a cheap one.}
+\begin{sol}
+Constant folding: \texttt{2 + 3} $\to$ \texttt{5}. \quad Strength reduction: \texttt{x * 2} $\to$ \texttt{x << 1}.
+\end{sol}
+
+\warm{2} What enabling condition must hold for \texttt{x * 0} $\to$ \texttt{0}?
+\hint{Think about side effects in evaluating \texttt{x}.}
+\begin{sol}
+Evaluating \texttt{x} must have \emph{no side effects} (and not trap); otherwise discarding it changes behaviour.
+\end{sol}
+
+\exam Optimise the following, naming each transformation you apply, and give the final code:
+\begin{verbatim}
+  t = 4 * 2;
+  y = x + t;
+  z = x + t;
+  unused = z * 0;
+  for i in 0..n:  w = a * b + i;
+\end{verbatim}
+\hint{Fold the constant, propagate it, eliminate the dead store, share the repeated subexpression, and hoist the loop-invariant.}
+\begin{sol}
+\begin{enumerate}[leftmargin=*,itemsep=0pt]
+  \item \textbf{Constant folding:} \texttt{t = 4*2} $\to$ \texttt{t = 8}.
+  \item \textbf{Constant propagation:} \texttt{y = x + 8}, \texttt{z = x + 8}.
+  \item \textbf{Common-subexpression elimination:} compute \texttt{x + 8} once: \texttt{c = x + 8; y = c; z = c}.
+  \item \textbf{Dead-code elimination:} \texttt{unused = z * 0} (and \texttt{unused}) is never used $\to$ remove.
+  \item \textbf{Loop-invariant code motion:} \texttt{a * b} doesn't depend on \texttt{i} $\to$ hoist.
+\end{enumerate}
+Final:
+\begin{verbatim}
+  c = x + 8;  y = c;  z = c;
+  m = a * b;
+  for i in 0..n:  w = m + i;
+\end{verbatim}
+(If \texttt{y}/\texttt{z} themselves turn out unused, a further DCE pass removes them too.)
+\end{sol}
+
+\vspace{0.4cm}
+\begin{center}\textit{That's every checklist point. Re-do the exam-style ones cold a week before the paper.}\end{center}
+
+\end{document}
